@@ -54,7 +54,6 @@ double getQ2max(int nset, int member);
 void extrapolate(bool extrapolate = true);
 }
 
-
 class  DMAnalysisTreeMaker : public edm::EDAnalyzer 
 {
 public:
@@ -69,6 +68,7 @@ private:
   void getEventPdf();
   bool getEventTriggers();
   void getEventLHEWeights();
+  bool getMETFilters();
   double jetUncertainty(double pt, double eta, string syst);
   //  double smearPt(double pt, double genpt, double eta, string syst);
   double smear(double pt, double genpt, double eta, string syst);
@@ -87,6 +87,10 @@ private:
   edm::InputTag lumiBlock_;
   edm::InputTag runNumber_;
   edm::InputTag eventNumber_;
+
+  edm::InputTag metNames_;
+  edm::InputTag metBits_;
+
 
   TTree * treesBase;
   map<string, TTree * > trees;
@@ -117,10 +121,10 @@ private:
   edm::ParameterSet channelInfo;
   std::string channel;
   double crossSection, originalEvents;
-  bool useLHEWeights, useLHE, useTriggers,cutOnTriggers;
+  bool useLHEWeights, useLHE, useTriggers,cutOnTriggers, useMETFilters;
   bool addLHAPDFWeights;
   string centralPdfSet,variationPdfSet;
-  std::vector<string> leptonicTriggers, hadronicTriggers;
+  std::vector<string> leptonicTriggers, hadronicTriggers, metFilters;
   int maxPdf, maxWeights;
   edm::Handle<LHEEventProduct > lhes;
   edm::Handle<GenEventInfoProduct> genprod;
@@ -128,6 +132,9 @@ private:
   edm::Handle<std::vector<float> > triggerBits;
   edm::Handle<std::vector<string> > triggerNames;
   edm::Handle<std::vector<int> > triggerPrescales;
+
+  edm::Handle<std::vector<float> > metBits;
+  edm::Handle<std::vector<string> > metNames;
 
   edm::Handle<unsigned int> lumiBlock;
   edm::Handle<unsigned int> runNumber;
@@ -139,6 +146,7 @@ private:
   //float lhe_weights[20];  
   // std::string lhe_weights_id[20];  
 
+  bool isFirstEvent;
 
   class BTagWeight
   {
@@ -284,6 +292,14 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
     leptonicTriggers= channelInfo.getParameter<std::vector<string> >("leptonicTriggers");
     hadronicTriggers= channelInfo.getParameter<std::vector<string> >("hadronicTriggers");
   }
+  useMETFilters = iConfig.getUntrackedParameter<bool>("useMETFilters",true);
+  if(useMETFilters){
+    metFilters = channelInfo.getParameter<std::vector<string> >("metFilters");
+    metBits_ = iConfig.getParameter<edm::InputTag>("metBits");
+    metNames_ = iConfig.getParameter<edm::InputTag>("metNames");
+  }
+
+
   if(useLHEWeights){
     maxWeights = channelInfo.getUntrackedParameter<int>("maxWeights",9);//Usually we do have 9 weights for the scales, might vary depending on the lhe
   }
@@ -471,6 +487,19 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     iEvent.getByLabel(triggerPrescales_,triggerPrescales );
     bool triggerOr = getEventTriggers();
     if(cutOnTriggers && !triggerOr) return;
+    
+    if(useMETFilters){
+      iEvent.getByLabel(metBits_,metBits );
+      iEvent.getByLabel(metNames_,metNames );
+      if(isFirstEvent){
+	for(size_t bt = 0; bt < metNames->size();++bt){
+	  std::string tname = metNames->at(bt);
+	  cout << "test tname "<< tname << " passes "<< metBits->at(bt)<< endl;
+	}
+	//cout << "test tname "<< tname <<endl;
+	isFirstEvent = false;
+      }
+    }
     
 
     /*    std::cout << " initTriggers "<< endl;
@@ -1546,6 +1575,13 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
 	addvar.push_back("PDFWeight" + w_n.str());
       }
     }
+    if(useMETFilters){
+      for (size_t lt = 0; lt < metFilters.size(); ++lt)  {
+	string trig = metFilters.at(lt);
+	addvar.push_back("passes"+trig);
+      }
+      addvar.push_back("passesMETFilters");
+    }
     if(useTriggers){
       for (size_t lt = 0; lt < leptonicTriggers.size(); ++lt)  {
 	string trig = leptonicTriggers.at(lt);
@@ -1581,7 +1617,22 @@ void DMAnalysisTreeMaker::initializePdf(string central, string varied){
 }
 
 
-
+bool DMAnalysisTreeMaker::getMETFilters(){
+  bool METFilterAND=true;
+  for(size_t mf =0; mf< metFilters.size();++mf){
+    string fname = metFilters.at(mf);
+    for(size_t bt = 0; bt < metNames->size();++bt){
+      std::string tname = metNames->at(bt);
+      //      cout << "test tname "<<endl;
+      if(tname.find(fname)!=std::string::npos){
+	METFilterAND = METFilterAND && (metBits->at(bt)>0);
+	float_values["Event_passes"+fname]=metBits->at(bt);
+      }
+    }
+  }
+  float_values["Event_passesMETFilters"]=(float)METFilterAND;
+  return METFilterAND;
+}
 bool DMAnalysisTreeMaker::getEventTriggers(){
   bool leptonOR=false,hadronOR=false;
   for(size_t lt =0; lt< leptonicTriggers.size();++lt){

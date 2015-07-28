@@ -20,6 +20,7 @@ metlabel = cms.string("met")
 #systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down"]
 systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","mistag_up","mistag_down","b_tag_up","b_tag_down"]
 #systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","unclusteredMet__up","unclusteredMet__down"]
+metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices"]
 
 #Triggers
 #leptonTriggers = ["HLT_Ele27_eta2p1_WP85_Gsf","HLT_IsoMu24_IterTrk02"] #<--Check those triggers!
@@ -98,11 +99,13 @@ DMTreesDumper = cms.EDAnalyzer(
     triggerBits = cms.InputTag("TriggerUserData","triggerBitTree"),
     triggerNames = cms.InputTag("TriggerUserData","triggerNameTree"),
     triggerPrescales = cms.InputTag("TriggerUserData","triggerPrescaleTree"),
+    #met filters
+    metBits = cms.InputTag("METUserData","triggerBitTree"),
+    metNames = cms.InputTag("METUserData","triggerNameTree"),
     #lumi,run,number
     lumiBlock = cms.InputTag("eventInfo","evtInfoLumiBlock"),
     runNumber = cms.InputTag("eventInfo","evtInfoRunNumber"),
     eventNumber = cms.InputTag("eventInfo","evtInfoEventNumber"),
-    useLHE = cms.untracked.bool(False),
     #resolved top part:
     #doResolvedTopHad=cms.untracked.bool(True),
     #doResolvedTopSemiLep=cms.untracked.bool(True),
@@ -118,7 +121,10 @@ DMTreesDumper = cms.EDAnalyzer(
         originalEvents = cms.double(1),#Number of events in the MC
         hadronicTriggers = cms.vstring(hadronTriggers),
         leptonicTriggers = cms.vstring(leptonTriggers),
+        metFilters = cms.vstring(metFilters),
+
         #useLHE = cms.untracked.bool(False),#Whether one uses the weights from the LHE in order to get scale uncertainties
+        useLHE = cms.untracked.bool(False),
         useLHEWeights = cms.untracked.bool(False),#Whether one uses the weights from the LHE in order to get scale uncertainties
         addLHAPDFWeights = cms.untracked.bool(False), #Whether to add the PDF for uncertainty evaluation (time consuming)
         )

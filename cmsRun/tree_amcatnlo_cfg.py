@@ -96,10 +96,10 @@ process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
 ### Rootplizer
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputLabel))
-process.load("Analysis.B2GAnaFW.topplusdmedmRootTreeMaker_cff")
+process.load("Analysis.ST_RunII_EA.topplusdmedmRootTreeMaker_cff")
 #process.DMTreesDumper.lhes =cms.InputTag("externalLHEProducer")
 process.DMTreesDumper.lhes =cms.InputTag(options.lhes)
-process.DMTreesDumper.useLHE =(options.useLHE)
+process.DMTreesDumper.channelInfo.useLHE =(options.useLHE)
 
 process.analysisPath = cms.Path(
     process.DMTreesDumper
