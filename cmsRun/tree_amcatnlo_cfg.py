@@ -23,8 +23,8 @@ options.register('maxEvts',
 
 options.register('sample',
                  [#'file:/tmp/oiorio/B2GEDMNtuple_1.root'
-#                 'file:B2GEDMNtuple_1.root'
-                  'root://xrootd.ba.infn.it//store/user/oiorio/ttDM/samples/July2015/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/EDMNTUPLE_06Jul/150706_224326/0000/B2GEDMNtuple_1.root'
+                'file:./B2GEDMNtuple.root'
+#                  'root://xrootd.ba.infn.it//store/user/oiorio/ttDM/samples/July2015/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/EDMNTUPLE_06Jul/150706_224326/0000/B2GEDMNtuple_1.root'
 #'root://xrootd.ba.infn.it//store/user/decosa/ttDM/Phys14_v2/TTDMDMJets_M600GeV_Tune4C_13TeV-madgraph-tauola/DM600_Phys14DR-PU20bx25_PHYS14_25_V1-v1_EDMNtuple/150212_173740/0000/B2GEDMNtuple_5.root', 
 #'root://xrootd.ba.infn.it//store/user/decosa/ttDM/Phys14_v2/TTDMDMJets_M600GeV_Tune4C_13TeV-madgraph-tauola/DM600_Phys14DR-PU20bx25_PHYS14_25_V1-v1_EDMNtuple/150212_173740/0000/B2GEDMNtuple_4.root'],
 ],
@@ -96,10 +96,10 @@ process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
 ### Rootplizer
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputLabel))
-process.load("Analysis.B2GAnaFW.topplusdmedmRootTreeMaker_cff")
+process.load("Analysis.ST_RunII_EA.topplusdmedmRootTreeMaker_cff")
 #process.DMTreesDumper.lhes =cms.InputTag("externalLHEProducer")
 process.DMTreesDumper.lhes =cms.InputTag(options.lhes)
-process.DMTreesDumper.useLHE =(options.useLHE)
+process.DMTreesDumper.channelInfo.useLHE =(options.useLHE)
 
 process.analysisPath = cms.Path(
     process.DMTreesDumper
