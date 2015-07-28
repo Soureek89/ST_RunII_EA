@@ -18,8 +18,8 @@ metlabel = cms.string("met")
 #systsToSave = ["jes__down"]
 #systsToSave = ["noSyst"]
 #systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down"]
-systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","mistag_up","mistag_down","b_tag_up","b_tag_down"]
-#systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","unclusteredMet__up","unclusteredMet__down"]
+#systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","mistag_up","mistag_down","b_tag_up","b_tag_down"]
+systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","unclusteredMet__up","unclusteredMet__down"]
 metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices"]
 
 #Triggers
@@ -106,6 +106,8 @@ DMTreesDumper = cms.EDAnalyzer(
     lumiBlock = cms.InputTag("eventInfo","evtInfoLumiBlock"),
     runNumber = cms.InputTag("eventInfo","evtInfoRunNumber"),
     eventNumber = cms.InputTag("eventInfo","evtInfoEventNumber"),
+    #HBHE
+    HBHEFilter = cms.InputTag("HBHENoiseFilterResultProducer","HBHENoiseFilterResult"),
     #resolved top part:
     #doResolvedTopHad=cms.untracked.bool(True),
     #doResolvedTopSemiLep=cms.untracked.bool(True),

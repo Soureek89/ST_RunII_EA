@@ -87,6 +87,7 @@ private:
   edm::InputTag lumiBlock_;
   edm::InputTag runNumber_;
   edm::InputTag eventNumber_;
+  edm::InputTag HBHEFilter_;
 
   edm::InputTag metNames_;
   edm::InputTag metBits_;
@@ -135,6 +136,7 @@ private:
 
   edm::Handle<std::vector<float> > metBits;
   edm::Handle<std::vector<string> > metNames;
+  edm::Handle<bool> HBHE;
 
   edm::Handle<unsigned int> lumiBlock;
   edm::Handle<unsigned int> runNumber;
@@ -297,6 +299,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
     metFilters = channelInfo.getParameter<std::vector<string> >("metFilters");
     metBits_ = iConfig.getParameter<edm::InputTag>("metBits");
     metNames_ = iConfig.getParameter<edm::InputTag>("metNames");
+    HBHEFilter_ = iConfig.getParameter<edm::InputTag>("HBHEFilter");
   }
 
 
@@ -491,6 +494,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     if(useMETFilters){
       iEvent.getByLabel(metBits_,metBits );
       iEvent.getByLabel(metNames_,metNames );
+      iEvent.getByLabel(HBHEFilter_ ,HBHE);
       if(isFirstEvent){
 	for(size_t bt = 0; bt < metNames->size();++bt){
 	  std::string tname = metNames->at(bt);
@@ -1305,6 +1309,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       getEventPdf();
     }
     
+    float_values["Event_PassesHBHE"]=(float)(*HBHE);
 
     //technical event information
     float_values["Event_EventNumber"]=*eventNumber;
@@ -1581,6 +1586,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
 	addvar.push_back("passes"+trig);
       }
       addvar.push_back("passesMETFilters");
+      addvar.push_back("passesHBHE");
     }
     if(useTriggers){
       for (size_t lt = 0; lt < leptonicTriggers.size(); ++lt)  {
@@ -1881,38 +1887,49 @@ double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst,
   if(algo == "csvt"){
     if(syst ==  "noSyst") {
       if(abs(flavor)==5){
-	return 0.90;
+	return 1.00;
       }
       if(abs(flavor)==4){
-	return 0.80;
+	return 1.00;
       }
       if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 1.1;
+	return 1.00;
       }
     }
     if(syst ==  "mistag_up") {
       if(abs(flavor)==5){
-	return 0.90;
+	return 1.00;
       }
       if(abs(flavor)==4){
-	return 0.80;
+	return 1.00;
       }
       if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 1.6;
+	return 1.20;
       }
     }
     if(syst ==  "mistag_down") {
       if(abs(flavor)==5){
-	return 0.90;
+	return 1.00;
       }
       if(abs(flavor)==4){
-	return 0.80;
+	return 1.00;
       }
       if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 0.6;
+	return 0.8;
       }
     }
     if(syst ==  "b_tag_up") {
+      if(abs(flavor)==5){
+	return 1.05;
+      }
+      if(abs(flavor)==4){
+	return 1.10;
+      }
+      if(abs(flavor)!=5 && abs(flavor)!=4){
+	return 1.0;
+      }
+    }
+    if(syst ==  "b_tag_down") {
       if(abs(flavor)==5){
 	return 0.95;
       }
@@ -1920,18 +1937,7 @@ double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst,
 	return 0.90;
       }
       if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 1.1;
-      }
-    }
-    if(syst ==  "b_tag_down") {
-      if(abs(flavor)==5){
-	return 0.85;
-      }
-      if(abs(flavor)==4){
-	return 0.70;
-      }
-      if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 1.1;
+	return 1.0;
       }
     }
   }
