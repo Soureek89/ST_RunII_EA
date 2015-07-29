@@ -1309,6 +1309,10 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       getEventPdf();
     }
     
+    if(useMETFilters){
+      getMETFilters();
+    }
+
     float_values["Event_PassesHBHE"]=(float)(*HBHE);
 
     //technical event information
