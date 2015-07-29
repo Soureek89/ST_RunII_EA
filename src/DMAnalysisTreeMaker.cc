@@ -274,7 +274,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   originalEvents = channelInfo.getParameter<double>("originalEvents");
   useLHEWeights = channelInfo.getUntrackedParameter<bool>("useLHEWeights",false);
   //useLHE = channelInfo.getUntrackedParameter<bool>("useLHE",false);
-  useLHE = iConfig.getUntrackedParameter<bool>("useLHE",false);
+  useLHE = channelInfo.getUntrackedParameter<bool>("useLHE",false);
   //addLHAPDFWeights = channelInfo.getUntrackedParameter<bool>("addLHAPDFWeights",false);
   addLHAPDFWeights = channelInfo.getUntrackedParameter<bool>("addLHAPDFWeights",true);
   
