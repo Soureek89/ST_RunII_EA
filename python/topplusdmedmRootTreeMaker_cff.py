@@ -124,11 +124,12 @@ DMTreesDumper = cms.EDAnalyzer(
         hadronicTriggers = cms.vstring(hadronTriggers),
         leptonicTriggers = cms.vstring(leptonTriggers),
         metFilters = cms.vstring(metFilters),
-
+        
         #useLHE = cms.untracked.bool(False),#Whether one uses the weights from the LHE in order to get scale uncertainties
-        useLHE = cms.untracked.bool(False),
-        useLHEWeights = cms.untracked.bool(False),#Whether one uses the weights from the LHE in order to get scale uncertainties
+        useLHE = cms.untracked.bool(True),
+        useLHEWeights = cms.untracked.bool(True),#Whether one uses the weights from the LHE in order to get scale uncertainties
         addLHAPDFWeights = cms.untracked.bool(False), #Whether to add the PDF for uncertainty evaluation (time consuming)
+        maxWeights = cms.untracked.int32(110) 
         )
     )
 
