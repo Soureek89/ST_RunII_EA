@@ -1569,10 +1569,10 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
 
     if(useLHEWeights){
       for (size_t w = 1; w <= (size_t)maxWeights; ++w)  {
-	//	cout << " weight # " << lhe_weights[w - 1] << " test "<< endl; 
 	stringstream w_n;
 	w_n << w;
 	addvar.push_back("LHEWeight"+w_n.str());
+	//	cout << " weight # " << w << " test "<< "LHEWeight"+w_n.str()<< endl; 
 	//addvar.push_back(("LHEWeight"+w_n.str())+"ID");
       }
     }
@@ -1731,8 +1731,17 @@ void DMAnalysisTreeMaker::getEventLHEWeights(){
   for(size_t i =0; i < wgtsize;++i) {
     if (i< (size_t)maxWeights){ 
       stringstream w_n;
+      w_n << i;
+
       float ww = (float)lhes->weights().at(i).wgt;
-      float_values["LHEWeight"+w_n.str()]= ww;
+      
+      //      cout << "ww # " << i<< "is "<<ww <<endl;
+      //      cout <<" floatval before "<< float_values["Event_LHEWeight"+w_n.str()]<<endl;
+
+      float_values["Event_LHEWeight"+w_n.str()]= ww;
+
+      //      cout <<" floatval after "<< float_values["Event_LHEWeight"+w_n.str()]<<endl;
+
     }
     else cout << "WARNING! there are " << wgtsize << " weights, and you accomodated for only "<< maxWeights << " weights, check your configuration file/your lhe!!!"<<endl;
   }
