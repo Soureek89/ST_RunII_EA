@@ -949,17 +949,19 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	}
 
 
-
-	if(isCSVT && passesCut && fabs(eta) < 2.4) {
+	//if(isCSVT && passesCut && fabs(eta) < 2.4) {
+	if(isCSVT && passesID && passesDRtight && ptCorr > 40 && fabs(eta) < 2.4) {
 	  float_values["Event_nCSVTJets"+j_n.str()]+=1.0;
 	  ncsvt_tags +=1;
 	}
 
-	if(isCSVL && passesCut && fabs(eta) < 2.4) { 
+	//if(isCSVL && passesCut && fabs(eta) < 2.4) { 
+	if(isCSVL && passesID && passesDRtight && ptCorr > 40 && fabs(eta) < 2.4) {
 	  ncsvl_tags +=1;
 	}
 
-	if(isCSVM && passesCut && fabs(eta) < 2.4) { 
+	//if(isCSVM && passesCut && fabs(eta) < 2.4) { 
+	if(isCSVM && passesID && passesDRtight && ptCorr > 40 && fabs(eta) < 2.4) {
 	  float_values["Event_nCSVMJets"+j_n.str()]+=1.0;
 	  if(ji==0){
 	    ncsvm_tags +=1;
