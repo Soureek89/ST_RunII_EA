@@ -33,7 +33,7 @@ options.register('sample',
                  'Sample to analyze')
 
 options.register('outputLabel',
-                 'treesTest_NewSmall.root',
+                 'treesTest_NewSmallNoChange.root',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Output label')
@@ -100,6 +100,8 @@ process.load("Analysis.ST_RunII_EA.topplusdmedmRootTreeMaker_cff")
 #process.DMTreesDumper.lhes =cms.InputTag("externalLHEProducer")
 process.DMTreesDumper.lhes =cms.InputTag(options.lhes)
 process.DMTreesDumper.channelInfo.useLHE =(options.useLHE)
+process.DMTreesDumper.changeJECs = cms.untracked.bool(True)
+process.DMTreesDumper.isData = cms.untracked.bool(False)#This adds the L2L3Residuals
 
 process.analysisPath = cms.Path(
     process.DMTreesDumper

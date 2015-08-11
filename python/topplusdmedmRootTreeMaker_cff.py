@@ -17,10 +17,11 @@ metlabel = cms.string("met")
 #systsToSave = ["noSyst","jer__up","jer__down"]
 #systsToSave = ["jes__down"]
 #systsToSave = ["noSyst"]
-#systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down"]
+systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down"]
 #systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","mistag_up","mistag_down","b_tag_up","b_tag_down"]
-systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","unclusteredMet__up","unclusteredMet__down"]
-metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices"]
+#systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","unclusteredMet__up","unclusteredMet__down"]
+metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices", "Flag_eeBadScFilter"]
+#metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices"]
 
 #Triggers
 #leptonTriggers = ["HLT_Ele27_eta2p1_WP85_Gsf","HLT_IsoMu24_IterTrk02"] #<--Check those triggers!
@@ -108,11 +109,16 @@ DMTreesDumper = cms.EDAnalyzer(
     eventNumber = cms.InputTag("eventInfo","evtInfoEventNumber"),
     #HBHE
     HBHEFilter = cms.InputTag("HBHENoiseFilterResultProducer","HBHENoiseFilterResult"),
+    #vertex
+    vertexZ =  cms.InputTag("vertexInfo","z"),
+    vertexChi2 =  cms.InputTag("vertexInfo","chi"),
+    vertexNdof =  cms.InputTag("vertexInfo","ndof"),
+    vertexRho =  cms.InputTag("vertexInfo","rho"),
     #resolved top part:
     #doResolvedTopHad=cms.untracked.bool(True),
     #doResolvedTopSemiLep=cms.untracked.bool(True),
     #cuts for the jet scan
-    jetScanCuts=cms.vdouble(30), #Note: the order is important, as the jet collection with the first cut is used for the definition of mt2w.
+    jetScanCuts=cms.vdouble(40), #Note: the order is important, as the jet collection with the first cut is used for the definition of mt2w.
     
     #Systematics trees to produce. Include:
     #jes__up,jes__down,jer__up,jer__down,unclusteredMet__up,unclusteredMet__down    
