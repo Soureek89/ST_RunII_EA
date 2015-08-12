@@ -92,6 +92,10 @@ private:
   edm::InputTag metNames_;
   edm::InputTag metBits_;
 
+  edm::InputTag pvZ_,pvChi2_,pvNdof_,pvRho_;
+
+  //  edm::LumiReWeighting LumiWeights_, LumiWeightsUp_, LumiWeightsDown_;
+
 
   TTree * treesBase;
   map<string, TTree * > trees;
@@ -122,7 +126,7 @@ private:
   edm::ParameterSet channelInfo;
   std::string channel;
   double crossSection, originalEvents;
-  bool useLHEWeights, useLHE, useTriggers,cutOnTriggers, useMETFilters;
+  bool useLHEWeights, useLHE, useTriggers,cutOnTriggers, useMETFilters, addPV;
   bool addLHAPDFWeights;
   string centralPdfSet,variationPdfSet;
   std::vector<string> leptonicTriggers, hadronicTriggers, metFilters;
@@ -142,11 +146,25 @@ private:
   edm::Handle<unsigned int> runNumber;
   edm::Handle<ULong64_t> eventNumber;
 
-  std::vector<double> jetScanCuts;
-  JetCorrectionUncertainty *jecUnc;
   //  float pdf_weights[140];
   //float lhe_weights[20];  
   // std::string lhe_weights_id[20];  
+
+  edm::Handle<std::vector<float> > pvZ,pvChi2,pvRho;
+  edm::Handle<std::vector<int> > pvNdof;
+  float nPV;
+
+  //JEC info
+  bool changeJECs;
+  bool isData;
+  edm::Handle<double> rho;
+  double Rho;
+  std::vector<double> jetScanCuts;
+  std::vector<JetCorrectorParameters> jecPars;
+  JetCorrectorParameters *jecParsL1, *jecParsL2, *jecParsL3, *jecParsL2L3Residuals;
+  JetCorrectionUncertainty *jecUnc;
+  FactorizedJetCorrector *jecCorr;
+
 
   bool isFirstEvent;
 
@@ -302,6 +320,15 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
     HBHEFilter_ = iConfig.getParameter<edm::InputTag>("HBHEFilter");
   }
 
+  addPV = iConfig.getUntrackedParameter<bool>("addPV",true);
+  changeJECs = iConfig.getUntrackedParameter<bool>("changeJECs",false);
+  isData = iConfig.getUntrackedParameter<bool>("isData",false);
+  if(addPV || changeJECs){
+    pvZ_ = iConfig.getParameter<edm::InputTag >("vertexZ");
+    pvChi2_ = iConfig.getParameter<edm::InputTag >("vertexChi2");
+    pvNdof_ = iConfig.getParameter<edm::InputTag >("vertexNdof");
+    pvRho_ = iConfig.getParameter<edm::InputTag >("vertexRho");
+  }
 
   if(useLHEWeights){
     maxWeights = channelInfo.getUntrackedParameter<int>("maxWeights",9);//Usually we do have 9 weights for the scales, might vary depending on the lhe
@@ -457,9 +484,18 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
     trees[syst]->SetTitle((channel+"__"+syst).c_str());
   }
   
-  //jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Fall12_V7_DATA_UncertaintySources_AK5PFchs.txt", "Total")));
-  //  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer13_V5_DATA_UncertaintySources_AK5PFchs.txt", "Total")));
-  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Winter14_V5_DATA_UncertaintySources_AK5PFchs.txt", "Total")));
+
+  jecParsL1  = new JetCorrectorParameters("Summer15_50nsV2_MC_L1FastJet_AK4PFchs.txt");
+  jecParsL2  = new JetCorrectorParameters("Summer15_50nsV2_MC_L2Relative_AK4PFchs.txt");
+  jecParsL3  = new JetCorrectorParameters("Summer15_50nsV2_MC_L3Absolute_AK4PFchs.txt");
+  jecParsL2L3Residuals  = new JetCorrectorParameters("Summer15_50nsV2_DATA_L2L3Residual_AK4PFchs.txt");
+  jecPars.push_back(*jecParsL1);
+  jecPars.push_back(*jecParsL2);
+  jecPars.push_back(*jecParsL3);
+  if(isData)jecPars.push_back(*jecParsL2L3Residuals);
+
+  jecCorr = new FactorizedJetCorrector(jecPars);
+  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer15_50nsV2_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
   
   //  if(addNominal) systematics.push_back("noSyst");
  
@@ -490,21 +526,33 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     iEvent.getByLabel(triggerPrescales_,triggerPrescales );
     bool triggerOr = getEventTriggers();
     if(cutOnTriggers && !triggerOr) return;
-    
-    if(useMETFilters){
-      iEvent.getByLabel(metBits_,metBits );
-      iEvent.getByLabel(metNames_,metNames );
-      iEvent.getByLabel(HBHEFilter_ ,HBHE);
-      if(isFirstEvent){
-	for(size_t bt = 0; bt < metNames->size();++bt){
-	  std::string tname = metNames->at(bt);
-	  cout << "test tname "<< tname << " passes "<< metBits->at(bt)<< endl;
-	}
-	//cout << "test tname "<< tname <<endl;
-	isFirstEvent = false;
+  }  
+  if(useMETFilters){
+    iEvent.getByLabel(metBits_,metBits );
+    iEvent.getByLabel(metNames_,metNames );
+    iEvent.getByLabel(HBHEFilter_ ,HBHE);
+    if(isFirstEvent){
+      for(size_t bt = 0; bt < metNames->size();++bt){
+	std::string tname = metNames->at(bt);
+	cout << "test tname "<< tname << " passes "<< metBits->at(bt)<< endl;
       }
+      //cout << "test tname "<< tname <<endl;
+      isFirstEvent = false;
     }
-    
+    getMETFilters();
+  }
+  
+  if(changeJECs){
+    iEvent.getByLabel("fixedGridRhoFastjetAll",rho);
+    Rho = *rho; 
+  }
+  if( addPV || changeJECs){
+    iEvent.getByLabel(pvZ_,pvZ);
+    iEvent.getByLabel(pvChi2_,pvChi2);
+    iEvent.getByLabel(pvNdof_,pvNdof);
+    iEvent.getByLabel(pvRho_,pvRho);
+    nPV = pvZ->size();
+  }
 
     /*    std::cout << " initTriggers "<< endl;
     for(size_t bt = 0; bt < triggerNames->size();++bt){
@@ -514,8 +562,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       std::cout << "name "<< tname << " bit "<< bit << " prescale "<<presc<<endl;
       }*/
     
-
-  }
+    
+  
 
   //Part 1 taking the obs values from the edm file
   for (;itPsets!=physObjects.end();++itPsets){ 
@@ -743,7 +791,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float smearfact = -9999;
       //      cout << "j is " <<j<< "label "<< jets_label << " maxinstances "<< max_instances[jets_label]<< "size "<< sizes[jets_label]<< " pt "<< vfloats_values[makeName(jets_label,pref,"Pt")][j]<< " eta "<< eta<< " phi "<< phi << " e "<< energy <<endl;
       float jecscale = vfloats_values[makeName(jets_label,pref,"jecFactor0")][j];
-      
+      float area = vfloats_values[makeName(jets_label,pref,"jetArea")][j];
+
       // if(pt>0){
       // 	ptCorr = smearPt(pt, genpt, eta, syst);
 	
@@ -753,6 +802,28 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       // 	energyCorr = energy * (1 + unc);
       // }
       if(pt>0){
+	if(changeJECs){
+	  TLorentzVector jetUncorr;
+	  
+	  jetUncorr.SetPtEtaPhiE(pt,eta,phi,energy);
+	  
+	  //	  cout << "jet "<< j <<" standard pt "<<pt<< " eta "<< eta << " zero correction "<< jecscale<<endl;;
+	  jetUncorr= jetUncorr*jecscale;
+	  //	  cout << " uncorrected "<<jetUncorr.Pt()<<endl;
+	  jecCorr->setJetEta(jetUncorr.Eta());
+	  jecCorr->setJetPt(jetUncorr.Pt());
+	  jecCorr->setJetA(area);
+	  jecCorr->setRho(Rho);
+	  jecCorr->setNPV(nPV);
+	  double recorr =  jecCorr->getCorrection();
+	  jetUncorr = jetUncorr *recorr;
+	  //	  cout << " recorrection "<<recorr << " corrected Pt "<< jetUncorr.Pt()<< " eta "<< jetUncorr.Eta()<<endl;
+	  pt = jetUncorr.Pt();
+	  eta = jetUncorr.Eta();
+	  energy = jetUncorr.Energy();
+	  phi = jetUncorr.Phi();
+	}
+	
 	smearfact = smear(pt, genpt, eta, syst);
 	ptCorr = pt * smearfact;
 	energyCorr = energy * smearfact;
@@ -1311,10 +1382,24 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       getEventPdf();
     }
     
-    if(useMETFilters){
-      getMETFilters();
+    if(addPV){
+      float nGoodPV = 0.0;
+      for (size_t v = 0; v < pvZ->size();++v){
+	bool isGoodPV = (
+			 fabs(pvZ->at(v)) < 24.0 &&
+			 pvNdof->at(v) > 4.0 &&
+			 pvRho->at(v) <2.0
+			 );
+	if (isGoodPV)nGoodPV+=1.0;
+      }	
+      float_values["Event_nGoodPV"]=(float)(nGoodPV);
+      float_values["Event_nPV"]=(float)(nPV);
     }
 
+    //    if(useMETFilters){
+    //      getMETFilters();
+    //    }
+    
     float_values["Event_passesHBHE"]=(float)(*HBHE);
 
     //technical event information
@@ -1570,7 +1655,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     }
 
     if(useLHEWeights){
-      for (size_t w = 1; w <= (size_t)maxWeights; ++w)  {
+      for (size_t w = 0; w <= (size_t)maxWeights; ++w)  {
 	stringstream w_n;
 	w_n << w;
 	addvar.push_back("LHEWeight"+w_n.str());
@@ -1730,8 +1815,8 @@ void DMAnalysisTreeMaker::getEventLHEWeights(){
   //  std::cout << " in weight "<<endl;
   size_t wgtsize=  lhes->weights().size();
   //  std::cout << "weight size "<< wgtsize<<endl;
-  for(size_t i =0; i < wgtsize;++i) {
-    if (i< (size_t)maxWeights){ 
+  for (size_t i = 0; i <  wgtsize; ++i)  {
+    if (i<= (size_t)maxWeights){ 
       stringstream w_n;
       w_n << i;
 
