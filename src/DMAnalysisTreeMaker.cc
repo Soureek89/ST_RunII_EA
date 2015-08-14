@@ -878,9 +878,18 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	float chEmEnFrac = vfloats_values[makeName(jets_label,pref,"chargedEmEnergy")][j]/enZero;
 	float neuEmEnFrac = vfloats_values[makeName(jets_label,pref,"neutralEmEnergy")][j]/enZero;
 	float neuHadEnFrac = vfloats_values[makeName(jets_label,pref,"neutralHadronEnergy")][j]/enZero;
+	float neuMulti = vfloats_values[makeName(jets_label,pref,"neutralMultiplicity")][j];
+
 	
+	// recommended at 8 TeV
 	//passesID =  (nDau >1.0 && fabs(eta) < 4.7 && (fabs(eta)>=2.4 ||(chHadEnFrac>0.0 && chMulti>0 && chEmEnFrac<0.99) ) && neuEmEnFrac<0.99 && neuHadEnFrac <0.99 && mu_frac < 0.8);
-	passesID =  (nDau >1.0 && fabs(eta) < 4.7 && (fabs(eta)>=2.4 ||(chHadEnFrac>0.0 && chMulti>0 && chEmEnFrac<0.99 && neuEmEnFrac<0.99 && neuHadEnFrac <0.99) ) && mu_frac < 0.8);
+
+	// temp fix for HF issues
+	//passesID =  (nDau >1.0 && fabs(eta) < 4.7 && (fabs(eta)>=2.4 ||(chHadEnFrac>0.0 && chMulti>0 && chEmEnFrac<0.99 && neuEmEnFrac<0.99 && neuHadEnFrac <0.99) ) && mu_frac < 0.8);
+
+	// new recommendations from 14/08
+	if (fabs(eta)<=3.0) passesID =  (nDau >1.0 && fabs(eta) < 4.7 && (fabs(eta)>=2.4 ||(chHadEnFrac>0.0 && chMulti>0 && chEmEnFrac<0.99) ) && neuEmEnFrac<0.99 && neuHadEnFrac <0.99);
+	else passesID = (fabs(eta) < 4.7 && neuMulti > 10 && neuEmEnFrac < 0.9 );
 
 	vfloats_values[jets_label+"_JetID_numberOfDaughters"][j]=nDau;
 	vfloats_values[jets_label+"_JetID_muonEnergyFraction"][j]=mu_frac;
@@ -889,6 +898,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	vfloats_values[jets_label+"_JetID_chargedEmEnergyFraction"][j]=chEmEnFrac;
 	vfloats_values[jets_label+"_JetID_neutralEmEnergyFraction"][j]=neuEmEnFrac;
 	vfloats_values[jets_label+"_JetID_neutralHadronEnergyFraction"][j]=neuHadEnFrac;
+	vfloats_values[jets_label+"_JetID_neutralMultiplicity"][j]=neuMulti;
 
 	/*
 	cout << "### JET ID ###" << endl;
@@ -1515,6 +1525,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     addvar.push_back("JetID_chargedEmEnergyFraction");
     addvar.push_back("JetID_neutralEmEnergyFraction");
     addvar.push_back("JetID_neutralHadronEnergyFraction");
+    addvar.push_back("JetID_neutralMultiplicity");
 
   }
   if(isak8){
