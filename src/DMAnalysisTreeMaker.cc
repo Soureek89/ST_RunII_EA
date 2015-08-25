@@ -155,7 +155,7 @@ private:
   float nPV;
 
   //JEC info
-  bool changeJECs;
+  bool changeJECs=false; // already applied on B2G side
   bool isData;
   edm::Handle<double> rho;
   double Rho;
@@ -321,7 +321,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   }
 
   addPV = iConfig.getUntrackedParameter<bool>("addPV",true);
-  changeJECs = iConfig.getUntrackedParameter<bool>("changeJECs",false);
+  //changeJECs = iConfig.getUntrackedParameter<bool>("changeJECs",false);
   isData = iConfig.getUntrackedParameter<bool>("isData",false);
   if(addPV || changeJECs){
     pvZ_ = iConfig.getParameter<edm::InputTag >("vertexZ");
@@ -495,7 +495,8 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   if(isData)jecPars.push_back(*jecParsL2L3Residuals);
 
   jecCorr = new FactorizedJetCorrector(jecPars);
-  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer15_50nsV2_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
+  
+  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer15_50nsV4_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
   
   //  if(addNominal) systematics.push_back("noSyst");
  
@@ -956,7 +957,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	stringstream j_n;
 	double jetval = jetScanCuts.at(ji);
 	j_n << "Cut" <<jetval;
-	bool passesCut = ( ptCorr > jetval && fabs(eta) < 4.0);
+	bool passesCut = ( ptCorr > jetval && fabs(eta) < 4.7);
 
 	
 	if(!passesID || !passesCut || !passesDR) continue;
@@ -1993,15 +1994,17 @@ double DMAnalysisTreeMaker::MCTagEfficiency(string algo, int flavor, double pt){
   return 1.0;
 }
 
-
 double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst, double pt){
+  // source (08/24):
+  // https://indico.cern.ch/event/439699/contribution/2/attachments/1143400/1638534/BTag_150727_FirstResults13TeVData.pdf
+  // http://scodella.web.cern.ch/scodella/Work/CMS/BTagging/PerformanceCombination/Codes/CSVv2_Aug24.csv
   if(algo == "csvt"){
     if(syst ==  "noSyst") {
       if(abs(flavor)==5){
-	return 1.00;
+	if (pt >= 30  && pt < 670) return 0.921826;
       }
       if(abs(flavor)==4){
-	return 1.00;
+	if (pt >= 30  && pt < 670) return 0.921826;
       }
       if(abs(flavor)!=5 && abs(flavor)!=4){
 	return 1.00;
@@ -2015,7 +2018,7 @@ double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst,
 	return 1.00;
       }
       if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 1.20;
+	return 1.40;
       }
     }
     if(syst ==  "mistag_down") {
@@ -2026,26 +2029,52 @@ double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst,
 	return 1.00;
       }
       if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 0.8;
+	return 0.6;
       }
     }
+
     if(syst ==  "b_tag_up") {
       if(abs(flavor)==5){
-	return 1.05;
+	if (pt >= 30  && pt < 50 ) return 0.921826+0.038185462355613708;
+	if (pt >= 50  && pt < 70 ) return 0.921826+0.048359211534261703;
+	if (pt >= 70  && pt < 100) return 0.921826+0.036345392465591431;
+	if (pt >= 100 && pt < 140) return 0.921826+0.090967245399951935;
+	if (pt >= 140 && pt < 200) return 0.921826+0.087966755032539368;
+	if (pt >= 200 && pt < 300) return 0.921826+0.26064527034759521;
+	if (pt >= 300 && pt < 670) return 0.921826+0.20989412069320679;
       }
       if(abs(flavor)==4){
-	return 1.10;
+	if (pt >= 30  && pt < 50 ) return 0.921826+0.076370924711227417;
+	if (pt >= 50  && pt < 70 ) return 0.921826+0.096718423068523407;
+	if (pt >= 70  && pt < 100) return 0.921826+0.072690784931182861;
+	if (pt >= 100 && pt < 140) return 0.921826+0.18193449079990387;
+	if (pt >= 140 && pt < 200) return 0.921826+0.17593351006507874;
+	if (pt >= 200 && pt < 300) return 0.921826+0.52129054069519043;
+	if (pt >= 300 && pt < 670) return 0.921826+0.41978824138641357;
       }
       if(abs(flavor)!=5 && abs(flavor)!=4){
 	return 1.0;
       }
     }
+
     if(syst ==  "b_tag_down") {
       if(abs(flavor)==5){
-	return 0.95;
+	if (pt >= 30  && pt < 50 ) return 0.921826-0.038185462355613708;
+	if (pt >= 50  && pt < 70 ) return 0.921826-0.048359211534261703;
+	if (pt >= 70  && pt < 100) return 0.921826-0.036345392465591431;
+	if (pt >= 100 && pt < 140) return 0.921826-0.090967245399951935;
+	if (pt >= 140 && pt < 200) return 0.921826-0.087966755032539368;
+	if (pt >= 200 && pt < 300) return 0.921826-0.26064527034759521;
+	if (pt >= 300 && pt < 670) return 0.921826-0.20989412069320679;
       }
       if(abs(flavor)==4){
-	return 0.90;
+	if (pt >= 30  && pt < 50 ) return 0.921826-0.076370924711227417;
+	if (pt >= 50  && pt < 70 ) return 0.921826-0.096718423068523407;
+	if (pt >= 70  && pt < 100) return 0.921826-0.072690784931182861;
+	if (pt >= 100 && pt < 140) return 0.921826-0.18193449079990387;
+	if (pt >= 140 && pt < 200) return 0.921826-0.17593351006507874;
+	if (pt >= 200 && pt < 300) return 0.921826-0.52129054069519043;
+	if (pt >= 300 && pt < 670) return 0.921826-0.41978824138641357;
       }
       if(abs(flavor)!=5 && abs(flavor)!=4){
 	return 1.0;
