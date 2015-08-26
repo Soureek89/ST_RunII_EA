@@ -289,7 +289,8 @@ DMTreesDumper.physicsObjects.append(
             cms.InputTag(j,jpref+"chargedEmEnergy"),
             cms.InputTag(j,jpref+"neutralEmEnergy"),
             cms.InputTag(j,jpref+"neutralHadronEnergy"),
-            cms.InputTag(j,jpref+"jecFactor0")
+            cms.InputTag(j,jpref+"jecFactor0"),
+            cms.InputTag(j,jpref+"jetArea")            
             ),
         variablesI = cms.VInputTag(),
         singleI = cms.VInputTag(),
