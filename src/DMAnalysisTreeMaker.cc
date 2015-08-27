@@ -155,7 +155,7 @@ private:
   float nPV;
 
   //JEC info
-  bool changeJECs=false; // already applied on B2G side
+  bool changeJECs;
   bool isData, useMETNoHF;
   edm::Handle<double> rho;
   double Rho;
@@ -322,7 +322,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   }
 
   addPV = iConfig.getUntrackedParameter<bool>("addPV",true);
-  //changeJECs = iConfig.getUntrackedParameter<bool>("changeJECs",false);
+  changeJECs = iConfig.getUntrackedParameter<bool>("changeJECs",false);
   isData = iConfig.getUntrackedParameter<bool>("isData",false);
   useMETNoHF = iConfig.getUntrackedParameter<bool>("useMETNoHF",false);
   if(addPV || changeJECs){
@@ -487,10 +487,10 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   }
   
 
-  jecParsL1  = new JetCorrectorParameters("Summer15_50nsV2_MC_L1FastJet_AK4PFchs.txt");
-  jecParsL2  = new JetCorrectorParameters("Summer15_50nsV2_MC_L2Relative_AK4PFchs.txt");
-  jecParsL3  = new JetCorrectorParameters("Summer15_50nsV2_MC_L3Absolute_AK4PFchs.txt");
-  jecParsL2L3Residuals  = new JetCorrectorParameters("Summer15_50nsV2_DATA_L2L3Residual_AK4PFchs.txt");
+  jecParsL1  = new JetCorrectorParameters("Summer15_50nsV4_MC_L1FastJet_AK4PFchs.txt");
+  jecParsL2  = new JetCorrectorParameters("Summer15_50nsV4_MC_L2Relative_AK4PFchs.txt");
+  jecParsL3  = new JetCorrectorParameters("Summer15_50nsV4_MC_L3Absolute_AK4PFchs.txt");
+  jecParsL2L3Residuals  = new JetCorrectorParameters("Summer15_50nsV4_DATA_L2L3Residual_AK4PFchs.txt");
   jecPars.push_back(*jecParsL1);
   jecPars.push_back(*jecParsL2);
   jecPars.push_back(*jecParsL3);
