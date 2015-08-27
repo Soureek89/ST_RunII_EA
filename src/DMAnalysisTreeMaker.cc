@@ -776,6 +776,21 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
     } 
 
+    /**************************
+    MET:
+    **************************/
+    //    cout << " met "<<endl;
+
+    string pref = obj_to_pref[met_label];
+    float metpt = vfloats_values[makeName(met_label,pref,"Pt")][0];
+    float metphi = vfloats_values[makeName(met_label,pref,"Phi")][0];
+    float metZeroCorrPt = vfloats_values[makeName(met_label,pref,"UncorrPt")][0];
+    float metZeroCorrPhi = vfloats_values[makeName(met_label,pref,"UncorrPhi")][0];
+    float metZeroCorrY = metZeroCorrPt*sin(metZeroCorrPhi);
+    float metZeroCorrX = metZeroCorrPt*cos(metZeroCorrPhi);
+    float metPx = metpt*sin(metphi);
+    float metPy = metpt*cos(metphi);
+    
     //    cout << "syst "<<syst<<endl;
     /**************************
     Jets:
@@ -786,8 +801,6 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     double DUnclusteredMETPy=0.0;
 
     for(int j = 0;j < max_instances[jets_label] ;++j){
-      DUnclusteredMETPx=0.0;
-      DUnclusteredMETPy=0.0;
 
       string pref = obj_to_pref[jets_label];
       float pt = vfloats_values[makeName(jets_label,pref,"Pt")][j];
@@ -820,8 +833,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	jetUncorr= jetUncorr*jecscale;
 
 
-	DUnclusteredMETPx=0.1*jetUncorr.Pt()*cos(phi);
-	DUnclusteredMETPy=0.1*jetUncorr.Pt()*sin(phi);
+	DUnclusteredMETPx+=jetUncorr.Pt()*cos(phi);
+	DUnclusteredMETPy+=jetUncorr.Pt()*sin(phi);
 	if(changeJECs){
 	  jecCorr->setJetEta(jetUncorr.Eta());
 	  jecCorr->setJetPt(jetUncorr.Pt());
@@ -847,12 +860,6 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  corrMetPx -=unc*(cos(phi)*ptCorr);
 	  corrMetPy -=unc*(sin(phi)*ptCorr);
 	}
-	if(syst.find("unclusteredMet")!= std::string::npos && !useMETNoHF){
-	  double signmet = 1.0; 
-	  if(syst.find("down")!=std::string::npos) signmet=-1.0;
-	  corrMetPx -=signmet*DUnclusteredMETPx;
-	  corrMetPy -=signmet*DUnclusteredMETPy;
-	}
 	
       	if (syst.find("jer__")!=std::string::npos && (fabs(eta)<3.0 || (!useMETNoHF))){//For JER propagation to met we use standard jets, as reclusteded ones don't have genparticle information
 	  corrMetPx -=pt * (smearfact-1) * cos(phi);
@@ -862,6 +869,18 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	ptCorr = ptCorr * (1 + unc);
 	energyCorr = energyCorr * (1 + unc);
       }
+      if(syst.find("unclusteredMet")!= std::string::npos && !useMETNoHF){
+	
+	DUnclusteredMETPx=metZeroCorrX+DUnclusteredMETPx;
+	DUnclusteredMETPy=metZeroCorrY+DUnclusteredMETPy;
+	
+	double signmet = 1.0; 
+	if(syst.find("down")!=std::string::npos) signmet=-1.0;
+	corrMetPx -=signmet*DUnclusteredMETPx*0.1;
+	corrMetPy -=signmet*DUnclusteredMETPy*0.1;
+      }
+
+
       //      ptCorr = ptCorr;
       //      energyCorr = energyCorr;
       float csv = vfloats_values[makeName(jets_label,pref,"CSV")][j];
@@ -1092,11 +1111,9 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     } 
     
     if(useMETNoHF){
-      double DUnclusteredMETPx=0.0;
-      double DUnclusteredMETPy=0.0;
+      DUnclusteredMETPx=0.0;
+      DUnclusteredMETPy=0.0;
       for(int j = 0;j < max_instances[jetsnohf_label] ;++j){
-	DUnclusteredMETPx=0.0;
-	DUnclusteredMETPy=0.0;
 
 	string pref = obj_to_pref[jetsnohf_label];
 	float pt = vfloats_values[makeName(jetsnohf_label,pref,"Pt")][j];
@@ -1120,10 +1137,10 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  jetUncorr= jetUncorr*jecscale;
 	  //	  cout << " uncorrected "<<jetUncorr.Pt()<<" ch jecs? "<< changeJECs<<endl;
 	  //	  cout << " corrmetPx? "<<corrMetPx<<" Py? "<< corrMetPy<<endl;
-	  //	  if(pt > 10){
-	  DUnclusteredMETPx=0.1*jetUncorr.Pt()*cos(phi);
-	  DUnclusteredMETPy=0.1*jetUncorr.Pt()*sin(phi);
-	  ///	  }
+	  if(jetUncorr.Pt() > 10){
+	    DUnclusteredMETPx+=jetUncorr.Pt()*cos(phi);
+	    DUnclusteredMETPy+=jetUncorr.Pt()*sin(phi);
+	  }
 	  //	  DUnclusteredMETPx=0.1*jetUncorr.Pt()*cos(phi);
 	  //	  DUnclusteredMETPy=0.1*jetUncorr.Pt()*sin(phi);
 	  if(changeJECs){
@@ -1143,29 +1160,26 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  }
 	  
 	  float unc = jetUncertainty(pt,eta,syst);
-	  if(syst.find("unclusteredMet")!= std::string::npos ){
-	    double signmet = 1.0; 
-	    if(syst.find("down")!=std::string::npos) signmet=-1.0;
-	    corrMetPx -=signmet*DUnclusteredMETPx;
-	    corrMetPy -=signmet*DUnclusteredMETPy;
-	  }
 	  if(unc != 0){
 	    corrMetPx -=unc*(cos(phi)*ptCorr);
 	    corrMetPy -=unc*(sin(phi)*ptCorr);
 	  }
 	}
       }
+      if(syst.find("unclusteredMet")!= std::string::npos ){
+	//	cout << "metZeroCorrX is "<< metZeroCorrX << " y "<< metZeroCorrY << " metX "<< metPx << " metPy "<<metPy << " DuncX"<< DUnclusteredMETPx << " y "<< DUnclusteredMETPy<<endl;
+
+
+	DUnclusteredMETPx=metZeroCorrX+DUnclusteredMETPx;
+	DUnclusteredMETPy=metZeroCorrY+DUnclusteredMETPy;
+	double signmet = 1.0; 
+	if(syst.find("down")!=std::string::npos) signmet=-1.0;
+	corrMetPx -=signmet*DUnclusteredMETPx*0.1;
+	corrMetPy -=signmet*DUnclusteredMETPy*0.1;
+      }
     }
     
-    //    cout << " met "<<endl;
-    //Met and mt
-    string pref = obj_to_pref[met_label];
-    float metpt = vfloats_values[makeName(met_label,pref,"Pt")][0];
-    float metphi = vfloats_values[makeName(met_label,pref,"Phi")][0];
-    
-    
-    float metPy = metpt*sin(metphi);
-    float metPx = metpt*cos(metphi);
+    //MET corrections
     metPx+=corrMetPx; metPy+=corrMetPy; // add JEC/JER contribution
     
     //Correcting the pt

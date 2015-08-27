@@ -90,6 +90,8 @@ DMTreesDumper = cms.EDAnalyzer(
                 cms.InputTag("met","metPhi"),
                 cms.InputTag("met","metPx"),
                 cms.InputTag("met","metPy"),
+                cms.InputTag("met","metUncorrPhi"),
+                cms.InputTag("met","metUncorrPt"),
                 ),
             variablesI = cms.VInputTag(),
             singleI = cms.VInputTag(),
