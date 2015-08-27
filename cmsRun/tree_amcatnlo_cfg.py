@@ -22,12 +22,12 @@ options.register('maxEvts',
                  'Number of events to process')
 
 options.register('sample',
-                 [#'file:/tmp/oiorio/B2GEDMNtuple_1.root'
-                'file:./B2GEDMNtuple.root'
+                 ['file:/tmp/oiorio/B2GEDMNtuple_TChan.root'],
+#                'file:./B2GEDMNtuple.root'
 #                  'root://xrootd.ba.infn.it//store/user/oiorio/ttDM/samples/July2015/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/EDMNTUPLE_06Jul/150706_224326/0000/B2GEDMNtuple_1.root'
 #'root://xrootd.ba.infn.it//store/user/decosa/ttDM/Phys14_v2/TTDMDMJets_M600GeV_Tune4C_13TeV-madgraph-tauola/DM600_Phys14DR-PU20bx25_PHYS14_25_V1-v1_EDMNtuple/150212_173740/0000/B2GEDMNtuple_5.root', 
 #'root://xrootd.ba.infn.it//store/user/decosa/ttDM/Phys14_v2/TTDMDMJets_M600GeV_Tune4C_13TeV-madgraph-tauola/DM600_Phys14DR-PU20bx25_PHYS14_25_V1-v1_EDMNtuple/150212_173740/0000/B2GEDMNtuple_4.root'],
-],
+#],
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Sample to analyze')
@@ -101,6 +101,8 @@ process.load("Analysis.ST_RunII_EA.topplusdmedmRootTreeMaker_cff")
 process.DMTreesDumper.lhes =cms.InputTag(options.lhes)
 process.DMTreesDumper.channelInfo.useLHE =(options.useLHE)
 process.DMTreesDumper.changeJECs = cms.untracked.bool(True)
+process.DMTreesDumper.useMETNoHF = cms.untracked.bool(True)
+process.DMTreesDumper.channelInfo.useLHEWeights =cms.untracked.bool(False)
 process.DMTreesDumper.isData = cms.untracked.bool(False)#This adds the L2L3Residuals
 
 process.analysisPath = cms.Path(
