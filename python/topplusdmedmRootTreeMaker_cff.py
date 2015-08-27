@@ -35,8 +35,8 @@ leptonTriggers = [
     "HLT_IsoTkMu20_v1",
     "HLT_IsoTkMu20_v2",
     "HLT_IsoTkMu20_eta2p1_v1",
-    "HLT_IsoTkMu20_eta2p1_v2",
-    "HLT_IsoMu20_eta2p1_IterTrk02_v1"
+    "HLT_IsoTkMu20_eta2p1_v2"
+    "HLT_IsoMu20_eta2p1_IterTrk02_v1",
     #"HLT_IsoMu24_IterTrk02",
     #"HLT_IsoTkMu20_eta2p1_IterTrk02_v1",
     #"HLT_IsoMu24_eta2p1_IterTrk02_v1",
@@ -90,6 +90,8 @@ DMTreesDumper = cms.EDAnalyzer(
                 cms.InputTag("met","metPhi"),
                 cms.InputTag("met","metPx"),
                 cms.InputTag("met","metPy"),
+                cms.InputTag("met","metUncorrPhi"),
+                cms.InputTag("met","metUncorrPt"),
                 ),
             variablesI = cms.VInputTag(),
             singleI = cms.VInputTag(),
