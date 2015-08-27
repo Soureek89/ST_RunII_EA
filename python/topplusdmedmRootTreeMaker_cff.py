@@ -10,6 +10,7 @@ jetlabel = cms.string("jetsAK4")
 jetak8label = cms.string("jetsAK8")
 subjetak8label = cms.string("subjetsAK8")
 metlabel = cms.string("met")
+jetnohflabel = cms.string("jetsAK4NoHF")
 
 #Systematics:
 #systsToSave = ["jes__up","jes__down","jer__up","jer__down","unclusteredMet__up","unclusteredMet__down"]
@@ -17,9 +18,8 @@ metlabel = cms.string("met")
 #systsToSave = ["noSyst","jer__up","jer__down"]
 #systsToSave = ["jes__down"]
 #systsToSave = ["noSyst"]
-systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down"]
-#systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","mistag_up","mistag_down","b_tag_up","b_tag_down"]
-#systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","unclusteredMet__up","unclusteredMet__down"]
+#systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down"]
+systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","unclusteredMet__up","unclusteredMet__down"]
 metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices", "Flag_eeBadScFilter"]
 #metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices"]
 
@@ -57,6 +57,9 @@ saveBase = cms.untracked.bool(False)
 j= "jetsAK4"
 jpref= "jetAK4"
 
+jnohf= "jetsAK4NoHF"
+jprefnohf= "jetAK4NoHF"
+
 sj = "subjetsAK8"
 sjpref = "subjetAK8"
 
@@ -72,6 +75,7 @@ DMTreesDumper = cms.EDAnalyzer(
     muLabel = mulabel,
     eleLabel = elelabel,
     jetsLabel = jetlabel,
+    jetsnohfLabel = jetnohflabel,
     boostedTopsLabel = jetak8label,
     boostedTopsSubjetsLabel = subjetak8label,
     metLabel = metlabel,
@@ -297,6 +301,34 @@ DMTreesDumper.physicsObjects.append(
         singleF = cms.VInputTag(),
         #toSave = cms.vstring(jpref+"Eta",jpref+"Phi","allExtra"),
         toSave = cms.vstring(jpref+"E",jpref+"Pt",jpref+"Eta",jpref+"Phi",jpref+"GenJetPt",jpref+"GenJetEta",jpref+"CSV",jpref+"PartonFlavour","allExtra"),
+        ),
+    )
+
+
+
+
+
+
+
+DMTreesDumper.physicsObjects.append( 
+    cms.PSet(
+        label = jetnohflabel,
+        prefix = cms.string(jprefnohf),
+        maxInstances = jetssize,
+        saveBaseVariables = saveBase,
+        variablesF = cms.VInputTag(
+            cms.InputTag(jnohf,jprefnohf+"E"),
+            cms.InputTag(jnohf,jprefnohf+"Pt"),
+            cms.InputTag(jnohf,jprefnohf+"Eta"),
+            cms.InputTag(jnohf,jprefnohf+"Phi"),
+            cms.InputTag(jnohf,jprefnohf+"jecFactor0"),
+            cms.InputTag(jnohf,jprefnohf+"jetArea")            
+            ),
+        variablesI = cms.VInputTag(),
+        singleI = cms.VInputTag(),
+        singleF = cms.VInputTag(),
+        #toSave = cms.vstring(jpref+"Eta",jpref+"Phi","allExtra"),
+        toSave = cms.vstring(jprefnohf+"E",jprefnohf+"Pt",jprefnohf+"Eta",jprefnohf+"Phi"),
         ),
     )
 

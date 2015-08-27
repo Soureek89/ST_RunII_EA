@@ -119,7 +119,7 @@ private:
   map<string, edm::Handle<float> > h_float;
   map<string, edm::Handle<int> >h_int;
 
-  string mu_label, ele_label, jets_label, met_label; 
+  string mu_label, ele_label, jets_label, met_label, jetsnohf_label; 
  
    
   //MC info:
@@ -156,7 +156,7 @@ private:
 
   //JEC info
   bool changeJECs=false; // already applied on B2G side
-  bool isData;
+  bool isData, useMETNoHF;
   edm::Handle<double> rho;
   double Rho;
   std::vector<double> jetScanCuts;
@@ -284,6 +284,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   ele_label = iConfig.getParameter<std::string >("eleLabel");
   jets_label = iConfig.getParameter<std::string >("jetsLabel");
   met_label = iConfig.getParameter<std::string >("metLabel");
+  jetsnohf_label = iConfig.getParameter<std::string >("jetsnohfLabel");
   physObjects = iConfig.template getParameter<std::vector<edm::ParameterSet> >("physicsObjects");
   
   channelInfo = iConfig.getParameter<edm::ParameterSet >("channelInfo"); // The physics of the channel, e.g. the cross section, #original events, etc.
@@ -323,6 +324,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   addPV = iConfig.getUntrackedParameter<bool>("addPV",true);
   //changeJECs = iConfig.getUntrackedParameter<bool>("changeJECs",false);
   isData = iConfig.getUntrackedParameter<bool>("isData",false);
+  useMETNoHF = iConfig.getUntrackedParameter<bool>("useMETNoHF",false);
   if(addPV || changeJECs){
     pvZ_ = iConfig.getParameter<edm::InputTag >("vertexZ");
     pvChi2_ = iConfig.getParameter<edm::InputTag >("vertexChi2");
@@ -774,12 +776,19 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
     } 
 
+    //    cout << "syst "<<syst<<endl;
     /**************************
     Jets:
     **************************/
     double corrMetPx =0;
     double corrMetPy =0;
+    double DUnclusteredMETPx=0.0;
+    double DUnclusteredMETPy=0.0;
+
     for(int j = 0;j < max_instances[jets_label] ;++j){
+      DUnclusteredMETPx=0.0;
+      DUnclusteredMETPy=0.0;
+
       string pref = obj_to_pref[jets_label];
       float pt = vfloats_values[makeName(jets_label,pref,"Pt")][j];
       //      if(pt<0)continue;
@@ -803,14 +812,17 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       // 	energyCorr = energy * (1 + unc);
       // }
       if(pt>0){
+	TLorentzVector jetUncorr;
+	
+	jetUncorr.SetPtEtaPhiE(pt,eta,phi,energy);
+	
+	//	  cout << "jet "<< j <<" standard pt "<<pt<< " eta "<< eta << " zero correction "<< jecscale<<endl;;
+	jetUncorr= jetUncorr*jecscale;
+
+
+	DUnclusteredMETPx=0.1*jetUncorr.Pt()*cos(phi);
+	DUnclusteredMETPy=0.1*jetUncorr.Pt()*sin(phi);
 	if(changeJECs){
-	  TLorentzVector jetUncorr;
-	  
-	  jetUncorr.SetPtEtaPhiE(pt,eta,phi,energy);
-	  
-	  //	  cout << "jet "<< j <<" standard pt "<<pt<< " eta "<< eta << " zero correction "<< jecscale<<endl;;
-	  jetUncorr= jetUncorr*jecscale;
-	  //	  cout << " uncorrected "<<jetUncorr.Pt()<<endl;
 	  jecCorr->setJetEta(jetUncorr.Eta());
 	  jecCorr->setJetPt(jetUncorr.Pt());
 	  jecCorr->setJetA(area);
@@ -825,14 +837,27 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  phi = jetUncorr.Phi();
 	}
 	
+	
 	smearfact = smear(pt, genpt, eta, syst);
 	ptCorr = pt * smearfact;
 	energyCorr = energy * smearfact;
 	float unc = jetUncertainty(ptCorr,eta,syst);
 	//	cout << "genpt? "<< genpt <<" pt ? "<< pt<<" ptcorr? "<< ptCorr<<"unc? "<< unc<<endl;
-	if(unc != 0){
+	if(unc != 0 && !useMETNoHF){ // for noHFMet we use the uncertainty from the NoHFJet set.
 	  corrMetPx -=unc*(cos(phi)*ptCorr);
 	  corrMetPy -=unc*(sin(phi)*ptCorr);
+	}
+	if(syst.find("unclusteredMet")!= std::string::npos && !useMETNoHF){
+	  double signmet = 1.0; 
+	  if(syst.find("down")!=std::string::npos) signmet=-1.0;
+	  corrMetPx -=signmet*DUnclusteredMETPx;
+	  corrMetPy -=signmet*DUnclusteredMETPy;
+	}
+	
+      	if (syst.find("jer__")!=std::string::npos && (fabs(eta)<3.0 || (!useMETNoHF))){//For JER propagation to met we use standard jets, as reclusteded ones don't have genparticle information
+	  corrMetPx -=pt * (smearfact-1) * cos(phi);
+	  corrMetPy -=pt * (smearfact-1) * sin(phi);
+	  
 	}
 	ptCorr = ptCorr * (1 + unc);
 	energyCorr = energyCorr * (1 + unc);
@@ -1066,6 +1091,72 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       }
     } 
     
+    if(useMETNoHF){
+      double DUnclusteredMETPx=0.0;
+      double DUnclusteredMETPy=0.0;
+      for(int j = 0;j < max_instances[jetsnohf_label] ;++j){
+	DUnclusteredMETPx=0.0;
+	DUnclusteredMETPy=0.0;
+
+	string pref = obj_to_pref[jetsnohf_label];
+	float pt = vfloats_values[makeName(jetsnohf_label,pref,"Pt")][j];
+	//      if(pt<0)continue;
+	float eta = vfloats_values[makeName(jetsnohf_label,pref,"Eta")][j];
+	float phi = vfloats_values[makeName(jetsnohf_label,pref,"Phi")][j];
+	float energy = vfloats_values[makeName(jetsnohf_label,pref,"E")][j];
+	float ptCorr = pt;
+	//	float energyCorr = -9999;
+	//	float smearfact = -9999;
+	//	cout << "j is " <<j<< "label "<< jetsnohf_label << " maxinstances "<< max_instances[jetsnohf_label]<< "size "<< sizes[jetsnohf_label]<< " pt "<< vfloats_values[makeName(jetsnohf_label,pref,"Pt")][j]<< " eta "<< eta<< " phi "<< phi << " e "<< energy <<endl;
+	float jecscale = vfloats_values[makeName(jetsnohf_label,pref,"jecFactor0")][j];
+	float area = vfloats_values[makeName(jetsnohf_label,pref,"jetArea")][j];
+	
+	if(pt>0){
+	  TLorentzVector jetUncorr;
+	  
+	  jetUncorr.SetPtEtaPhiE(pt,eta,phi,energy);
+	  
+	  //	  cout << "jet "<< j <<" standard pt "<<pt<< " eta "<< eta << " zero correction "<< jecscale<<endl;;
+	  jetUncorr= jetUncorr*jecscale;
+	  //	  cout << " uncorrected "<<jetUncorr.Pt()<<" ch jecs? "<< changeJECs<<endl;
+	  //	  cout << " corrmetPx? "<<corrMetPx<<" Py? "<< corrMetPy<<endl;
+	  //	  if(pt > 10){
+	  DUnclusteredMETPx=0.1*jetUncorr.Pt()*cos(phi);
+	  DUnclusteredMETPy=0.1*jetUncorr.Pt()*sin(phi);
+	  ///	  }
+	  //	  DUnclusteredMETPx=0.1*jetUncorr.Pt()*cos(phi);
+	  //	  DUnclusteredMETPy=0.1*jetUncorr.Pt()*sin(phi);
+	  if(changeJECs){
+	    jecCorr->setJetEta(jetUncorr.Eta());
+	    jecCorr->setJetPt(jetUncorr.Pt());
+	    jecCorr->setJetA(area);
+	    jecCorr->setRho(Rho);
+	    jecCorr->setNPV(nPV);
+	    
+	    double recorr =  jecCorr->getCorrection();
+	    jetUncorr = jetUncorr *recorr;
+	    //	  cout << " recorrection "<<recorr << " corrected Pt "<< jetUncorr.Pt()<< " eta "<< jetUncorr.Eta()<<endl;
+	    pt = jetUncorr.Pt();
+	    eta = jetUncorr.Eta();
+	    energy = jetUncorr.Energy();
+	    phi = jetUncorr.Phi();
+	  }
+	  
+	  float unc = jetUncertainty(pt,eta,syst);
+	  if(syst.find("unclusteredMet")!= std::string::npos ){
+	    double signmet = 1.0; 
+	    if(syst.find("down")!=std::string::npos) signmet=-1.0;
+	    corrMetPx -=signmet*DUnclusteredMETPx;
+	    corrMetPy -=signmet*DUnclusteredMETPy;
+	  }
+	  if(unc != 0){
+	    corrMetPx -=unc*(cos(phi)*ptCorr);
+	    corrMetPy -=unc*(sin(phi)*ptCorr);
+	  }
+	}
+      }
+    }
+    
     //    cout << " met "<<endl;
     //Met and mt
     string pref = obj_to_pref[met_label];
@@ -1090,181 +1181,6 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     else  metphiCorr = (atan(metPy/metPx));
 
     vfloats_values[met_label+"_CorrPhi"][0]=metphiCorr;
-
-
-    /*
-    
-    TLorentzVector lepton;
-    for(int s = 0;s < min(max_instances[boosted_tops_subjets_label],sizes[boosted_tops_subjets_label]) ;++s){
-      string pref = obj_to_pref[boosted_tops_subjets_label];
-      float pt  = vfloats_values[makeName(boosted_tops_subjets_label,pref,"Pt")][s];
-      float eta = vfloats_values[makeName(boosted_tops_subjets_label,pref,"Eta")][s];
-      float phi = vfloats_values[makeName(boosted_tops_subjets_label,pref,"Phi")][s];
-      float e   = vfloats_values[makeName(boosted_tops_subjets_label,pref,"E")][s];
-      
-      TLorentzVector subjet;
-      subjet.SetPtEtaPhiE(pt, eta, phi, e);       
-      double minDR=999;
-      float subjcsv = vfloats_values[makeName(boosted_tops_subjets_label,pref,"subjetCSV")][s];
-      
-      bool isCSVM = (subjcsv>0.814);
-      // bool isCSVT = csv  > 0.941;
-	//	  bool isCSVM = csv  > 0.814;
-	//	bool isCSVL = csv  > 0.423;
-	
-	
-	for(int t = 0;t < min(max_instances[boosted_tops_label],sizes[boosted_tops_label]) ;++t){
-	  
-	  float ptj = vfloats_values[makeName(boosted_tops_label,pref,"Pt")][t];
-	  if (ptj<0.0)continue;
-	  float etaj = vfloats_values[makeName(boosted_tops_label,pref,"Eta")][t];
-	  float phij = vfloats_values[makeName(boosted_tops_label,pref,"Phi")][t];
-	  float ej = vfloats_values[makeName(boosted_tops_label,pref,"E")][t];
-	  TLorentzVector topjet;
-	  topjet.SetPtEtaPhiE(ptj, etaj, phij, ej);       
-	  
-	  float DR = subjet.DeltaR(topjet); 
-	  //	  cout <<"subjet# "<<s<< " jet "<< t << " DR is "<< DR << " minDR is "<<minDR<<endl;
-	    if(DR < minDR){
-	    minDR = DR;
-	    subj_jet_map[s]=t;
-	    }
-	    //	    cout << " sjmap is "<< subj_jet_map[s]<<endl;
-	}
-	size_t tm = subj_jet_map[s];
-	if(isCSVM)vfloats_values[boosted_tops_label+"_nCSVM"][tm]+=1;
-	vfloats_values[boosted_tops_label+"_nJ"][tm]+=1;
-    }
-    
-    for(int t = 0;t < max_instances[boosted_tops_label] ;++t){
-      string pref = obj_to_pref[boosted_tops_label];
-      //      float minmass      = vfloats_values[makeName(boosted_tops_label,pref,"minmass")][t];
-      float trimmedMass  = vfloats_values[makeName(boosted_tops_label,pref,"trimmedMass")][t];
-      float prunedMass   = vfloats_values[makeName(boosted_tops_label,pref,"prunedMass")][t];
-      float filteredMass = vfloats_values[makeName(boosted_tops_label,pref,"filteredMass")][t];
-      //      float tau1         = vfloats_values[makeName(boosted_tops_label,pref,"tau1")][t];
-      //      float tau2         = vfloats_values[makeName(boosted_tops_label,pref,"tau2")][t];
-      //      float tau3         = vfloats_values[makeName(boosted_tops_label,pref,"tau3")][t];
-
-      float nSubJets = vfloats_values[makeName(boosted_tops_label,pref,"nSubJets")][t];
-      //      float nJ = vfloats_values[makeName(boosted_tops_label,pref,"nJ")][t];
-      //      float nCSVMSubJets= vfloats_values[makeName(boosted_tops_label,pref,"nCVSM")][t];
-      //      float Index0IsCSVM = vfloats_values[makeName(boosted_tops_label,pref,"nSubJets")][t];
-      
-      //      cout << " ak8J # "<< t << " nJ "<< nJ << " nSubJets "<< nSubJets<<endl; 
-
-      //      float tau3OVERtau2 = (tau2!=0. ? tau3/tau2 : 9999.);
-      //      float tau2OVERtau1 = (tau1!=0. ? tau2/tau1 : 9999.);
-
-      math::PtEtaPhiELorentzVector p4bestTop;
-      math::PtEtaPhiELorentzVector p4bestB;
-
-      bool isTop = ( ( (trimmedMass  <= 250 && trimmedMass >= 140) or (filteredMass <= 250 && filteredMass >= 140) or (prunedMass   <= 250 && prunedMass >= 140) )
-		     and ( nSubJets >=3 )
-		     //		     and (tau3OVERtau2 <= 0.7 )
-		     //		     and ( minmass >= 50.)
-		     //		    nCSVMSubJets ==1 
-		     );
-      
-      bool isW = ( ( (trimmedMass <= 105 && trimmedMass >= 65) or (filteredMass<= 105 && filteredMass >= 65) or (prunedMass<= 105 && prunedMass >= 65) )
-		   //		   and (minmass >= 50.)
-		   //		   and (tau2OVERtau1 <= 0.5)
-		   //nSubJets >=2 &&
-		   //nCSVMSubJets ==1 
-		   );
-      math::PtEtaPhiELorentzVector p4ak8;
-      if (isW) {
-	//	std::cout << "boosted_tops_label: " << boosted_tops_label << std::endl;
-	//	std::cout << "pref: " << pref << std::endl;
-	p4ak8 = math::PtEtaPhiELorentzVector(vfloats_values[makeName(boosted_tops_label,pref,"Pt")][t],
-					     vfloats_values[makeName(boosted_tops_label,pref,"Eta")][t],
-					     vfloats_values[makeName(boosted_tops_label,pref,"Phi")][t],
-					     vfloats_values[makeName(boosted_tops_label,pref,"E")][t]);
-	
-	//	std::cout << "p4ak8.pt : " << p4ak8.pt() << " eta: " << p4ak8.eta() << " phi: " << p4ak8.phi() << " p4ak8.E: " << p4ak8.E() << std::endl;
-
-	float bestTopMass = 0.;
-	float dRmin = 2.6;
-	//	std::cout << "max_instances[jets_label]: " << max_instances[jets_label] << " <---> max_leading_jets_for_top " << max_leading_jets_for_top << " <---> sizes[jets_label] " <<  sizes[jets_label] << std::endl;
-	for(int i = 0; i < sizes[jets_label]; ++i){
-	  //	  bool isIBJet= (bool)vfloats_values[jets_label+"_IsCSVM"][i];
-
-	  math::PtEtaPhiELorentzVector p4ak4 = math::PtEtaPhiELorentzVector(vfloats_values[jets_label+"_CorrPt"][i], 
-									    vfloats_values[jets_label+"_CorrEta"][i], 
-									    vfloats_values[jets_label+"_CorrPhi"][i], 
-									    vfloats_values[jets_label+"_CorrE"][i] );
-	  double dR = ROOT::Math::VectorUtil::DeltaR(p4ak8,p4ak4);
-
-	  if (dR <= 0.8 or dR > 2.5) continue;
-	  //	  std::cout << "isIBJet ? " << (isIBJet ? "yes" : "nope") << std::endl;
-	  
-	  math::PtEtaPhiELorentzVector p4top = (p4ak8+p4ak4);
-	  float topMass = p4top.mass();
-	  if ( dR < dRmin ) {
-	    dRmin = dR;
-	    bestTopMass = topMass;
-	    p4bestB= p4ak4;
-	  }
-	  //	    std::cout << "dR: " << dR << " topMass: " << topMass << " trimmedMass: " << trimmedMass << " p4ak8.pt: " << p4ak8.pt() << std::endl;
-
-	}
-	//	std::cout << "bestTopMass : " << bestTopMass << " dRmin: " << dRmin << std::endl;
-	if (bestTopMass > 250 or bestTopMass < 140) isW=false; 
-      }
-
-      if(isW){
-	p4bestTop = p4bestB + p4ak8;
-      }
-      if(isTop) p4bestTop = p4ak8;
-      
-
-      vfloats_values[makeName(boosted_tops_label,pref,"isType2")][t]=(float)isW;
-      vfloats_values[makeName(boosted_tops_label,pref,"isType1")][t]=(float)isTop;
-
-      if(isW || isTop){
-	TLorentzVector topjet;
-	float ptj  = vfloats_values[makeName(boosted_tops_label,pref,"Pt")][t];
-	float etaj = vfloats_values[makeName(boosted_tops_label,pref,"Eta")][t];
-	float phij = vfloats_values[makeName(boosted_tops_label,pref,"Phi")][t];
-	float ej   = vfloats_values[makeName(boosted_tops_label,pref,"E")][t];
-	
-	vfloats_values[makeName(boosted_tops_label,pref,"TopPt")][t]   = p4bestTop.pt();
-	vfloats_values[makeName(boosted_tops_label,pref,"TopEta")][t]  = p4bestTop.eta();
-	vfloats_values[makeName(boosted_tops_label,pref,"TopPhi")][t]  = p4bestTop.phi();
-	vfloats_values[makeName(boosted_tops_label,pref,"TopE")][t]    = p4bestTop.energy();
-	vfloats_values[makeName(boosted_tops_label,pref,"TopMass")][t] = p4bestTop.mass();
-	if (isW)
-	  vfloats_values[makeName(boosted_tops_label,pref,"TopWMass")][t] = vfloats_values[makeName(boosted_tops_label,pref,"prunedMass")][t];
-
-
-	topjet.SetPtEtaPhiE(ptj, etaj, phij, ej);       
-	if(isW){
-	  float_values["Event_nType2TopJets"]+=1;
-	  type2topjets.push_back(topjet);
-	}
-	if(isTop){
-	  float_values["Event_nType1TopJets"]+=1;
-	  type1topjets.push_back(topjet);
-	}
-      }
-    }
-    
-    //    int nTightLeptons = electrons.size()+muons.size();
-    size_t cat = 0;
-
-    //cout << "muons size "<< muons.size()<<" el size "<<electrons.size()<< " jets size "<< jets.size() << " bjets size "<< bjets.size()<<endl;
-    size_t ni = 9;
-    cat+= 100000*(min(ni,muons.size()));
-    cat+= 10000*(min(ni,electrons.size()));
-    cat+= 1000*(min(ni,jets.size()));
-    cat+= 100*(min(ni,bjets.size()));
-    cat+= 10*(min(ni,type2topjets.size()));
-    cat+= 1*(min(ni,type1topjets.size()));
-    //    cat+= 1*(min(ni,tops.size()));
-    //cout << " category is "<< cat <<" as float "<< (float)cat<<endl;
-    float_values["Event_category"]=(float)cat;
-
-*/
 
     //BTagging part
     if(doBTagSF){
