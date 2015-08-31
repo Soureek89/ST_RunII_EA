@@ -28,6 +28,7 @@
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include "DataFormats/Math/interface/deltaR.h"
+#include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 #include <Math/VectorUtil.h>
 
 #include "TFile.h"
@@ -75,6 +76,9 @@ private:
   double resolSF(double eta, string syst);
   double getScaleFactor(double pt, double eta, double partonFlavour, string syst);
   
+  //------------------ Soureek adding pile-up Info ------------------------------
+  void getPUSF(std::string distr);
+  //-----------------------------------------------------------------------------
 
   bool isInVector(std::vector<std::string> v, std::string s);
   std::vector<edm::ParameterSet > physObjects;
@@ -152,7 +156,17 @@ private:
 
   edm::Handle<std::vector<float> > pvZ,pvChi2,pvRho;
   edm::Handle<std::vector<int> > pvNdof;
-  float nPV;
+  int nPV;
+
+  //----------------------------- Soureek adding for PU info -------------------------
+  bool doPU_;
+  std::string dataPUFile_;
+  edm::Handle<int> npv, ntrpu;
+  edm::Handle<std::vector<int> > pubx, puNInt; 
+  int nTruePU;
+  edm::LumiReWeighting LumiWeights_, LumiWeightsUp_, LumiWeightsDown_;
+  float puWeight, puWeightUp, puWeightDown;
+  //--------------------------------------------------------------------------------------
 
   //JEC info
   bool changeJECs;
@@ -331,6 +345,11 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
     pvNdof_ = iConfig.getParameter<edm::InputTag >("vertexNdof");
     pvRho_ = iConfig.getParameter<edm::InputTag >("vertexRho");
   }
+
+  //---------------- Soureek adding PU info -----------------------------------------
+  doPU_=iConfig.getParameter<bool>("doPU");
+  dataPUFile_=iConfig.getParameter<std::string>("dataPUFile");
+  //---------------------------------------------------------------------------------
 
   if(useLHEWeights){
     maxWeights = channelInfo.getUntrackedParameter<int>("maxWeights",9);//Usually we do have 9 weights for the scales, might vary depending on the lhe
@@ -556,6 +575,18 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     iEvent.getByLabel(pvRho_,pvRho);
     nPV = pvZ->size();
   }
+
+  //---------------- Soureek Adding PU Info ------------------------------
+
+  if(doPU_){
+    //iEvent.getByLabel("eventUserData","npv",npv);
+    iEvent.getByLabel("eventUserData","puNtrueInt",ntrpu);
+    //nPV=*npv; 
+    nTruePU=*ntrpu;
+    std::string distr = "pileUp" + dataPUFile_ + ".root";
+    getPUSF(distr);
+  }
+  
 
     /*    std::cout << " initTriggers "<< endl;
     for(size_t bt = 0; bt < triggerNames->size();++bt){
@@ -1635,6 +1666,14 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
       addvar.push_back("passesLeptonicTriggers");
       addvar.push_back("passesHadronicTriggers");
     }
+
+    //--- Soureek adding PU info -----------------    
+    if(doPU_){
+      addvar.push_back("puWeight");
+      addvar.push_back("puWeightUp");
+      addvar.push_back("puWeightDown");
+    }
+
   }
       
   return addvar;
@@ -1701,6 +1740,20 @@ bool DMAnalysisTreeMaker::getEventTriggers(){
   return (leptonOR || hadronOR);
 }
 
+
+void DMAnalysisTreeMaker::getPUSF(std::string distr){
+  LumiWeights_ = edm::LumiReWeighting(distr,"PUdata_19468.3.root",std::string("pileup"),std::string("pileup"));
+  LumiWeightsUp_ = edm::LumiReWeighting(distr,"PUdata_20441.7.root",std::string("pileup"),std::string("pileup"));
+  LumiWeightsDown_ = edm::LumiReWeighting(distr,"PUdata_18494.9.root",std::string("pileup"),std::string("pileup"));
+  puWeight=(float) LumiWeights_.weight(nTruePU);
+  puWeightUp = (float) LumiWeightsUp_.weight(nTruePU);
+  puWeightDown = (float) LumiWeightsDown_.weight(nTruePU);
+  std::cout<<"nTruePU: "<<nTruePU<<"\tnPV: "<<nPV<<std::endl;
+  std::cout<<"pileUp weight: "<<puWeight<<"\tpileUp weight Up: "<<puWeightUp<<"\tpileUp weight Down: "<<puWeightDown<<std::endl;
+  float_values["Event_puWeight"]=puWeight; 
+  float_values["Event_puWeightUp"]=puWeightUp; 
+  float_values["Event_puWeightDown"]=puWeightDown;
+}
 
 
 void DMAnalysisTreeMaker::getEventPdf(){
