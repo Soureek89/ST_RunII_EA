@@ -105,7 +105,7 @@ process.DMTreesDumper.useMETNoHF = cms.untracked.bool(True)
 process.DMTreesDumper.channelInfo.useLHEWeights =cms.untracked.bool(False)
 process.DMTreesDumper.isData = cms.untracked.bool(False)#This adds the L2L3Residuals
 process.DMTreesDumper.doPU= cms.bool(True);
-process.DMTreesDumper.dataPUFile=cms.string("DistrSummer12");
+process.DMTreesDumper.dataPUFile=cms.string("DistrSummer15");
 process.DMTreesDumper.channelInfo.addLHAPDFWeights = cms.untracked.bool(True) 
 
 process.analysisPath = cms.Path(
