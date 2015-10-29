@@ -22,18 +22,17 @@ options.register('maxEvts',
                  'Number of events to process')
 
 options.register('sample',
-                 ['root://xrootd.ba.infn.it//store/user/oiorio/ttDM/samples/Aug2015/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/EDMNTUPLE_25Aug/150825_011253/0000/B2GEDMNtuple_1.root'],
-#                'file:./B2GEDMNtuple.root'
-#                  'root://xrootd.ba.infn.it//store/user/oiorio/ttDM/samples/July2015/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/EDMNTUPLE_06Jul/150706_224326/0000/B2GEDMNtuple_1.root'
-#'root://xrootd.ba.infn.it//store/user/decosa/ttDM/Phys14_v2/TTDMDMJets_M600GeV_Tune4C_13TeV-madgraph-tauola/DM600_Phys14DR-PU20bx25_PHYS14_25_V1-v1_EDMNtuple/150212_173740/0000/B2GEDMNtuple_5.root', 
-#'root://xrootd.ba.infn.it//store/user/decosa/ttDM/Phys14_v2/TTDMDMJets_M600GeV_Tune4C_13TeV-madgraph-tauola/DM600_Phys14DR-PU20bx25_PHYS14_25_V1-v1_EDMNtuple/150212_173740/0000/B2GEDMNtuple_4.root'],
-#],
+                 [#'file:/tmp/oiorio/B2GEDMNtuple_1.root'
+#                 'file:../../edm_mc/B2GEDMNtuple.root'
+                 'file:/afs/cern.ch/work/n/nfalterm/public/B2GEDMNtuple.root'
+#                  'root://xrootd.ba.infn.it///store/user/decosa/ttDM/CMSSW_7_4_X/TT_TuneCUETP8M1_13TeV-powheg-pythia8/TT_TuneCUETP8M1_13TeV/150926_070344/0000/B2GEDMNtuple_1.root'
+],
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Sample to analyze')
 
 options.register('outputLabel',
-                 'treesTest_NewSmallNoChange.root',
+                 'treesTest_NewSmall.root',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Output label')
@@ -57,6 +56,20 @@ options.register('lhes',
                  opts.VarParsing.varType.string,
                  'name from generator')
 
+options.register('syst',
+                 ['noSyst'],
+#                 ['noSyst','jer__up','jer__down','jes__up','jes__down','unclusteredMet__up','unclusteredMet__down'],
+                 opts.VarParsing.multiplicity.singleton,
+                 opts.VarParsing.varType.string,
+                 'systematic trees')
+
+
+options.register('globalTag',
+                 '74X_mcRun2_asymptotic_v2',
+                 opts.VarParsing.multiplicity.singleton,
+                 opts.VarParsing.varType.string,
+                 'global tag to be used')
+
 options.parseArguments()
 
 if(options.isData):options.useLHE = False
@@ -76,21 +89,22 @@ process.source = cms.Source("PoolSource",
         )
 )
 
-#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-#process.GlobalTag.globaltag = options.globalTag 
+from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
+print "# using GT ", options.globalTag
+process.GlobalTag.globaltag = options.globalTag
 
+#from Configuration.AlCa.GlobalTag import GlobalTag as customiseGlobalTag
+#process.GlobalTag = customiseGlobalTag(process.GlobalTag, globaltag = 'auto:run2_mc_50nsGRun')
+#process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
+#process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
 
-from Configuration.AlCa.GlobalTag import GlobalTag as customiseGlobalTag
-#process.GlobalTag = customiseGlobalTag(process.GlobalTag, globaltag = 'auto:startup_GRun')
-process.GlobalTag = customiseGlobalTag(process.GlobalTag, globaltag = 'auto:run2_mc_50nsGRun')
-process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
-process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
 #for pset in process.GlobalTag.toGet.value():
 #    pset.connect = pset.connect.value().replace('frontier://FrontierProd/', 'frontier://FrontierProd/')
 #    #   Fix for multi-run processing:
 #    process.GlobalTag.RefreshEachRun = cms.untracked.bool( False )
 #    process.GlobalTag.ReconnectEachRun = cms.untracked.bool( False )
+
     
 
 ### Rootplizer
@@ -100,17 +114,17 @@ process.load("Analysis.ST_RunII_EA.topplusdmedmRootTreeMaker_cff")
 #process.DMTreesDumper.lhes =cms.InputTag("externalLHEProducer")
 process.DMTreesDumper.lhes =cms.InputTag(options.lhes)
 process.DMTreesDumper.channelInfo.useLHE =(options.useLHE)
-process.DMTreesDumper.changeJECs = cms.untracked.bool(False)
+process.DMTreesDumper.systematics =(options.syst)
+process.DMTreesDumper.changeJECs = cms.untracked.bool(False)# JEC via GT
 process.DMTreesDumper.useMETNoHF = cms.untracked.bool(True)
+#process.DMTreesDumper.addPV = cms.untracked.bool(True)
 process.DMTreesDumper.channelInfo.useLHEWeights =cms.untracked.bool(False)
 process.DMTreesDumper.isData = cms.untracked.bool(False)#This adds the L2L3Residuals
 process.DMTreesDumper.doPU= cms.bool(True);
 process.DMTreesDumper.dataPUFile=cms.string("DistrSummer15");
-process.DMTreesDumper.channelInfo.addLHAPDFWeights = cms.untracked.bool(True) 
 
 process.analysisPath = cms.Path(
     process.DMTreesDumper
     )
-
 
 

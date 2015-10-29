@@ -13,13 +13,10 @@ metlabel = cms.string("met")
 jetnohflabel = cms.string("jetsAK4NoHF")
 
 #Systematics:
-#systsToSave = ["jes__up","jes__down","jer__up","jer__down","unclusteredMet__up","unclusteredMet__down"]
-#systsToSave = ["jes__up","jes__down"]
-#systsToSave = ["noSyst","jer__up","jer__down"]
-#systsToSave = ["jes__down"]
-#systsToSave = ["noSyst"]
-#systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down"]
-systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","unclusteredMet__up","unclusteredMet__down"]
+# default, can be overwritten in the *_cfg.py
+systsToSave = ["noSyst"]
+#systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","unclusteredMet__up","unclusteredMet__down"]
+
 metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices", "Flag_eeBadScFilter"]
 #metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices"]
 
@@ -30,6 +27,7 @@ metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices", "Flag_eeBadScFilter
 leptonTriggers = [
     "HLT_IsoMu20_v1",
     "HLT_IsoMu20_v2",
+    "HLT_IsoMu20_v3",
     "HLT_IsoMu20_eta2p1_v1",    
     "HLT_IsoMu20_eta2p1_v2",
     "HLT_IsoTkMu20_v1",
@@ -37,14 +35,6 @@ leptonTriggers = [
     "HLT_IsoTkMu20_eta2p1_v1",
     "HLT_IsoTkMu20_eta2p1_v2",
     "HLT_IsoMu20_eta2p1_IterTrk02_v1"
-    #"HLT_IsoMu24_IterTrk02",
-    #"HLT_IsoTkMu20_eta2p1_IterTrk02_v1",
-    #"HLT_IsoMu24_eta2p1_IterTrk02_v1",
-    #"HLT_IsoTkMu24_eta2p1_IterTrk02_v1",
-    #"HLT_IsoMu24_eta2p1_v1",
-    #"HLT_IsoMu24_eta2p1_v2",
-    #"HLT_IsoTkMu24_eta2p1_v1",
-    #"HLT_IsoTkMu24_eta2p1_v2"
     ]
 
 
@@ -90,8 +80,8 @@ DMTreesDumper = cms.EDAnalyzer(
                 cms.InputTag("met","metPhi"),
                 cms.InputTag("met","metPx"),
                 cms.InputTag("met","metPy"),
-                cms.InputTag("met","metUncorrPhi"),
-                cms.InputTag("met","metUncorrPt"),
+                #cms.InputTag("met","metUncorrPhi"),
+                #cms.InputTag("met","metUncorrPt"),
                 ),
             variablesI = cms.VInputTag(),
             singleI = cms.VInputTag(),
@@ -232,12 +222,16 @@ DMTreesDumper.physicsObjects.append(
             cms.InputTag("electrons","elisLoose"),
             cms.InputTag("electrons","elisMedium"),
             cms.InputTag("electrons","elisTight"),
+            cms.InputTag("electrons","elvidHEEP"),
+            cms.InputTag("electrons","elvidLoose"),
+            cms.InputTag("electrons","elvidMedium"),
+            cms.InputTag("electrons","elvidTight"),
+            cms.InputTag("electrons","elvidVeto"),
             ),
-        variablesI = cms.VInputTag(
-            ),
+        variablesI = cms.VInputTag( ),
         singleI = cms.VInputTag(),
         singleF = cms.VInputTag(),
-        toSave = cms.vstring("elE","elPt","elEta","elPhi","elIso03","elisTight","elisMedium","elisLoose","elisVeto","allExtra"),
+        toSave = cms.vstring("elE","elPt","elEta","elPhi","elIso03","elisTight","elisMedium","elisLoose","elisVeto","allExtra","elvidHEEP","elvidLoose","elvidMedium","elvidTight","elvidVeto"),
         )
     )                                     
 
@@ -305,12 +299,6 @@ DMTreesDumper.physicsObjects.append(
         toSave = cms.vstring(jpref+"E",jpref+"Pt",jpref+"Eta",jpref+"Phi",jpref+"GenJetPt",jpref+"GenJetEta",jpref+"CSV",jpref+"PartonFlavour","allExtra"),
         ),
     )
-
-
-
-
-
-
 
 DMTreesDumper.physicsObjects.append( 
     cms.PSet(

@@ -31,6 +31,9 @@
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 #include <Math/VectorUtil.h>
 
+#include "CondFormats/BTauObjects/interface/BTagCalibration.h"
+#include "CondFormats/BTauObjects/interface/BTagCalibrationReader.h"
+
 #include "TFile.h"
 #include "TTree.h"
 #include "TMath.h"
@@ -284,8 +287,51 @@ private:
     b_weight_csvl_2_tags;
 
   double MCTagEfficiency(string algo, int flavor, double pt); 
-  double TagScaleFactor(string algo, int flavor, string syst,double pt);
+  //double TagScaleFactor(string algo, int flavor, string syst,double pt);
  
+  // read SF from csv file
+  BTagCalibration btagsf_calib = BTagCalibration("","CSVv2_Aug24.csv");
+  
+  // central
+  BTagCalibrationReader reader_csvl = BTagCalibrationReader(&btagsf_calib,
+							    BTagEntry::OP_LOOSE,
+							    "comb",
+							    "central");
+  BTagCalibrationReader reader_csvm = BTagCalibrationReader(&btagsf_calib,
+							    BTagEntry::OP_MEDIUM,
+							    "comb",
+							    "central");
+  BTagCalibrationReader reader_csvt = BTagCalibrationReader(&btagsf_calib,
+							    BTagEntry::OP_TIGHT,
+							    "comb",
+							    "central");
+  // btag up
+  BTagCalibrationReader reader_csvlup = BTagCalibrationReader(&btagsf_calib,
+							      BTagEntry::OP_LOOSE,
+							      "comb",
+							      "up");
+  BTagCalibrationReader reader_csvmup = BTagCalibrationReader(&btagsf_calib,
+							      BTagEntry::OP_MEDIUM,
+							      "comb",
+							      "up");
+  BTagCalibrationReader reader_csvtup = BTagCalibrationReader(&btagsf_calib,
+							      BTagEntry::OP_TIGHT,
+							      "comb",
+							      "up");
+  // btag down
+  BTagCalibrationReader reader_csvldown = BTagCalibrationReader(&btagsf_calib,
+								BTagEntry::OP_LOOSE,
+								"comb",
+								"down");
+  BTagCalibrationReader reader_csvmdown = BTagCalibrationReader(&btagsf_calib,
+								BTagEntry::OP_MEDIUM,
+								"comb",
+								"down");
+  BTagCalibrationReader reader_csvtdown = BTagCalibrationReader(&btagsf_calib,
+								BTagEntry::OP_TIGHT,
+								"comb",
+								"down");
+
   //
   bool doBTagSF=true;
   
@@ -506,10 +552,10 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   }
   
 
-  jecParsL1  = new JetCorrectorParameters("Summer15_50nsV4_MC_L1FastJet_AK4PFchs.txt");
-  jecParsL2  = new JetCorrectorParameters("Summer15_50nsV4_MC_L2Relative_AK4PFchs.txt");
-  jecParsL3  = new JetCorrectorParameters("Summer15_50nsV4_MC_L3Absolute_AK4PFchs.txt");
-  jecParsL2L3Residuals  = new JetCorrectorParameters("Summer15_50nsV4_DATA_L2L3Residual_AK4PFchs.txt");
+  jecParsL1  = new JetCorrectorParameters("Summer15_25nsV5_MC_L1FastJet_AK4PFchs.txt");
+  jecParsL2  = new JetCorrectorParameters("Summer15_25nsV5_MC_L2Relative_AK4PFchs.txt");
+  jecParsL3  = new JetCorrectorParameters("Summer15_25nsV5_MC_L3Absolute_AK4PFchs.txt");
+  jecParsL2L3Residuals  = new JetCorrectorParameters("Summer15_25nsV5_DATA_L2L3Residual_AK4PFchs.txt");
   jecPars.push_back(*jecParsL1);
   jecPars.push_back(*jecParsL2);
   jecPars.push_back(*jecParsL3);
@@ -517,7 +563,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
 
   jecCorr = new FactorizedJetCorrector(jecPars);
   
-  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer15_50nsV4_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
+  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer15_25nsV5_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
   
   //  if(addNominal) systematics.push_back("noSyst");
  
@@ -575,18 +621,6 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     iEvent.getByLabel(pvRho_,pvRho);
     nPV = pvZ->size();
   }
-
-  //---------------- Soureek Adding PU Info ------------------------------
-
-  if(doPU_){
-    //iEvent.getByLabel("eventUserData","npv",npv);
-    iEvent.getByLabel("eventUserData","puNtrueInt",ntrpu);
-    //nPV=*npv; 
-    nTruePU=*ntrpu;
-    std::string distr = "pileUp" + dataPUFile_ + ".root";
-    getPUSF(distr);
-  }
-  
 
     /*    std::cout << " initTriggers "<< endl;
     for(size_t bt = 0; bt < triggerNames->size();++bt){
@@ -708,6 +742,16 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     jsfscsvl_mistag_up.clear();
     jsfscsvl_mistag_down.clear();
 
+  //---------------- Soureek Adding PU Info ------------------------------
+    if(doPU_){
+      //iEvent.getByLabel("eventUserData","npv",npv);
+      iEvent.getByLabel("eventUserData","puNtrueInt",ntrpu);
+      //nPV=*npv; 
+      nTruePU=*ntrpu;
+      std::string distr = "pileUp" + dataPUFile_ + ".root";
+      getPUSF(distr);
+    }
+
     /**************************
     Muons:
     **************************/
@@ -758,12 +802,20 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float isLoose = vfloats_values[makeName(ele_label,pref,"isLoose")][el];
       float isMedium = vfloats_values[makeName(ele_label,pref,"isMedium")][el];
       float isVeto = vfloats_values[makeName(ele_label,pref,"isVeto")][el];
+      //float vidTight = vfloats_values[makeName(ele_label,pref,"vidTight")][el];
+      //float vidLoose = vfloats_values[makeName(ele_label,pref,"vidLoose")][el];
+      //float vidMedium = vfloats_values[makeName(ele_label,pref,"vidMedium")][el];
+      //float vidVeto = vfloats_values[makeName(ele_label,pref,"vidVeto")][el];
+      //float vidHEEP = vfloats_values[makeName(ele_label,pref,"vidHEEP")][el];
       float eta = vfloats_values[makeName(ele_label,pref,"Eta")][el];
       float scEta = vfloats_values[makeName(ele_label,pref,"scEta")][el];
       float phi = vfloats_values[makeName(ele_label,pref,"Phi")][el];
       float energy = vfloats_values[makeName(ele_label,pref,"E")][el];      
       float iso = vfloats_values[makeName(ele_label,pref,"Iso03")][el];
-      //      std::cout << " electron #"<<el<< " pt " << pt << " isTight/Mid/Loose/Veto?"<< isTight<<isMedium<<isLoose<<isVeto<<std::endl;
+      
+      //cout << "######" << endl;
+      //std::cout << " electron #"<<el<< " pt " << pt << " isTight/Mid/Loose/Veto?"<< isTight<<isMedium<<isLoose<<isVeto<<std::endl;
+      //std::cout << " electron #"<<el<< " pt " << pt << " vid isTight/Mid/Loose/Veto?"<< vidTight<<vidMedium<<vidLoose<<vidVeto<<vidHEEP<<std::endl;
 
       bool passesDRmu = true;
       bool passesTightCuts = false;
@@ -1058,16 +1110,44 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	//	cout<<  "after: "<< float_values["Event_nJets"+j_n.str()]<<endl;
 	if(passesCut){
 	  double csvteff = MCTagEfficiency("csvt",flavor, ptCorr);
-	  double sfcsvt = TagScaleFactor("csvt", flavor, "noSyst", ptCorr);
-	    
 	  double csvleff = MCTagEfficiency("csvl",flavor,ptCorr);
-	  double sfcsvl = TagScaleFactor("csvl", flavor, "noSyst", ptCorr);
-
 	  double csvmeff = MCTagEfficiency("csvm",flavor,ptCorr);
+
+	  BTagEntry::JetFlavor jtflv;
+	  if (flavor == 5)
+	    jtflv = BTagEntry::FLAV_B;
+	  else if (flavor == 4)
+	    jtflv = BTagEntry::FLAV_C;
+	  else 
+	    jtflv = BTagEntry::FLAV_UDSG;
+ 
+	  double sfcsvl = reader_csvl.eval(jtflv,eta,ptCorr);
+	  double sfcsvm = reader_csvm.eval(jtflv,eta,ptCorr);
+	  double sfcsvt = reader_csvt.eval(jtflv,eta,ptCorr);
+
+	  double sfcsvt_mistag_up = reader_csvtup.eval(jtflv,eta,ptCorr);
+	  double sfcsvl_mistag_up = reader_csvlup.eval(jtflv,eta,ptCorr);
+	  double sfcsvm_mistag_up = reader_csvmup.eval(jtflv,eta,ptCorr);
+
+	  double sfcsvt_mistag_down = reader_csvtdown.eval(jtflv,eta,ptCorr);
+	  double sfcsvl_mistag_down = reader_csvldown.eval(jtflv,eta,ptCorr);
+	  double sfcsvm_mistag_down = reader_csvmdown.eval(jtflv,eta,ptCorr);
+
+	  double sfcsvt_b_tag_down = reader_csvtdown.eval(jtflv,eta,ptCorr);
+	  double sfcsvl_b_tag_down = reader_csvldown.eval(jtflv,eta,ptCorr);
+	  double sfcsvm_b_tag_down = reader_csvmdown.eval(jtflv,eta,ptCorr);
+
+	  double sfcsvt_b_tag_up = reader_csvtup.eval(jtflv,eta,ptCorr);
+	  double sfcsvl_b_tag_up = reader_csvlup.eval(jtflv,eta,ptCorr);
+	  double sfcsvm_b_tag_up = reader_csvmup.eval(jtflv,eta,ptCorr);
+	  
+	  /*
+	  double sfcsvt = TagScaleFactor("csvt", flavor, "noSyst", ptCorr);	 
+	  double sfcsvl = TagScaleFactor("csvl", flavor, "noSyst", ptCorr);
 	  double sfcsvm = TagScaleFactor("csvm", flavor, "noSyst", ptCorr);
 
 	  double sfcsvt_mistag_up = TagScaleFactor("csvt", flavor, "mistag_up", ptCorr);
-	  double sfcsvl_mistag_up = TagScaleFactor("csvl", flavor, "mistag_up", ptCorr);
+	  double sfcsvl_mistag_up = TagScaleFactor("csvl", flavor, "mistag_up", ptCorr);	  
 	  double sfcsvm_mistag_up = TagScaleFactor("csvm", flavor, "mistag_up", ptCorr);
 
 	  double sfcsvt_mistag_down = TagScaleFactor("csvt", flavor, "mistag_down", ptCorr);
@@ -1076,11 +1156,12 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
 	  double sfcsvt_b_tag_down = TagScaleFactor("csvt", flavor, "b_tag_down", ptCorr);
 	  double sfcsvl_b_tag_down = TagScaleFactor("csvl", flavor, "b_tag_down", ptCorr);
-	  double sfcsvm_b_tag_down = TagScaleFactor("csvm", flavor, "b_tag_down", ptCorr);
-	    
+	  double sfcsvm_b_tag_down = TagScaleFactor("csvm", flavor, "b_tag_down", ptCorr);	
+
 	  double sfcsvt_b_tag_up = TagScaleFactor("csvt", flavor, "b_tag_up", ptCorr);
 	  double sfcsvl_b_tag_up = TagScaleFactor("csvl", flavor, "b_tag_up", ptCorr);
 	  double sfcsvm_b_tag_up = TagScaleFactor("csvm", flavor, "b_tag_up", ptCorr);
+	  */
 
 	  jsfscsvt.push_back(BTagWeight::JetInfo(csvteff, sfcsvt));
 	  jsfscsvl.push_back(BTagWeight::JetInfo(csvleff, sfcsvl));
@@ -1391,7 +1472,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       //      std::cout << " resetting variable "<< name<< " before "<< float_values[name];
       //      bool isTriggerVar
       //      if(isTriggerVar) continue;
-      float_values[name]=0;
+      float_values[name]=-1;
       //      std::cout << " after "<< Float_values[name]<<endl;
     }
   }
@@ -1530,17 +1611,17 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     addvar.push_back("nLooseElectrons");
     addvar.push_back("nVetoElectrons");
     addvar.push_back("nElectronsSF");
-    addvar.push_back("mt");
-    addvar.push_back("Mt2w");
-    addvar.push_back("category");
+    //addvar.push_back("mt");
+    //addvar.push_back("Mt2w");
+    //addvar.push_back("category");
     addvar.push_back("nMuonsSF");
     addvar.push_back("nCSVTJets");
     addvar.push_back("nCSVMJets");
     addvar.push_back("nCSVLJets");
     addvar.push_back("nTightJets");
     addvar.push_back("nLooseJets");
-    addvar.push_back("nType1TopJets");
-    addvar.push_back("nType2TopJets");
+    //addvar.push_back("nType1TopJets");
+    //addvar.push_back("nType2TopJets");
  
     addvar.push_back("bWeight0CSVT");
     addvar.push_back("bWeight1CSVT");
@@ -1607,7 +1688,13 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     addvar.push_back("EventNumber");
     addvar.push_back("LumiBlock");
     addvar.push_back("RunNumber");
+
+    if(addPV){
+      addvar.push_back("nPV");
+      addvar.push_back("nGoodPV");
+    }
     
+    /*
     for (size_t j = 0; j < (size_t)jetScanCuts.size(); ++j){
       stringstream j_n;
       double jetval = jetScanCuts.at(j);
@@ -1626,6 +1713,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
       addvar.push_back("bWeight0CSVLWeight"+j_n.str());
       addvar.push_back("bWeight0CSVLWeight"+j_n.str());
     }
+    */
 
     if(useLHEWeights){
       for (size_t w = 0; w <= (size_t)maxWeights; ++w)  {
@@ -1977,6 +2065,7 @@ double DMAnalysisTreeMaker::MCTagEfficiency(string algo, int flavor, double pt){
   return 1.0;
 }
 
+/*
 double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst, double pt){
   // source (08/24):
   // https://indico.cern.ch/event/439699/contribution/2/attachments/1143400/1638534/BTag_150727_FirstResults13TeVData.pdf
@@ -2066,6 +2155,8 @@ double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst,
   }
   return 1.0;
 }
+
+*/
 
 float DMAnalysisTreeMaker::BTagWeight::weightWithVeto(vector<JetInfo> jetsTags, int tags, vector<JetInfo> jetsVetoes, int vetoes)
 {//This function takes into account cases where you have n b-tags and m vetoes, but they have different thresholds. 

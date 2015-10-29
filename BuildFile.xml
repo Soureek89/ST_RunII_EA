@@ -23,7 +23,7 @@
 <use   name="Geometry/Records"/>
 <use   name="HLTrigger/HLTcore"/>
 <use   name="RecoEcal/EgammaCoreTools"/>
-<use   name="Utilities/Timing"/>
+<!-- <use   name="Utilities/Timing"/> -->
 <use   name="CondFormats/HLTObjects"/>
 <use   name="root"/>
 <use   name="DataFormats/CSCRecHit"/>
@@ -67,4 +67,5 @@
 <use name="DataFormats/PatCandidates"/>
 <use name="DataFormats/MuonReco"/>
 <use name="DataFormats/VertexReco"/>
+<use   name="CondFormats/BTauObjects"/>
 <flags   EDM_PLUGIN="1"/>
