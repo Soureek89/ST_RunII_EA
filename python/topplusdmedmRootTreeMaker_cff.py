@@ -72,16 +72,16 @@ DMTreesDumper = cms.EDAnalyzer(
     physicsObjects = cms.VPSet(
         cms.PSet(
             label = metlabel,
-            prefix = cms.string("met"),
+            prefix = cms.string("metNoHF"),
             maxInstances =  cms.untracked.int32(1),
             saveBaseVariables = cms.untracked.bool(True),
             variablesF = cms.VInputTag(
-                cms.InputTag("met","metPt"),
-                cms.InputTag("met","metPhi"),
-                cms.InputTag("met","metPx"),
-                cms.InputTag("met","metPy"),
-                #cms.InputTag("met","metUncorrPhi"),
-                #cms.InputTag("met","metUncorrPt"),
+                cms.InputTag("metNoHF","metNoHFPt"),
+                cms.InputTag("metNoHF","metNoHFPhi"),
+                cms.InputTag("metNoHF","metNoHFPx"),
+                cms.InputTag("metNoHF","metNoHFPy"),
+                #cms.InputTag("metNoHF","metNoHFUncorrPhi"),
+                #cms.InputTag("metNoHF","metNoHFUncorrPt"),
                 ),
             variablesI = cms.VInputTag(),
             singleI = cms.VInputTag(),

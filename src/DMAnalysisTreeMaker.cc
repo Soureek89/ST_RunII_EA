@@ -64,6 +64,13 @@ public:
   explicit DMAnalysisTreeMaker( const edm::ParameterSet & );   
 
 private:
+  virtual void beginJob() {
+    std::string distr = "pileUp" + dataPUFile_ + ".root";
+    LumiWeights_ = edm::LumiReWeighting(distr,"PUdata_19468.3.root",std::string("pileup"),std::string("pileup"));
+    LumiWeightsUp_ = edm::LumiReWeighting(distr,"PUdata_20441.7.root",std::string("pileup"),std::string("pileup"));
+    LumiWeightsDown_ = edm::LumiReWeighting(distr,"PUdata_18494.9.root",std::string("pileup"),std::string("pileup"));
+  }
+
   virtual void analyze(const edm::Event &, const edm::EventSetup & );
   vector<string> additionalVariables(string);
   string makeName(string label,string pref,string var);
@@ -80,7 +87,7 @@ private:
   double getScaleFactor(double pt, double eta, double partonFlavour, string syst);
   
   //------------------ Soureek adding pile-up Info ------------------------------
-  void getPUSF(std::string distr);
+  void getPUSF();
   //-----------------------------------------------------------------------------
 
   bool isInVector(std::vector<std::string> v, std::string s);
@@ -748,8 +755,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       iEvent.getByLabel("eventUserData","puNtrueInt",ntrpu);
       //nPV=*npv; 
       nTruePU=*ntrpu;
-      std::string distr = "pileUp" + dataPUFile_ + ".root";
-      getPUSF(distr);
+
+      getPUSF();
     }
 
     /**************************
@@ -1829,15 +1836,15 @@ bool DMAnalysisTreeMaker::getEventTriggers(){
 }
 
 
-void DMAnalysisTreeMaker::getPUSF(std::string distr){
-  LumiWeights_ = edm::LumiReWeighting(distr,"PUdata_19468.3.root",std::string("pileup"),std::string("pileup"));
-  LumiWeightsUp_ = edm::LumiReWeighting(distr,"PUdata_20441.7.root",std::string("pileup"),std::string("pileup"));
-  LumiWeightsDown_ = edm::LumiReWeighting(distr,"PUdata_18494.9.root",std::string("pileup"),std::string("pileup"));
+void DMAnalysisTreeMaker::getPUSF(){
+  // LumiWeights_ = edm::LumiReWeighting(distr,"PUdata_19468.3.root",std::string("pileup"),std::string("pileup"));
+  // LumiWeightsUp_ = edm::LumiReWeighting(distr,"PUdata_20441.7.root",std::string("pileup"),std::string("pileup"));
+  // LumiWeightsDown_ = edm::LumiReWeighting(distr,"PUdata_18494.9.root",std::string("pileup"),std::string("pileup"));
   puWeight=(float) LumiWeights_.weight(nTruePU);
   puWeightUp = (float) LumiWeightsUp_.weight(nTruePU);
   puWeightDown = (float) LumiWeightsDown_.weight(nTruePU);
-  std::cout<<"nTruePU: "<<nTruePU<<"\tnPV: "<<nPV<<std::endl;
-  std::cout<<"pileUp weight: "<<puWeight<<"\tpileUp weight Up: "<<puWeightUp<<"\tpileUp weight Down: "<<puWeightDown<<std::endl;
+  // std::cout<<"nTruePU: "<<nTruePU<<"\tnPV: "<<nPV<<std::endl;
+  // std::cout<<"pileUp weight: "<<puWeight<<"\tpileUp weight Up: "<<puWeightUp<<"\tpileUp weight Down: "<<puWeightDown<<std::endl;
   float_values["Event_puWeight"]=puWeight; 
   float_values["Event_puWeightUp"]=puWeightUp; 
   float_values["Event_puWeightDown"]=puWeightDown;
