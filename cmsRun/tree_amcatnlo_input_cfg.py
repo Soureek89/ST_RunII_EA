@@ -89,6 +89,7 @@ if(options.isData):options.useLHE = False
 process = cms.Process("ttDManalysisTrees")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.MessageLogger.categories.append('HLTrigReport')
 ### Output Report
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
@@ -100,6 +101,7 @@ process.source = cms.Source("PoolSource",
 
         )
 )
+
 
 
 from das_client import *
