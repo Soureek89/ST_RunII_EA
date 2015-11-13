@@ -744,9 +744,9 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
   //---------------- Soureek Adding PU Info ------------------------------
     if(doPU_){
-      //iEvent.getByLabel("eventUserData","npv",npv);
+//	  iEvent.getByLabel("eventUserData","npv",npv);
       iEvent.getByLabel("eventUserData","puNtrueInt",ntrpu);
-      //nPV=*npv; 
+//      nPV=*npv; 
       nTruePU=*ntrpu;
       std::string distr = "pileUp" + dataPUFile_ + ".root";
       getPUSF(distr);
@@ -1830,17 +1830,18 @@ bool DMAnalysisTreeMaker::getEventTriggers(){
 
 
 void DMAnalysisTreeMaker::getPUSF(std::string distr){
-  LumiWeights_ = edm::LumiReWeighting(distr,"PUdata_19468.3.root",std::string("pileup"),std::string("pileup"));
-  LumiWeightsUp_ = edm::LumiReWeighting(distr,"PUdata_20441.7.root",std::string("pileup"),std::string("pileup"));
-  LumiWeightsDown_ = edm::LumiReWeighting(distr,"PUdata_18494.9.root",std::string("pileup"),std::string("pileup"));
-  puWeight=(float) LumiWeights_.weight(nTruePU);
-  puWeightUp = (float) LumiWeightsUp_.weight(nTruePU);
-  puWeightDown = (float) LumiWeightsDown_.weight(nTruePU);
-  std::cout<<"nTruePU: "<<nTruePU<<"\tnPV: "<<nPV<<std::endl;
-  std::cout<<"pileUp weight: "<<puWeight<<"\tpileUp weight Up: "<<puWeightUp<<"\tpileUp weight Down: "<<puWeightDown<<std::endl;
-  float_values["Event_puWeight"]=puWeight; 
-  float_values["Event_puWeightUp"]=puWeightUp; 
-  float_values["Event_puWeightDown"]=puWeightDown;
+	LumiWeights_ = edm::LumiReWeighting(distr,"DataPileupHistogram_80mbMinBias.root",std::string("pileup"),std::string("pileup"));
+//	LumiWeights_ = edm::LumiReWeighting(distr,"DataPileupHistogram_80mbMinBias.root",std::string("pileup"),std::string("pileup"));	
+//	LumiWeightsUp_ = edm::LumiReWeighting(distr,"PUdata_20441.7.root",std::string("pileup"),std::string("pileup"));
+//	LumiWeightsDown_ = edm::LumiReWeighting(distr,"PUdata_18494.9.root",std::string("pileup"),std::string("pileup"));
+	puWeight=(float) LumiWeights_.weight(nTruePU);
+//	puWeightUp = (float) LumiWeightsUp_.weight(nTruePU);
+//	puWeightDown = (float) LumiWeightsDown_.weight(nTruePU);
+	std::cout<<"nTruePU: "<<nTruePU<<"\tnPV: "<<nPV<<"\tpileUp weight: "<<puWeight<<std::endl;
+//	std::cout<<"pileUp weight: "<<puWeight<<"\tpileUp weight Up: "<<puWeightUp<<"\tpileUp weight Down: "<<puWeightDown<<std::endl;
+	float_values["Event_puWeight"]=puWeight; 
+//	float_values["Event_puWeightUp"]=puWeightUp; 
+//	float_values["Event_puWeightDown"]=puWeightDown;
 }
 
 

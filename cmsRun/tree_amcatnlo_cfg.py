@@ -24,7 +24,7 @@ options.register('maxEvts',
 options.register('sample',
                  [#'file:/tmp/oiorio/B2GEDMNtuple_1.root'
 #                 'file:../../edm_mc/B2GEDMNtuple.root'
-                 'file:/afs/cern.ch/work/n/nfalterm/public/B2GEDMNtuple.root'
+#                 'file:/afs/cern.ch/work/n/nfalterm/public/B2GEDMNtuple.root'
 #                  'root://xrootd.ba.infn.it///store/user/decosa/ttDM/CMSSW_7_4_X/TT_TuneCUETP8M1_13TeV-powheg-pythia8/TT_TuneCUETP8M1_13TeV/150926_070344/0000/B2GEDMNtuple_1.root'
 ],
                  opts.VarParsing.multiplicity.singleton,
@@ -121,7 +121,7 @@ process.DMTreesDumper.useMETNoHF = cms.untracked.bool(True)
 process.DMTreesDumper.channelInfo.useLHEWeights =cms.untracked.bool(False)
 process.DMTreesDumper.isData = cms.untracked.bool(False)#This adds the L2L3Residuals
 process.DMTreesDumper.doPU= cms.bool(True);
-process.DMTreesDumper.dataPUFile=cms.string("DistrSummer15");
+process.DMTreesDumper.dataPUFile=cms.string("DistrSummer15_25ns");
 
 process.analysisPath = cms.Path(
     process.DMTreesDumper
