@@ -631,7 +631,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       }*/
     
     
-  
+  std::cout<<"Collected # of primary vertices: "<<nPV<<std::endl;	  
 
   //Part 1 taking the obs values from the edm file
   for (;itPsets!=physObjects.end();++itPsets){ 
@@ -749,9 +749,11 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 //      nPV=*npv; 
       nTruePU=*ntrpu;
       std::string distr = "pileUp" + dataPUFile_ + ".root";
+	  std::cout<<"Check for PU re-weighting 1"<<std::endl;	 
       getPUSF(distr);
     }
 
+	std::cout<<"Check for PU re-weighting 2"<<std::endl;
     /**************************
     Muons:
     **************************/
@@ -1830,8 +1832,8 @@ bool DMAnalysisTreeMaker::getEventTriggers(){
 
 
 void DMAnalysisTreeMaker::getPUSF(std::string distr){
-	LumiWeights_ = edm::LumiReWeighting(distr,"DataPileupHistogram_80mbMinBias.root",std::string("pileup"),std::string("pileup"));
-//	LumiWeights_ = edm::LumiReWeighting(distr,"DataPileupHistogram_80mbMinBias.root",std::string("pileup"),std::string("pileup"));	
+//	LumiWeights_ = edm::LumiReWeighting(distr,"DataPileupHistogram_80mbMinBias.root",std::string("pileup"),std::string("pileup"));
+	LumiWeights_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias.root",std::string("pileup"),std::string("pileup"));	
 //	LumiWeightsUp_ = edm::LumiReWeighting(distr,"PUdata_20441.7.root",std::string("pileup"),std::string("pileup"));
 //	LumiWeightsDown_ = edm::LumiReWeighting(distr,"PUdata_18494.9.root",std::string("pileup"),std::string("pileup"));
 	puWeight=(float) LumiWeights_.weight(nTruePU);
