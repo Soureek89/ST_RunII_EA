@@ -631,7 +631,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       }*/
     
     
-  std::cout<<"Collected # of primary vertices: "<<nPV<<std::endl;	  
+  //std::cout<<"Collected # of primary vertices: "<<nPV<<std::endl;	  
 
   //Part 1 taking the obs values from the edm file
   for (;itPsets!=physObjects.end();++itPsets){ 
@@ -749,11 +749,11 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 //      nPV=*npv; 
       nTruePU=*ntrpu;
       std::string distr = "pileUp" + dataPUFile_ + ".root";
-	  std::cout<<"Check for PU re-weighting 1"<<std::endl;	 
+      //std::cout<<"Check for PU re-weighting 1"<<std::endl;	 
       getPUSF(distr);
     }
 
-	std::cout<<"Check for PU re-weighting 2"<<std::endl;
+    //std::cout<<"Check for PU re-weighting 2"<<std::endl;
     /**************************
     Muons:
     **************************/
@@ -869,8 +869,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     string pref = obj_to_pref[met_label];
     float metpt = vfloats_values[makeName(met_label,pref,"Pt")][0];
     float metphi = vfloats_values[makeName(met_label,pref,"Phi")][0];
-    float metZeroCorrPt = vfloats_values[makeName(met_label,pref,"UncorrPt")][0];
-    float metZeroCorrPhi = vfloats_values[makeName(met_label,pref,"UncorrPhi")][0];
+    float metZeroCorrPt = vfloats_values[makeName(met_label,pref,"uncorPt")][0];
+    float metZeroCorrPhi = vfloats_values[makeName(met_label,pref,"uncorPhi")][0];
     float metZeroCorrY = metZeroCorrPt*sin(metZeroCorrPhi);
     float metZeroCorrX = metZeroCorrPt*cos(metZeroCorrPhi);
     float metPx = metpt*sin(metphi);
@@ -1297,7 +1297,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     metPx+=corrMetPx; metPy+=corrMetPy; // add JEC/JER contribution
     
     //Correcting the pt
-    float metptCorr = sqrt(metPx*metPx + metPy*metPy);
+    float metptCorr = sqrt(metPx*metPx + metPy*metPy); 
     vfloats_values[met_label+"_CorrPt"][0]=metptCorr;
 
     //Correcting the phi
@@ -1307,7 +1307,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       if(metPy<0)metphiCorr = atan(metPy/metPx)-3.141592;
     }
     else  metphiCorr = (atan(metPy/metPx));
-
+    
     vfloats_values[met_label+"_CorrPhi"][0]=metphiCorr;
 
     //BTagging part
