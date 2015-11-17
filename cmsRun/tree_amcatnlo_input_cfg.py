@@ -21,6 +21,13 @@ options.register('maxEvts',
                  opts.VarParsing.varType.int,
                  'Number of events to process')
 
+options.register('skip',
+                 0,# default value: process all events
+                 opts.VarParsing.multiplicity.singleton,
+                 opts.VarParsing.varType.int,
+                 'Number of events to skip')
+
+
 options.register('sample',
                  '/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/paktinat-B2GAnaFW_7415-1aae21629c396d43830e04018539aad4/USER',
                  opts.VarParsing.multiplicity.singleton,
@@ -28,7 +35,8 @@ options.register('sample',
                  'Sample to analyze')
 
 options.register('sourcedir',
-                 'srm://se1.particles.ipm.ac.ir:8446/srm/managerv2?SFN=/dpm/particles.ipm.ac.ir/home/cms/',
+                 'gsiftp://se1.particles.ipm.ac.ir/dpm/particles.ipm.ac.ir/home/cms/' , 
+                 #'srm://se1.particles.ipm.ac.ir:8446/srm/managerv2?SFN=/dpm/particles.ipm.ac.ir/home/cms/',
                  #'rfio:///dpm/particles.ipm.ac.ir/home/cms/',
                  #'file:/home/hbakhshi/mnt/',
                  opts.VarParsing.multiplicity.singleton,
@@ -99,7 +107,9 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxE
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
 
-        )
+        ),
+                            skipEvents=cms.untracked.uint32(options.skip)
+
 )
 
 
@@ -156,7 +166,7 @@ for jjj in data:
         os.remove( destinationfile )
 
     command = [ 'gfal-copy' , sourcefile , 'file:' + destinationfile ]
-    #print command
+    print command
     print "\t started to copy"
     call( command )
     
@@ -188,6 +198,9 @@ except os.error :
     print "directory already exits"
 
 
+
+if not options.skip == 0 :
+    options.outputLabel = options.outputLabel.replace( ".root" ,  "_from" + str(options.skip)  + ".root" )
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string( options.destination + "/Trees/" + options.outputLabel))
 process.load("Analysis.ST_RunII_EA.topplusdmedmRootTreeMaker_cff")
