@@ -1,0 +1,1 @@
+/cvmfs/cms.cern.ch/slc6_amd64_gcc491/cms/cmssw/CMSSW_7_4_15/external/slc6_amd64_gcc491/bin/das_client.py
