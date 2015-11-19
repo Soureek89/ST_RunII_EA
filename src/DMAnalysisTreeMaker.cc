@@ -64,6 +64,14 @@ public:
   explicit DMAnalysisTreeMaker( const edm::ParameterSet & );   
 
 private:
+  virtual void beginJob() {
+    std::string distr = "pileUp" + dataPUFile_ + ".root";
+    LumiWeights_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias.root",std::string("pileup"),std::string("pileup"));	
+    /*LumiWeights_ = edm::LumiReWeighting(distr,"PUdata_19468.3.root",std::string("pileup"),std::string("pileup"));
+    LumiWeightsUp_ = edm::LumiReWeighting(distr,"PUdata_20441.7.root",std::string("pileup"),std::string("pileup"));
+    LumiWeightsDown_ = edm::LumiReWeighting(distr,"PUdata_18494.9.root",std::string("pileup"),std::string("pileup"));*/
+  }
+
   virtual void analyze(const edm::Event &, const edm::EventSetup & );
   vector<string> additionalVariables(string);
   string makeName(string label,string pref,string var);
@@ -80,7 +88,7 @@ private:
   double getScaleFactor(double pt, double eta, double partonFlavour, string syst);
   
   //------------------ Soureek adding pile-up Info ------------------------------
-  void getPUSF(std::string distr);
+  void getPUSF();
   //-----------------------------------------------------------------------------
 
   bool isInVector(std::vector<std::string> v, std::string s);
@@ -172,7 +180,7 @@ private:
   //--------------------------------------------------------------------------------------
 
   //JEC info
-  bool changeJECs;
+  bool changeJECs = false;
   bool isData, useMETNoHF;
   edm::Handle<double> rho;
   double Rho;
@@ -382,7 +390,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   }
 
   addPV = iConfig.getUntrackedParameter<bool>("addPV",true);
-  changeJECs = iConfig.getUntrackedParameter<bool>("changeJECs",false);
+  //changeJECs = iConfig.getUntrackedParameter<bool>("changeJECs",false);
   isData = iConfig.getUntrackedParameter<bool>("isData",false);
   useMETNoHF = iConfig.getUntrackedParameter<bool>("useMETNoHF",false);
   if(addPV || changeJECs){
@@ -552,18 +560,18 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   }
   
 
-  jecParsL1  = new JetCorrectorParameters("Summer15_25nsV5_MC_L1FastJet_AK4PFchs.txt");
-  jecParsL2  = new JetCorrectorParameters("Summer15_25nsV5_MC_L2Relative_AK4PFchs.txt");
-  jecParsL3  = new JetCorrectorParameters("Summer15_25nsV5_MC_L3Absolute_AK4PFchs.txt");
-  jecParsL2L3Residuals  = new JetCorrectorParameters("Summer15_25nsV5_DATA_L2L3Residual_AK4PFchs.txt");
-  jecPars.push_back(*jecParsL1);
-  jecPars.push_back(*jecParsL2);
-  jecPars.push_back(*jecParsL3);
-  if(isData)jecPars.push_back(*jecParsL2L3Residuals);
+  //jecParsL1  = new JetCorrectorParameters("Summer15_25nsV6_MC_L1FastJet_AK4PFchs.txt");
+  //jecParsL2  = new JetCorrectorParameters("Summer15_25nsV6_MC_L2Relative_AK4PFchs.txt");
+  //jecParsL3  = new JetCorrectorParameters("Summer15_25nsV6_MC_L3Absolute_AK4PFchs.txt");
+  jecParsL2L3Residuals  = new JetCorrectorParameters("Summer15_25nsV6_DATA_L2L3Residual_AK4PFchs.txt");
+  //jecPars.push_back(*jecParsL1);
+  //jecPars.push_back(*jecParsL2);
+  //jecPars.push_back(*jecParsL3);
+  //if(isData)jecPars.push_back(*jecParsL2L3Residuals);
 
   jecCorr = new FactorizedJetCorrector(jecPars);
   
-  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer15_25nsV5_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
+  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer15_25nsV6_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
   
   //  if(addNominal) systematics.push_back("noSyst");
  
@@ -631,7 +639,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       }*/
     
     
-  
+  //std::cout<<"Collected # of primary vertices: "<<nPV<<std::endl;	  
 
   //Part 1 taking the obs values from the edm file
   for (;itPsets!=physObjects.end();++itPsets){ 
@@ -744,14 +752,16 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
   //---------------- Soureek Adding PU Info ------------------------------
     if(doPU_){
-      //iEvent.getByLabel("eventUserData","npv",npv);
+//	  iEvent.getByLabel("eventUserData","npv",npv);
       iEvent.getByLabel("eventUserData","puNtrueInt",ntrpu);
-      //nPV=*npv; 
+//      nPV=*npv; 
       nTruePU=*ntrpu;
-      std::string distr = "pileUp" + dataPUFile_ + ".root";
-      getPUSF(distr);
+      //std::cout<<"Check for PU re-weighting 1"<<std::endl;	 
+      getPUSF();
+
     }
 
+    //std::cout<<"Check for PU re-weighting 2"<<std::endl;
     /**************************
     Muons:
     **************************/
@@ -867,8 +877,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     string pref = obj_to_pref[met_label];
     float metpt = vfloats_values[makeName(met_label,pref,"Pt")][0];
     float metphi = vfloats_values[makeName(met_label,pref,"Phi")][0];
-    float metZeroCorrPt = vfloats_values[makeName(met_label,pref,"UncorrPt")][0];
-    float metZeroCorrPhi = vfloats_values[makeName(met_label,pref,"UncorrPhi")][0];
+    float metZeroCorrPt = vfloats_values[makeName(met_label,pref,"uncorPt")][0];
+    float metZeroCorrPhi = vfloats_values[makeName(met_label,pref,"uncorPhi")][0];
     float metZeroCorrY = metZeroCorrPt*sin(metZeroCorrPhi);
     float metZeroCorrX = metZeroCorrPt*cos(metZeroCorrPhi);
     float metPx = metpt*sin(metphi);
@@ -1295,7 +1305,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     metPx+=corrMetPx; metPy+=corrMetPy; // add JEC/JER contribution
     
     //Correcting the pt
-    float metptCorr = sqrt(metPx*metPx + metPy*metPy);
+    float metptCorr = sqrt(metPx*metPx + metPy*metPy); 
     vfloats_values[met_label+"_CorrPt"][0]=metptCorr;
 
     //Correcting the phi
@@ -1305,7 +1315,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       if(metPy<0)metphiCorr = atan(metPy/metPx)-3.141592;
     }
     else  metphiCorr = (atan(metPy/metPx));
-
+    
     vfloats_values[met_label+"_CorrPhi"][0]=metphiCorr;
 
     //BTagging part
@@ -1829,18 +1839,19 @@ bool DMAnalysisTreeMaker::getEventTriggers(){
 }
 
 
-void DMAnalysisTreeMaker::getPUSF(std::string distr){
-  LumiWeights_ = edm::LumiReWeighting(distr,"PUdata_19468.3.root",std::string("pileup"),std::string("pileup"));
-  LumiWeightsUp_ = edm::LumiReWeighting(distr,"PUdata_20441.7.root",std::string("pileup"),std::string("pileup"));
-  LumiWeightsDown_ = edm::LumiReWeighting(distr,"PUdata_18494.9.root",std::string("pileup"),std::string("pileup"));
+
+void DMAnalysisTreeMaker::getPUSF(){
+  // LumiWeights_ = edm::LumiReWeighting(distr,"PUdata_19468.3.root",std::string("pileup"),std::string("pileup"));
+  // LumiWeightsUp_ = edm::LumiReWeighting(distr,"PUdata_20441.7.root",std::string("pileup"),std::string("pileup"));
+  // LumiWeightsDown_ = edm::LumiReWeighting(distr,"PUdata_18494.9.root",std::string("pileup"),std::string("pileup"));
   puWeight=(float) LumiWeights_.weight(nTruePU);
-  puWeightUp = (float) LumiWeightsUp_.weight(nTruePU);
-  puWeightDown = (float) LumiWeightsDown_.weight(nTruePU);
-  std::cout<<"nTruePU: "<<nTruePU<<"\tnPV: "<<nPV<<std::endl;
-  std::cout<<"pileUp weight: "<<puWeight<<"\tpileUp weight Up: "<<puWeightUp<<"\tpileUp weight Down: "<<puWeightDown<<std::endl;
+  //puWeightUp = (float) LumiWeightsUp_.weight(nTruePU);
+  //puWeightDown = (float) LumiWeightsDown_.weight(nTruePU);
+  // std::cout<<"nTruePU: "<<nTruePU<<"\tnPV: "<<nPV<<std::endl;
+  // std::cout<<"pileUp weight: "<<puWeight<<"\tpileUp weight Up: "<<puWeightUp<<"\tpileUp weight Down: "<<puWeightDown<<std::endl;
   float_values["Event_puWeight"]=puWeight; 
-  float_values["Event_puWeightUp"]=puWeightUp; 
-  float_values["Event_puWeightDown"]=puWeightDown;
+  //float_values["Event_puWeightUp"]=puWeightUp; 
+  //float_values["Event_puWeightDown"]=puWeightDown;
 }
 
 

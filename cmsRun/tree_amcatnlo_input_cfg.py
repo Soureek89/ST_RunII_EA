@@ -21,16 +21,35 @@ options.register('maxEvts',
                  opts.VarParsing.varType.int,
                  'Number of events to process')
 
+options.register('skip',
+                 0,# default value: process all events
+                 opts.VarParsing.multiplicity.singleton,
+                 opts.VarParsing.varType.int,
+                 'Number of events to skip')
+
+
 options.register('sample',
-				[#'file:/tmp/oiorio/B2GEDMNtuple_1.root'
-#                 'file:../../edm_mc/B2GEDMNtuple.root'
-#                 'file:/afs/cern.ch/work/n/nfalterm/public/B2GEDMNtuple.root'
-#                  'root://xrootd.ba.infn.it///store/user/decosa/ttDM/CMSSW_7_4_X/TT_TuneCUETP8M1_13TeV-powheg-pythia8/TT_TuneCUETP8M1_13TeV/150926_070344/0000/B2GEDMNtuple_1.root'
-				'root://se01.indiacms.res.in//store/user/smitra/25ns/EDMTuple_74Xv8/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_EDMTuple_74Xv8/151109_200859/0000/DYJets_EDMTuple_1.root'	
-				],
+                 '/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/paktinat-B2GAnaFW_7415-1aae21629c396d43830e04018539aad4/USER',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Sample to analyze')
+
+options.register('sourcedir',
+                 'gsiftp://se1.particles.ipm.ac.ir/dpm/particles.ipm.ac.ir/home/cms/' , 
+                 #'srm://se1.particles.ipm.ac.ir:8446/srm/managerv2?SFN=/dpm/particles.ipm.ac.ir/home/cms/',
+                 #'rfio:///dpm/particles.ipm.ac.ir/home/cms/',
+                 #'file:/home/hbakhshi/mnt/',
+                 opts.VarParsing.multiplicity.singleton,
+                 opts.VarParsing.varType.string,
+                 'source prefix')
+
+options.register('destination',
+                 '/cmsdata2/hbakhshi/tchannel25ns',
+                 #'rfio:///dpm/particles.ipm.ac.ir/home/cms/',
+                 #'file:/home/hbakhshi/mnt/',
+                 opts.VarParsing.multiplicity.singleton,
+                 opts.VarParsing.varType.string,
+                 'source prefix')
 
 options.register('outputLabel',
                  'treesTest_NewSmall.root',
@@ -78,6 +97,7 @@ if(options.isData):options.useLHE = False
 process = cms.Process("ttDManalysisTrees")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.MessageLogger.categories.append('HLTrigReport')
 ### Output Report
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
@@ -86,9 +106,71 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxE
 ### Source file
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-        options.sample
-        )
+
+        ),
+                            skipEvents=cms.untracked.uint32(options.skip)
+
 )
+
+
+
+from das_client import *
+jsondict = get_data( "https://cmsweb.cern.ch" , 
+                     "file dataset=%(sample)s instance=prod/phys03"  %  {'sample':options.sample} ,
+                     0 , #idx
+                     0 , #limit
+                     0 , #verbose
+                     300 , #waiting time
+                     "" ,  #ckey
+                     "" , #cert
+                     )
+cli_msg  = jsondict.get('client_message', None)
+if  cli_msg:
+    print "DAS CLIENT WARNING: %s" % cli_msg
+if  'status' not in jsondict:
+    print 'DAS record without status field:\n%s' % jsondict
+    sys.exit(EX_PROTOCOL)
+if  jsondict['status'] != 'ok':
+    print "status: %s, reason: %s" \
+        % (jsondict.get('status'), jsondict.get('reason', 'N/A'))
+    sys.exit(EX_TEMPFAIL)
+
+data = jsondict['data']
+
+import os, ntpath
+from subprocess import call
+
+try:
+    os.makedirs( options.destination + options.sample )
+except os.error :
+    print "directory already exits"
+
+iii = 1
+for jjj in data:
+    print "%d/%d : %s" % ( iii , len(data) , ntpath.basename(str(prim_value(jjj))) )
+    iii += 1
+    sourcefile = options.sourcedir + str(prim_value( jjj ))
+    sourcesize = jjj['file'][0]['size']
+    destinationfile =  options.destination + options.sample +'/' + ntpath.basename(str(prim_value(jjj)) )
+    process.source.fileNames.append( 'file:' + destinationfile )
+    destsize = -1
+    if os.path.exists( destinationfile ):
+        destsize = os.path.getsize(destinationfile)
+    
+    if destsize == sourcesize :
+        print "\t already exists" 
+        continue
+
+    if  destsize > 0 :
+        print "\t is being removed" 
+        os.remove( destinationfile )
+
+    command = [ 'gfal-copy' , sourcefile , 'file:' + destinationfile ]
+    print command
+    print "\t started to copy"
+    call( command )
+    
+    #print command 
 
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
@@ -110,7 +192,17 @@ process.GlobalTag.globaltag = options.globalTag
 
 ### Rootplizer
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputLabel))
+try:
+    os.makedirs( options.destination + "/Trees/" )
+except os.error :
+    print "directory already exits"
+
+
+
+if not options.skip == 0 :
+    options.outputLabel = options.outputLabel.replace( ".root" ,  "_from" + str(options.skip)  + ".root" )
+
+process.TFileService = cms.Service("TFileService", fileName = cms.string( options.destination + "/Trees/" + options.outputLabel))
 process.load("Analysis.ST_RunII_EA.topplusdmedmRootTreeMaker_cff")
 #process.DMTreesDumper.lhes =cms.InputTag("externalLHEProducer")
 process.DMTreesDumper.lhes =cms.InputTag(options.lhes)
@@ -127,3 +219,5 @@ process.DMTreesDumper.dataPUFile=cms.string("DistrSummer15_25ns");
 process.analysisPath = cms.Path(
     process.DMTreesDumper
     )
+
+
