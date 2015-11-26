@@ -1944,23 +1944,7 @@ double DMAnalysisTreeMaker::smear(double pt, double genpt, double eta, string sy
   return  smear;
 }
 
-
 /*
-// outdated 7 TeV scale factors
-double DMAnalysisTreeMaker::resolSF(double eta, string syst)
-{
-  double fac = 0.;
-  if (syst == "jer__up")fac = 1.;
-  if (syst == "jer__down")fac = -1.;
-  if (eta <= 0.5) return 0.052 + 0.063 * fac;
-  else if ( eta > 0.5 && eta <= 1.1 ) return 0.057 + 0.057 * fac;
-  else if ( eta > 1.1 && eta <= 1.7 ) return 0.096 + 0.065 * fac;
-  else if ( eta > 1.7 && eta <= 2.3 ) return 0.134 + 0.093 * fac;
-  else if ( eta > 2.3 && eta <= 5. ) return 0.288 + 0.200 * fac;
-  return 0.1;
-}
-*/
-
  // 8 TeV scale factors
 double DMAnalysisTreeMaker::resolSF(double eta, string syst)
 {
@@ -1974,6 +1958,23 @@ double DMAnalysisTreeMaker::resolSF(double eta, string syst)
   else if ( eta > 2.3 && eta <= 2.8 )   return 0.254 + (0.062 * fac);
   else if ( eta > 2.8 && eta <= 3.2 )   return 0.395 + (0.063 * fac);
   else if ( eta > 3.2 && eta <= 5.0 )   return 0.056 + (0.191 * fac);
+  return 0.1;
+}
+*/
+
+ // preliminary 13 TeV scale factors
+double DMAnalysisTreeMaker::resolSF(double eta, string syst)
+{
+  double fac = 0.;
+  if (syst == "jer__up")fac = 1.;
+  if (syst == "jer__down")fac = -1.;
+  if (eta <= 0.8)                       return 0.061 + (0.023 * fac);
+  else if ( eta > 0.8 && eta <= 1.3 )   return 0.088 + (0.029 * fac);
+  else if ( eta > 1.3 && eta <= 1.9 )   return 0.106 + (0.030 * fac);
+  else if ( eta > 1.9 && eta <= 2.5 )   return 0.126 + (0.094 * fac);
+  else if ( eta > 2.5 && eta <= 3.0 )   return 0.343 + (0.123 * fac);
+  else if ( eta > 3.0 && eta <= 3.2 )   return 0.303 + (0.111 * fac);
+  else if ( eta > 3.2 && eta <= 5.0 )   return 0.320 + (0.286 * fac);
   return 0.1;
 }
 
