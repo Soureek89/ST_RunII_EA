@@ -134,9 +134,9 @@ private:
   map<string, edm::Handle<float> > h_float;
   map<string, edm::Handle<int> >h_int;
 
-  string mu_label, ele_label, jets_label, met_label, jetsnohf_label; 
- 
-   
+  string mu_label, ele_label, jets_label, met_label, jetsnohf_label;
+
+
   //MC info:
   edm::ParameterSet channelInfo;
   std::string channel;
@@ -543,7 +543,10 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   vector<string> extravars = additionalVariables(nameshortv);
   for(size_t addv = 0; addv < extravars.size();++addv){
     string name = nameshortv+"_"+extravars.at(addv);
-    trees["noSyst"]->Branch(name.c_str(), &float_values[name],(name+"/F").c_str());
+    if (name.find("EventNumber") != std::string::npos)
+      trees["noSyst"]->Branch(name.c_str(), &int_values[name],(name+"/I").c_str());
+    else
+      trees["noSyst"]->Branch(name.c_str(), &float_values[name],(name+"/F").c_str());
   }
   
   //Prepare the trees cloning all branches and setting the correct names/titles:
@@ -701,7 +704,6 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     for (;itsI != singleInt.end();++itsI){
       string varname=itsI->instance();
       string name = makeBranchName(namelabel,nameprefix,varname);
-
       iEvent.getByLabel(*(itsI),h_int[name]);
       int_values[name]=*h_int[name];
     }
@@ -1466,7 +1468,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     float_values["Event_passesHBHE"]=(float)(*HBHE);
 
     //technical event information
-    float_values["Event_EventNumber"]=*eventNumber;
+    int_values["Event_EventNumber"]=(*eventNumber);
+    //float_values["Event_EventNumber"]=(float)(*eventNumber);
     float_values["Event_LumiBlock"]=*lumiBlock;
     float_values["Event_RunNumber"]=*runNumber;
 
