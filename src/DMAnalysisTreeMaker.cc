@@ -134,7 +134,7 @@ private:
   map<string, edm::Handle<float> > h_float;
   map<string, edm::Handle<int> >h_int;
 
-  string mu_label, ele_label, jets_label, met_label, jetsnohf_label;
+  string mu_label, ele_label, jets_label, met_label, metnohf_label, jetsnohf_label;
 
 
   //MC info:
@@ -352,6 +352,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   ele_label = iConfig.getParameter<std::string >("eleLabel");
   jets_label = iConfig.getParameter<std::string >("jetsLabel");
   met_label = iConfig.getParameter<std::string >("metLabel");
+  metnohf_label = iConfig.getParameter<std::string >("metnohfLabel");
   jetsnohf_label = iConfig.getParameter<std::string >("jetsnohfLabel");
   physObjects = iConfig.template getParameter<std::vector<edm::ParameterSet> >("physicsObjects");
   
