@@ -86,6 +86,7 @@ private:
   double smear(double pt, double genpt, double eta, string syst);
   double resolSF(double eta, string syst);
   double getScaleFactor(double pt, double eta, double partonFlavour, string syst);
+  double muonSF(bool isdata, float pt, float eta, int syst);
   
   //------------------ Soureek adding pile-up Info ------------------------------
   void getPUSF();
@@ -768,6 +769,10 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     /**************************
     Muons:
     **************************/
+    float mu_sf = 1;
+    float mu_sf_up = 1;
+    float mu_sf_down = 1;
+
     for(int mu = 0;mu < max_instances[mu_label] ;++mu){
       string pref = obj_to_pref[mu_label];
       //      std::cout << " now checking name " << makeName(mu_label,pref,"IsTightMuon")<<std::endl;
@@ -789,6 +794,11 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	muons.push_back(muon);
 	muons_t.push_back(muon);
 	leptons.push_back(muon);
+
+	mu_sf *= muonSF(isData,pt,eta,0);
+	mu_sf_up *= muonSF(isData,pt,eta,1);
+	mu_sf_down *= muonSF(isData,pt,eta,-1);
+
       }
       if(isLoose>0 && pt> 10 && abs(eta) < 2.1 && iso<0.2){
 	++float_values["Event_nLooseMuons"];
@@ -801,8 +811,11 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	muon.SetPtEtaPhiE(pt, eta, phi, energy);
 	loosemuons.push_back(muon);
       }
-
     }
+
+    float_values["Event_mu_eff"]=mu_sf;
+    float_values["Event_mu_eff_up"]=mu_sf_up;
+    float_values["Event_mu_eff_down"]=mu_sf_down;
 
     /**************************
     Electrons:
@@ -1703,6 +1716,10 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     addvar.push_back("LumiBlock");
     addvar.push_back("RunNumber");
 
+    addvar.push_back("mu_eff");
+    addvar.push_back("mu_eff_up");
+    addvar.push_back("mu_eff_down");
+
     if(addPV){
       addvar.push_back("nPV");
       addvar.push_back("nGoodPV");
@@ -2219,6 +2236,185 @@ float DMAnalysisTreeMaker::BTagWeight::weightWithVeto(vector<JetInfo> jetsTags, 
   return pData / pMC;
 }
 
+// muon SF based on Muon POG values from Dec15
+double DMAnalysisTreeMaker::muonSF(bool isdata, float pt, float eta, int syst) {
+
+  if (isdata) return 1;
+
+  double eff_id = 0;
+  double eff_iso = 0;
+  double eff_trigger = 0;
+  
+  // tight id SF 
+  if (pt > 20 && pt <= 25) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_id = 0.9752116203308105 + 0.0030660638813280626 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_id = 0.9738101959228516 + 0.004502934246978295 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_id = 0.9983288645744324 + 0.002331323348626783 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_id = 0.9877836108207703 + 0.004915740433340289 * syst;
+  }
+
+  if (pt > 25 && pt <= 30) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_id = 0.9848297238349915 + 0.0016307213764927449 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_id = 0.978645384311676 + 0.0027064755458685794 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_id = 0.9905462265014648 + 0.001402578599690647 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_id = 0.9802553653717041 + 0.003173276637083633 * syst;
+  }
+
+  if (pt > 30 && pt <= 40) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_id = 0.9861794114112854 + 0.0006187187412138267 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_id = 0.9798933267593384 + 0.001057081371390319 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_id = 0.9923668503761292 + 0.0005653311393042486 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_id = 0.9785045385360718 + 0.0015542030446523895 * syst;
+  }
+
+  if (pt > 40 && pt <= 50) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_id = 0.987443208694458 + 0.000494159746725046 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_id = 0.980233907699585 + 0.000819615406448897 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_id = 0.9927627444267273 + 0.0004155573807947332 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_id = 0.9778544902801514 + 0.001456799997296391 * syst;
+  }
+
+  if (pt > 50 && pt <= 60) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_id = 0.9834294319152832 + 0.0011818999573518245 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_id = 0.9773300886154175 + 0.001955436343316424 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_id = 0.9886322021484375 + 0.0011254961157344963 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_id = 0.9654409885406494 + 0.003709169009223743 * syst;
+  }
+
+  if (pt > 60 && pt <= 120) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_id = 0.9863178730010986 + 0.002073330940717176 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_id = 0.9795225858688354 + 0.0035622593553725837 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_id = 0.9950451850891113 + 0.002673833447209764 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_id = 0.9689615368843079 + 0.011084748199568817 * syst;
+  }
+
+  if (abs(eta) > 2.4 || pt > 120) eff_id = 1;
+
+  // additional 1% syst. uncertainty
+  eff_id *= 1 + (0.01 * syst);
+
+
+  // tight iso SF 
+  if (pt > 20 && pt <= 25) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_iso = 1.0043761730194092 + 0.003959090391076143 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_iso = 1.004357933998108 + 0.006125539530136138 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_iso = 0.9970762133598328 + 0.003109125287470401 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_iso = 0.9957730770111084 + 0.006137193387970902 * syst;
+  }
+
+  if (pt > 25 && pt <= 30) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_iso = 0.9995378255844116 + 0.0022512071035640673 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_iso = 1.002331256866455 + 0.004003683572512011 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_iso = 1.0006532669067383 + 0.002067755362435184 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_iso = 0.9939026832580566 + 0.004261971076013437 * syst;
+  }
+
+  if (pt > 30 && pt <= 40) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_iso = 1.000901222229004 + 0.0007979481788689052 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_iso = 1.004658579826355 + 0.0014502638048416372 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_iso = 1.0023553371429443 + 0.0008445520691793605 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_iso = 0.997478187084198 + 0.001781225374381486 * syst;
+  }
+
+  if (pt > 40 && pt <= 50) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_iso = 0.9986253976821899 + 0.0004518361024064332 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_iso = 1.0013608932495117 + 0.0004888604573095644 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_iso = 0.999933660030365 + 0.0004309914887707696 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_iso = 1.002805233001709 + 0.001100242856214239 * syst;
+  }
+
+  if (pt > 50 && pt <= 60) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_iso = 1.0002487897872925 + 0.000772847340102783 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_iso = 0.9986217021942139 + 0.0012396364566794034 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_iso = 1.0002963542938232 + 0.0007614160360063238 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_iso = 1.0043764114379883 + 0.001806526581100641 * syst;
+  }
+
+  if (pt > 60 && pt <= 120) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_iso = 0.9986850023269653 + 0.0008907575174433545 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_iso = 1.0054655075073242 + 0.001589130019220112 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_iso = 1.0004935264587402 + 0.0009382223143922724 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_iso = 1.0010104179382324 + 0.0022795762936220253 * syst;
+  }
+
+  if (abs(eta) > 2.4 || pt > 120) eff_iso = 1;
+
+  // additional 1% syst. uncertainty
+  eff_iso *= 1 + (0.01 * syst);
+
+
+
+  // IsoMu20 trigger SF
+
+  /*
+   This is not trivial as there are two sets of SF depending on the HLT menu.
+   Values are the weighted average of both sets:
+
+   total lumi:
+   2197.95 pb-1
+
+   HLT v4.2: run <= 257819
+   393.47 pb-1
+   0.179
+
+   HLT v4.3: run > 257819
+   1804.48 pb-1
+   0.821
+  */
+
+  if (pt > 22 && pt <= 25) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_trigger = 0.987956 + 0.0044549 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_trigger = 1.0178482 + 0.0086129 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_trigger = 0.9971603 + 0.0047654 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_trigger = 1.0132546 + 0.0127635 * syst;
+  }
+
+  if (pt > 25 && pt <= 30) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_trigger = 0.9953616 + 0.0023685 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_trigger = 1.0096846 + 0.0048012 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_trigger = 0.9969169 + 0.0028327 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_trigger = 1.0136236 + 0.0073907 * syst;
+  }
+
+  if (pt > 30 && pt <= 40) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_trigger = 0.9939314 + 0.0003506 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_trigger = 1.0001498 + 0.0020148 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_trigger = 0.98972 + 0.0013253 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_trigger = 1.0178737 + 0.003679 * syst;
+  }
+
+  if (pt > 40 && pt <= 50) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_trigger = 0.9952441 + 0.0033988 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_trigger = 0.9939897 + 0.0015432 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_trigger = 0.9892971 + 0.000579 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_trigger = 1.0114995 + 0.0030685 * syst;
+  }
+
+  if (pt > 50 && pt <= 60) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_trigger = 0.9939026 + 0.0014432 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_trigger = 0.9977205 + 0.0243324 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_trigger = 0.9889162 + 0.001979 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_trigger = 1.019157 + 0.004705 * syst;
+  }
+
+  if (pt > 60 && pt <= 120) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_trigger = 0.9878582 + 0.0018148 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_trigger = 0.9833346 + 0.0039938 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_trigger = 0.9912019 + 0.0026506 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_trigger = 1.0122248 + 0.0082802 * syst;
+  }
+
+  if (abs(eta) > 2.4 || pt > 120) eff_trigger = 1;
+
+  // additional 0.5% syst. uncertainty
+  eff_trigger *= 1 + (0.005 * syst);
+
+
+  // total SF
+  double eff_total = eff_id * eff_iso * eff_trigger;
+  return eff_total;
+
+}
 
 
 
