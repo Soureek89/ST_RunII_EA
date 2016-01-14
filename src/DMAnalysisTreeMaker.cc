@@ -1002,10 +1002,9 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       vfloats_values[jets_label+"_CorrEta"][j]=eta;
       vfloats_values[jets_label+"_CorrPhi"][j]=phi;
       // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagPerformanceOP
-      bool isCSVT = csv  > 0.970;
-      bool isCSVM = csv  > 0.890;
-      //      bool isCSVM = csv  > 0.814;
-      bool isCSVL = csv  > 0.605;
+      bool isCSVT = csv  > 0.935;
+      bool isCSVM = csv  > 0.800;
+      bool isCSVL = csv  > 0.460;
       vfloats_values[jets_label+"_IsCSVT"][j]=isCSVT;
       vfloats_values[jets_label+"_IsCSVM"][j]=isCSVM;
       vfloats_values[jets_label+"_IsCSVL"][j]=isCSVL;
