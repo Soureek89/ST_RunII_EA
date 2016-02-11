@@ -276,7 +276,7 @@ DMTreesDumper.physicsObjects.append(
             cms.InputTag(j,jpref+"PartonFlavour"),
             cms.InputTag(j,jpref+"Phi"),
             cms.InputTag(j,jpref+"CSVv2"),
-            cms.InputTag(j,jpref+"CSVv1"),
+            #cms.InputTag(j,jpref+"CSVv1"),
             cms.InputTag(j,jpref+"Charge"),
             cms.InputTag(j,jpref+"ChargeMuEnergy"),
             cms.InputTag(j,jpref+"ChargedHadronMultiplicity"),
