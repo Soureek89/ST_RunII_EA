@@ -1034,7 +1034,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
       //      ptCorr = ptCorr;
       //      energyCorr = energyCorr;
-      float csv = vfloats_values[makeName(jets_label,pref,"CSV")][j];
+      float csv = vfloats_values[makeName(jets_label,pref,"CSVv2")][j];
       float partonFlavour = vfloats_values[makeName(jets_label,pref,"PartonFlavour")][j];
       int flavor = int(partonFlavour);
       //      vfloats_values[jets_label+"_CorrPt"][j]=ptCorr;
