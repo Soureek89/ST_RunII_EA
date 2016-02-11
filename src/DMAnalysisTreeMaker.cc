@@ -34,6 +34,8 @@
 #include "CondFormats/BTauObjects/interface/BTagCalibration.h"
 #include "CondFormats/BTauObjects/interface/BTagCalibrationReader.h"
 
+
+
 #include "TFile.h"
 #include "TTree.h"
 #include "TMath.h"
@@ -95,20 +97,25 @@ private:
   bool isInVector(std::vector<std::string> v, std::string s);
   std::vector<edm::ParameterSet > physObjects;
   std::vector<edm::InputTag > variablesFloat, variablesInt, singleFloat, singleInt;
-  edm::InputTag lhes_;
-  edm::InputTag genprod_;
-  edm::InputTag triggerNames_;
-  edm::InputTag triggerBits_;
-  edm::InputTag triggerPrescales_;
-  edm::InputTag lumiBlock_;
-  edm::InputTag runNumber_;
-  edm::InputTag eventNumber_;
-  edm::InputTag HBHEFilter_;
+  edm::EDGetTokenT< LHEEventProduct > t_lhes_;
+  edm::EDGetTokenT< GenEventInfoProduct > t_genprod_;
+  edm::EDGetTokenT< std::vector<string> > t_triggerNames_;
+  edm::EDGetTokenT< std::vector<float> > t_triggerBits_;
+  edm::EDGetTokenT< std::vector<int> > t_triggerPrescales_;
+  edm::EDGetTokenT< unsigned int > t_lumiBlock_;
+  edm::EDGetTokenT< unsigned int > t_runNumber_;
+  edm::EDGetTokenT< ULong64_t > t_eventNumber_;
+  edm::EDGetTokenT< bool > t_HBHEFilter_;
+  edm::EDGetTokenT< std::vector<string> > t_metNames_;
+  edm::EDGetTokenT< std::vector<float> > t_metBits_;
 
-  edm::InputTag metNames_;
-  edm::InputTag metBits_;
+  edm::EDGetTokenT< std::vector<float> > t_pvZ_,t_pvChi2_,t_pvRho_;
+  edm::EDGetTokenT< std::vector<int> > t_pvNdof_;
 
-  edm::InputTag pvZ_,pvChi2_,pvNdof_,pvRho_;
+  edm::EDGetTokenT<double> t_Rho_;
+  edm::EDGetTokenT<int> t_ntrpu_;
+
+  //====================================
 
   //  edm::LumiReWeighting LumiWeights_, LumiWeightsUp_, LumiWeightsDown_;
 
@@ -135,6 +142,11 @@ private:
   map<string, edm::Handle<float> > h_float;
   map<string, edm::Handle<int> >h_int;
 
+  map<string, edm::EDGetTokenT< std::vector<float> >  > t_floats;
+  map<string, edm::EDGetTokenT< std::vector<int> > > t_ints;
+  map<string, edm::EDGetTokenT<float>  > t_float;
+  map<string, edm::EDGetTokenT<int> >t_int;
+
   string mu_label, ele_label, jets_label, met_label, metnohf_label, jetsnohf_label;
 
 
@@ -147,9 +159,8 @@ private:
   string centralPdfSet,variationPdfSet;
   std::vector<string> leptonicTriggers, hadronicTriggers, metFilters;
   int maxPdf, maxWeights;
-  edm::Handle<LHEEventProduct > lhes;
   edm::Handle<GenEventInfoProduct> genprod;
-
+  edm::Handle<LHEEventProduct > lhes;
   edm::Handle<std::vector<float> > triggerBits;
   edm::Handle<std::vector<string> > triggerNames;
   edm::Handle<std::vector<int> > triggerPrescales;
@@ -368,45 +379,72 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   useLHE = channelInfo.getUntrackedParameter<bool>("useLHE",false);
   //addLHAPDFWeights = channelInfo.getUntrackedParameter<bool>("addLHAPDFWeights",false);
   addLHAPDFWeights = channelInfo.getUntrackedParameter<bool>("addLHAPDFWeights",true);
-  
-  genprod_ = iConfig.getParameter<edm::InputTag>( "genprod" );
-  
+
+  if( useLHE ){
+    edm::InputTag lhes_ = iConfig.getParameter<edm::InputTag>( "lhes" );
+    t_lhes_ = consumes< LHEEventProduct >( lhes_ );
+  }
+
+  if( addLHAPDFWeights ){
+    edm::InputTag genprod_ = iConfig.getParameter<edm::InputTag>( "genprod" );
+    t_genprod_ = consumes<GenEventInfoProduct>( genprod_ );
+  }
+
   useTriggers = iConfig.getUntrackedParameter<bool>("useTriggers",true);
   cutOnTriggers = iConfig.getUntrackedParameter<bool>("cutOnTriggers",true);
 
-  lumiBlock_ = iConfig.getParameter<edm::InputTag>("lumiBlock");
-  runNumber_ = iConfig.getParameter<edm::InputTag>("runNumber");
-  eventNumber_ = iConfig.getParameter<edm::InputTag>("eventNumber");
+  edm::InputTag lumiBlock_ = iConfig.getParameter<edm::InputTag>("lumiBlock");
+  t_lumiBlock_ = consumes< unsigned int >( lumiBlock_ );
+  edm::InputTag runNumber_ = iConfig.getParameter<edm::InputTag>("runNumber");
+  t_runNumber_ = consumes< unsigned int >( runNumber_ );
+  edm::InputTag eventNumber_ = iConfig.getParameter<edm::InputTag>("eventNumber");
+  t_eventNumber_ = consumes< ULong64_t >( eventNumber_ );
 
   if(useTriggers){
-    triggerBits_ = iConfig.getParameter<edm::InputTag>("triggerBits");
-    triggerNames_ = iConfig.getParameter<edm::InputTag>("triggerNames");
-    triggerPrescales_ = iConfig.getParameter<edm::InputTag>("triggerPrescales");
+    edm::InputTag triggerBits_ = iConfig.getParameter<edm::InputTag>("triggerBits");
+    t_triggerBits_ = consumes< std::vector<float> >( triggerBits_ );
+    edm::InputTag triggerNames_ = iConfig.getParameter<edm::InputTag>("triggerNames");
+    t_triggerNames_ = consumes< std::vector<string> >( triggerNames_ );
+    edm::InputTag triggerPrescales_ = iConfig.getParameter<edm::InputTag>("triggerPrescales");
+    t_triggerPrescales_ = consumes< std::vector<int> >( triggerPrescales_ );
     leptonicTriggers= channelInfo.getParameter<std::vector<string> >("leptonicTriggers");
     hadronicTriggers= channelInfo.getParameter<std::vector<string> >("hadronicTriggers");
   }
   useMETFilters = iConfig.getUntrackedParameter<bool>("useMETFilters",true);
   if(useMETFilters){
     metFilters = channelInfo.getParameter<std::vector<string> >("metFilters");
-    metBits_ = iConfig.getParameter<edm::InputTag>("metBits");
-    metNames_ = iConfig.getParameter<edm::InputTag>("metNames");
-    HBHEFilter_ = iConfig.getParameter<edm::InputTag>("HBHEFilter");
+    edm::InputTag metBits_ = iConfig.getParameter<edm::InputTag>("metBits");
+    t_metBits_ = consumes< std::vector<float> >( metBits_ );
+    edm::InputTag metNames_ = iConfig.getParameter<edm::InputTag>("metNames");
+    t_metNames_ = consumes< std::vector<string> >( metNames_ );
+    edm::InputTag HBHEFilter_ = iConfig.getParameter<edm::InputTag>("HBHEFilter");
+    t_HBHEFilter_ = consumes< bool >( HBHEFilter_ );
   }
 
   addPV = iConfig.getUntrackedParameter<bool>("addPV",true);
   //changeJECs = iConfig.getUntrackedParameter<bool>("changeJECs",false);
   isData = iConfig.getUntrackedParameter<bool>("isData",false);
   useMETNoHF = iConfig.getUntrackedParameter<bool>("useMETNoHF",false);
+
+  if( changeJECs )
+    t_Rho_ = consumes<double>( edm::InputTag( "fixedGridRhoFastjetAll" ) ) ;
+
   if(addPV || changeJECs){
-    pvZ_ = iConfig.getParameter<edm::InputTag >("vertexZ");
-    pvChi2_ = iConfig.getParameter<edm::InputTag >("vertexChi2");
-    pvNdof_ = iConfig.getParameter<edm::InputTag >("vertexNdof");
-    pvRho_ = iConfig.getParameter<edm::InputTag >("vertexRho");
+    edm::InputTag pvZ_ = iConfig.getParameter<edm::InputTag >("vertexZ");
+    t_pvZ_ = consumes< std::vector<float> >( pvZ_ );
+    edm::InputTag pvChi2_ = iConfig.getParameter<edm::InputTag >("vertexChi2");
+    t_pvChi2_ = consumes< std::vector<float> >( pvChi2_ );
+    edm::InputTag pvRho_ = iConfig.getParameter<edm::InputTag >("vertexRho");
+    t_pvRho_ = consumes< std::vector<float> >( pvRho_ );
+    edm::InputTag pvNdof_ = iConfig.getParameter<edm::InputTag >("vertexNdof");
+    t_pvNdof_ = consumes< std::vector< int > >( pvNdof_ );
   }
 
   //---------------- Soureek adding PU info -----------------------------------------
   doPU_=iConfig.getParameter<bool>("doPU");
   dataPUFile_=iConfig.getParameter<std::string>("dataPUFile");
+  if( doPU_ )
+    t_ntrpu_ = consumes< int >( edm::InputTag( "eventUserData","puNtrueInt" ) );
   //---------------------------------------------------------------------------------
 
   if(useLHEWeights){
@@ -455,9 +493,6 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   trees["noSyst"] =  new TTree((channel+"__noSyst").c_str(),(channel+"__noSyst").c_str());
   
   
-  lhes_ = iConfig.getParameter<edm::InputTag>( "lhes" );
-
-
   for (;itPsets!=physObjects.end();++itPsets){ 
     int maxI = itPsets->getUntrackedParameter< int >("maxInstances",10);
     variablesFloat = itPsets->template getParameter<std::vector<edm::InputTag> >("variablesF"); 
@@ -495,6 +530,9 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
       names.push_back(name);
       obs_to_obj[name] = nameobs;
       obj_to_pref[nameobs] = prefix;
+
+      t_floats[ name ] = consumes< std::vector<float> >( *itF );
+
       cout << " branching name "<< name<< " for obs "<< nameobs << " instance "<< nameinstance << endl;
     }
     
@@ -508,6 +546,9 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
       names.push_back(name);
       obs_to_obj[name] = nameobs;
       obj_to_pref[nameobs] = prefix;
+
+
+      t_ints[ name ] = consumes< std::vector<int> >( *itI );
     }  
     
     if (variablesFloat.size()>0){
@@ -531,6 +572,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
       string nametobranch = makeBranchName(namelabel,prefix,nameshort);
       name = nametobranch;
       nameshort = nametobranch;
+      t_float[ name ] = consumes< float >( *itsF );
       if(saveBaseVariables|| isInVector(toSave,itsF->instance()))trees["noSyst"]->Branch(nameshort.c_str(), &float_values[name]);
     }
     for (;itsI != singleInt.end();++itsI){
@@ -539,6 +581,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
       string nametobranch = makeBranchName(namelabel,prefix,nameshort);
       name = nametobranch;
       nameshort = nametobranch;
+      t_int[ name ] = consumes< int >( *itsI );
       if(saveBaseVariables|| isInVector(toSave,itsI->instance()))trees["noSyst"]->Branch(nameshort.c_str(), &int_values[name]);
     }
   }
@@ -591,29 +634,29 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
   //  if(addLHAPDFWeights){
 
   // event info
-  iEvent.getByLabel(lumiBlock_,lumiBlock );
-  iEvent.getByLabel(runNumber_,runNumber );
-  iEvent.getByLabel(eventNumber_,eventNumber );
+  iEvent.getByToken(t_lumiBlock_,lumiBlock );
+  iEvent.getByToken(t_runNumber_,runNumber );
+  iEvent.getByToken(t_eventNumber_,eventNumber );
 
   if(useLHE){
-    iEvent.getByLabel(lhes_, lhes);
+    iEvent.getByToken(t_lhes_, lhes);
   }
   if(addLHAPDFWeights){
-    iEvent.getByLabel(genprod_, genprod);
+    iEvent.getByToken(t_genprod_, genprod);
   }
 
   //Part 0: trigger preselection
   if(useTriggers){
-    iEvent.getByLabel(triggerBits_,triggerBits );
-    iEvent.getByLabel(triggerNames_,triggerNames );
-    iEvent.getByLabel(triggerPrescales_,triggerPrescales );
+    iEvent.getByToken(t_triggerBits_,triggerBits );
+    iEvent.getByToken(t_triggerNames_,triggerNames );
+    iEvent.getByToken(t_triggerPrescales_,triggerPrescales );
     bool triggerOr = getEventTriggers();
     if(cutOnTriggers && !triggerOr) return;
   }  
   if(useMETFilters){
-    iEvent.getByLabel(metBits_,metBits );
-    iEvent.getByLabel(metNames_,metNames );
-    iEvent.getByLabel(HBHEFilter_ ,HBHE);
+    iEvent.getByToken(t_metBits_,metBits );
+    iEvent.getByToken(t_metNames_,metNames );
+    iEvent.getByToken(t_HBHEFilter_ ,HBHE);
     if(isFirstEvent){
       for(size_t bt = 0; bt < metNames->size();++bt){
 	std::string tname = metNames->at(bt);
@@ -626,25 +669,26 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
   }
   
   if(changeJECs){
-    iEvent.getByLabel("fixedGridRhoFastjetAll",rho);
+    iEvent.getByToken(t_Rho_ ,rho);
     Rho = *rho; 
   }
   if( addPV || changeJECs){
-    iEvent.getByLabel(pvZ_,pvZ);
-    iEvent.getByLabel(pvChi2_,pvChi2);
-    iEvent.getByLabel(pvNdof_,pvNdof);
-    iEvent.getByLabel(pvRho_,pvRho);
+    iEvent.getByToken(t_pvZ_,pvZ);
+    iEvent.getByToken(t_pvChi2_,pvChi2);
+    iEvent.getByToken(t_pvNdof_,pvNdof);
+    iEvent.getByToken(t_pvRho_,pvRho);
     nPV = pvZ->size();
   }
 
-    /*    std::cout << " initTriggers "<< endl;
+  /*std::cout << " initTriggers "<< endl;
     for(size_t bt = 0; bt < triggerNames->size();++bt){
-      std::string tname = triggerNames->at(bt);
-      float bit = triggerBits->at(bt);
-      int presc = triggerPrescales->at(bt);
-      std::cout << "name "<< tname << " bit "<< bit << " prescale "<<presc<<endl;
-      }*/
+    std::string tname = triggerNames->at(bt);
+    float bit = triggerBits->at(bt);
+    int presc = triggerPrescales->at(bt);
+    std::cout << "name "<< tname << " bit "<< bit << " prescale "<<presc<<endl;
+    }*/
     
+  
     
   //std::cout<<"Collected # of primary vertices: "<<nPV<<std::endl;	  
 
@@ -661,7 +705,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     string namelabel = itPsets->getParameter< string >("label");
     string nameprefix = itPsets->getParameter< string >("prefix");
     size_t maxInstance=(size_t)max_instances[namelabel];
-    
+
     //Vectors of floats
     for (;itF != variablesFloat.end();++itF){
       string varname=itF->instance();
@@ -670,7 +714,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       
       //string namelabel;
       float tmp =1.0;
-      iEvent.getByLabel(*(itF),h_floats[name]);
+      iEvent.getByToken(t_floats[name] ,h_floats[name]);
       //      cout << "name "<< name <<endl;
       for (size_t fi = 0;fi < maxInstance ;++fi){
 	if(fi <h_floats[name]->size()){tmp = h_floats[name]->at(fi);}
@@ -688,7 +732,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       string varname=itI->instance();
       string name = makeBranchName(namelabel,nameprefix,varname);
       int tmp = 1;
-      iEvent.getByLabel(*(itI),h_ints[name]);
+      iEvent.getByToken(t_ints[name] ,h_ints[name]);
       for (size_t fi = 0;fi < maxInstance;++fi){
 	if(fi <h_ints[name]->size()){tmp = h_ints[name]->at(fi);}
 	else { tmp = -9999.; }
@@ -702,13 +746,13 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       string varname=itsF->instance();
       string name = makeBranchName(namelabel,nameprefix,varname);
 
-      iEvent.getByLabel(*(itsF),h_float[name]);
+      iEvent.getByToken(t_float[name],h_float[name]);
       float_values[name]=*h_float[name];
     }
     for (;itsI != singleInt.end();++itsI){
       string varname=itsI->instance();
       string name = makeBranchName(namelabel,nameprefix,varname);
-      iEvent.getByLabel(*(itsI),h_int[name]);
+      iEvent.getByToken(t_int[name],h_int[name]);
       int_values[name]=*h_int[name];
     }
     //    std::cout << " checkpoint singles"<<endl;
@@ -758,13 +802,9 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
   //---------------- Soureek Adding PU Info ------------------------------
     if(doPU_){
-//	  iEvent.getByLabel("eventUserData","npv",npv);
-      iEvent.getByLabel("eventUserData","puNtrueInt",ntrpu);
-//      nPV=*npv; 
+      iEvent.getByToken(t_ntrpu_,ntrpu);
       nTruePU=*ntrpu;
-      //std::cout<<"Check for PU re-weighting 1"<<std::endl;	 
       getPUSF();
-
     }
 
     //std::cout<<"Check for PU re-weighting 2"<<std::endl;
