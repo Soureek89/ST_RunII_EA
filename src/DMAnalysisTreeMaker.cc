@@ -296,8 +296,9 @@ private:
     b_weight_csvl_2_tags;
 
   double MCTagEfficiency(string algo, int flavor, double pt); 
-  //double TagScaleFactor(string algo, int flavor, string syst,double pt);
+  double TagScaleFactor(string algo, int flavor, string syst,double pt);
  
+  /*
   // read SF from csv file
   BTagCalibration btagsf_calib = BTagCalibration("","CSVv2_Aug24.csv");
   
@@ -340,6 +341,7 @@ private:
 								BTagEntry::OP_TIGHT,
 								"comb",
 								"down");
+  */
 
   //
   bool doBTagSF=true;
@@ -1138,6 +1140,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  double csvleff = MCTagEfficiency("csvl",flavor,ptCorr);
 	  double csvmeff = MCTagEfficiency("csvm",flavor,ptCorr);
 
+	  /*
 	  BTagEntry::JetFlavor jtflv;
 	  if (flavor == 5)
 	    jtflv = BTagEntry::FLAV_B;
@@ -1165,8 +1168,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  double sfcsvt_b_tag_up = reader_csvtup.eval(jtflv,eta,ptCorr);
 	  double sfcsvl_b_tag_up = reader_csvlup.eval(jtflv,eta,ptCorr);
 	  double sfcsvm_b_tag_up = reader_csvmup.eval(jtflv,eta,ptCorr);
+	  */
 	  
-	  /*
 	  double sfcsvt = TagScaleFactor("csvt", flavor, "noSyst", ptCorr);	 
 	  double sfcsvl = TagScaleFactor("csvl", flavor, "noSyst", ptCorr);
 	  double sfcsvm = TagScaleFactor("csvm", flavor, "noSyst", ptCorr);
@@ -1186,7 +1189,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  double sfcsvt_b_tag_up = TagScaleFactor("csvt", flavor, "b_tag_up", ptCorr);
 	  double sfcsvl_b_tag_up = TagScaleFactor("csvl", flavor, "b_tag_up", ptCorr);
 	  double sfcsvm_b_tag_up = TagScaleFactor("csvm", flavor, "b_tag_up", ptCorr);
-	  */
+	  
 
 	  jsfscsvt.push_back(BTagWeight::JetInfo(csvteff, sfcsvt));
 	  jsfscsvl.push_back(BTagWeight::JetInfo(csvleff, sfcsvl));
@@ -2097,7 +2100,7 @@ double DMAnalysisTreeMaker::MCTagEfficiency(string algo, int flavor, double pt){
   return 1.0;
 }
 
-/*
+
 double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst, double pt){
   // source (08/24):
   // https://indico.cern.ch/event/439699/contribution/2/attachments/1143400/1638534/BTag_150727_FirstResults13TeVData.pdf
@@ -2188,7 +2191,7 @@ double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst,
   return 1.0;
 }
 
-*/
+
 
 float DMAnalysisTreeMaker::BTagWeight::weightWithVeto(vector<JetInfo> jetsTags, int tags, vector<JetInfo> jetsVetoes, int vetoes)
 {//This function takes into account cases where you have n b-tags and m vetoes, but they have different thresholds. 
