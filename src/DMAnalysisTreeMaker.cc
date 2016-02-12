@@ -1592,14 +1592,14 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
   //bool isResolvedTopSemiLep=object.find("resolvedTopSemiLep")!=std::string::npos;
   
   if(ismuon || iselectron){
-    addvar.push_back("SFTrigger");
-    addvar.push_back("SFReco");
-    addvar.push_back("isQCD");
+    //addvar.push_back("SFTrigger");
+    //addvar.push_back("SFReco");
+    //addvar.push_back("isQCD");
     //    addvar.push_back("isTightOffline");
     //    addvar.push_back("isLooseOffline");
   }
   if(iselectron){
-    addvar.push_back("PassesDRmu");
+    //addvar.push_back("PassesDRmu");
   }
   if(ismet){
     //    addvar.push_back("Pt");
@@ -1671,7 +1671,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
   }
   */
   if(isevent){
-    addvar.push_back("weight");
+    //addvar.push_back("weight");
     addvar.push_back("nTightMuons");
     addvar.push_back("nSoftMuons");
     addvar.push_back("nLooseMuons");
@@ -1679,16 +1679,16 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     addvar.push_back("nMediumElectrons");
     addvar.push_back("nLooseElectrons");
     addvar.push_back("nVetoElectrons");
-    addvar.push_back("nElectronsSF");
+    //addvar.push_back("nElectronsSF");
     //addvar.push_back("mt");
     //addvar.push_back("Mt2w");
     //addvar.push_back("category");
-    addvar.push_back("nMuonsSF");
-    addvar.push_back("nCSVTJets");
-    addvar.push_back("nCSVMJets");
-    addvar.push_back("nCSVLJets");
-    addvar.push_back("nTightJets");
-    addvar.push_back("nLooseJets");
+    //addvar.push_back("nMuonsSF");
+    //addvar.push_back("nCSVTJets");
+    //addvar.push_back("nCSVMJets");
+    //addvar.push_back("nCSVLJets");
+    //addvar.push_back("nTightJets");
+    //addvar.push_back("nLooseJets");
     //addvar.push_back("nType1TopJets");
     //addvar.push_back("nType2TopJets");
  
@@ -1833,7 +1833,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
       addvar.push_back("puWeight");
       addvar.push_back("puWeightUp");
       addvar.push_back("puWeightDown");
-	  addvar.push_back("nTruePU");
+      addvar.push_back("nTruePU");
     }
 
   }
