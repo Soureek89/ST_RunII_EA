@@ -609,15 +609,23 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
     trees[syst]->SetName((channel+"__"+syst).c_str());
     trees[syst]->SetTitle((channel+"__"+syst).c_str());
   }
-  
-  jecParsL1  = new JetCorrectorParameters("Fall15_25nsV1_MC_L1FastJet_AK4PFchs.txt");
+
+
+
+  if(isData)
+    jecParsL1  = new JetCorrectorParameters("Fall15_25nsV1_DATA_L1FastJet_AK4PFchs.txt");
+  else
+    jecParsL1  = new JetCorrectorParameters("Fall15_25nsV1_MC_L1FastJet_AK4PFchs.txt");
+ 
   jecParsL2  = new JetCorrectorParameters("Fall15_25nsV1_MC_L2Relative_AK4PFchs.txt");
   jecParsL3  = new JetCorrectorParameters("Fall15_25nsV1_MC_L3Absolute_AK4PFchs.txt");
   jecParsL2L3Residuals  = new JetCorrectorParameters("Summer15_25nsV7_DATA_L2L3Residual_AK4PFchs.txt");
   jecPars.push_back(*jecParsL1);
   jecPars.push_back(*jecParsL2);
   jecPars.push_back(*jecParsL3);
-  if(isData)jecPars.push_back(*jecParsL2L3Residuals);
+
+  if(isData)
+    jecPars.push_back(*jecParsL2L3Residuals);
 
   jecCorr = new FactorizedJetCorrector(jecPars);
   
