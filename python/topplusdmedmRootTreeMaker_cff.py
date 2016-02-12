@@ -22,20 +22,11 @@ metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices", "Flag_eeBadScFilter
 #metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices"]
 
 #Triggers
-#leptonTriggers = ["HLT_Ele27_eta2p1_WP85_Gsf","HLT_IsoMu24_IterTrk02"] #<--Check those triggers!
-#leptonTriggers = ["HLT_IsoMu20_eta2p1_IterTrk02_v1","HLT_IsoTkMu20_eta2p1_IterTrk02_v1","HLT_IsoMu24_eta2p1_IterTrk02_v1","HLT_IsoTkMu24_eta2p1_IterTrk02_v1",
-#                  "HLT_Ele27_eta2p1_WP85_Gsf_v1","HLT_Ele32_eta2p1_WP85_Gsf_v1"]
 leptonTriggers = [
     "HLT_IsoMu20_v1",
     "HLT_IsoMu20_v2",
     "HLT_IsoMu20_v3",
-    "HLT_IsoMu20_eta2p1_v1",    
-    "HLT_IsoMu20_eta2p1_v2",
-    "HLT_IsoTkMu20_v1",
-    "HLT_IsoTkMu20_v2",
-    "HLT_IsoTkMu20_eta2p1_v1",
-    "HLT_IsoTkMu20_eta2p1_v2",
-    "HLT_IsoMu20_eta2p1_IterTrk02_v1"
+    "HLT_IsoMu20_v4",
     ]
 
 
