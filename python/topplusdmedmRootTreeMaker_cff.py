@@ -10,6 +10,7 @@ jetlabel = cms.string("jetsAK4")
 jetak8label = cms.string("jetsAK8")
 subjetak8label = cms.string("subjetsAK8")
 metlabel = cms.string("met")
+metnohflabel = cms.string("metnohf")
 jetnohflabel = cms.string("jetsAK4NoHF")
 
 #Systematics:
@@ -69,19 +70,21 @@ DMTreesDumper = cms.EDAnalyzer(
     boostedTopsLabel = jetak8label,
     boostedTopsSubjetsLabel = subjetak8label,
     metLabel = metlabel,
+    metnohfLabel = metnohflabel,
     physicsObjects = cms.VPSet(
         cms.PSet(
             label = metlabel,
-            prefix = cms.string("metNoHF"),
+            prefix = cms.string("metFull"),
             maxInstances =  cms.untracked.int32(1),
             saveBaseVariables = cms.untracked.bool(True),
             variablesF = cms.VInputTag(
-                cms.InputTag("metNoHF","metNoHFPt"),
-                cms.InputTag("metNoHF","metNoHFPhi"),
-                cms.InputTag("metNoHF","metNoHFPx"),
-                cms.InputTag("metNoHF","metNoHFPy"),
-                cms.InputTag("metNoHF","metNoHFuncorPhi"),
-                cms.InputTag("metNoHF","metNoHFuncorPt"),
+                cms.InputTag("metFull","metFullPt"),
+                cms.InputTag("metFull","metFullPhi"),
+                cms.InputTag("metFull","metFullPx"),
+                cms.InputTag("metFull","metFullPy"),
+                cms.InputTag("metFull","metFulluncorPhi"),
+                cms.InputTag("metFull","metFulluncorPt"),
+                cms.InputTag("metFull","metFulluncorSumEt"),
                 ),
             variablesI = cms.VInputTag(),
             singleI = cms.VInputTag(),
@@ -136,6 +139,29 @@ DMTreesDumper = cms.EDAnalyzer(
     )
 
 #Now taking the other input objects:
+# DMTreesDumper.physicsObjects.append(  
+#     cms.PSet(
+#         label = metnohflabel,
+#         prefix = cms.string("metNoHF"),
+#         maxInstances =  cms.untracked.int32(1),
+#         saveBaseVariables = cms.untracked.bool(True),
+#         variablesF = cms.VInputTag(
+#             cms.InputTag("metNoHF","metNoHFPt"),
+#             cms.InputTag("metNoHF","metNoHFPhi"),
+#             cms.InputTag("metNoHF","metNoHFPx"),
+#             cms.InputTag("metNoHF","metNoHFPy"),
+#             cms.InputTag("metNoHF","metNoHFuncorPhi"),
+#             cms.InputTag("metNoHF","metNoHFuncorPt"),
+#             cms.InputTag("metNoHF","metNoHFuncorSumEt"),
+#                 ),
+#         variablesI = cms.VInputTag(),
+#         singleI = cms.VInputTag(),
+#         singleF = cms.VInputTag(),
+#         toSave = cms.vstring(),
+#         )
+#     )
+
+
 DMTreesDumper.physicsObjects.append(  
     cms.PSet(
         label = mulabel,
@@ -249,8 +275,8 @@ DMTreesDumper.physicsObjects.append(
             cms.InputTag(j,jpref+"Phi"),
             cms.InputTag(j,jpref+"PartonFlavour"),
             cms.InputTag(j,jpref+"Phi"),
-            cms.InputTag(j,jpref+"CSV"),
-            cms.InputTag(j,jpref+"CSVV1"),
+            cms.InputTag(j,jpref+"CSVv2"),
+            #cms.InputTag(j,jpref+"CSVv1"),
             cms.InputTag(j,jpref+"Charge"),
             cms.InputTag(j,jpref+"ChargeMuEnergy"),
             cms.InputTag(j,jpref+"ChargedHadronMultiplicity"),
@@ -296,31 +322,31 @@ DMTreesDumper.physicsObjects.append(
         singleI = cms.VInputTag(),
         singleF = cms.VInputTag(),
         #toSave = cms.vstring(jpref+"Eta",jpref+"Phi","allExtra"),
-        toSave = cms.vstring(jpref+"E",jpref+"Pt",jpref+"Eta",jpref+"Phi",jpref+"GenJetPt",jpref+"GenJetEta",jpref+"CSV",jpref+"PartonFlavour","allExtra"),
+        toSave = cms.vstring(jpref+"E",jpref+"Pt",jpref+"Eta",jpref+"Phi",jpref+"GenJetPt",jpref+"GenJetEta",jpref+"CSVv2",jpref+"PartonFlavour","allExtra"),
         ),
     )
 
-DMTreesDumper.physicsObjects.append( 
-    cms.PSet(
-        label = jetnohflabel,
-        prefix = cms.string(jprefnohf),
-        maxInstances = jetssize,
-        saveBaseVariables = saveBase,
-        variablesF = cms.VInputTag(
-            cms.InputTag(jnohf,jprefnohf+"E"),
-            cms.InputTag(jnohf,jprefnohf+"Pt"),
-            cms.InputTag(jnohf,jprefnohf+"Eta"),
-            cms.InputTag(jnohf,jprefnohf+"Phi"),
-            cms.InputTag(jnohf,jprefnohf+"jecFactor0"),
-            cms.InputTag(jnohf,jprefnohf+"jetArea")            
-            ),
-        variablesI = cms.VInputTag(),
-        singleI = cms.VInputTag(),
-        singleF = cms.VInputTag(),
-        #toSave = cms.vstring(jpref+"Eta",jpref+"Phi","allExtra"),
-        toSave = cms.vstring(jprefnohf+"E",jprefnohf+"Pt",jprefnohf+"Eta",jprefnohf+"Phi"),
-        ),
-    )
+# DMTreesDumper.physicsObjects.append( 
+#     cms.PSet(
+#         label = jetnohflabel,
+#         prefix = cms.string(jprefnohf),
+#         maxInstances = jetssize,
+#         saveBaseVariables = saveBase,
+#         variablesF = cms.VInputTag(
+#             cms.InputTag(jnohf,jprefnohf+"E"),
+#             cms.InputTag(jnohf,jprefnohf+"Pt"),
+#             cms.InputTag(jnohf,jprefnohf+"Eta"),
+#             cms.InputTag(jnohf,jprefnohf+"Phi"),
+#             cms.InputTag(jnohf,jprefnohf+"jecFactor0"),
+#             cms.InputTag(jnohf,jprefnohf+"jetArea")            
+#             ),
+#         variablesI = cms.VInputTag(),
+#         singleI = cms.VInputTag(),
+#         singleF = cms.VInputTag(),
+#         #toSave = cms.vstring(jpref+"Eta",jpref+"Phi","allExtra"),
+#         toSave = cms.vstring(jprefnohf+"E",jprefnohf+"Pt",jprefnohf+"Eta",jprefnohf+"Phi"),
+#         ),
+#     )
 
 '''
 DMTreesDumper.physicsObjects.append( 

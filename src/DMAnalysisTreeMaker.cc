@@ -34,6 +34,8 @@
 #include "CondFormats/BTauObjects/interface/BTagCalibration.h"
 #include "CondFormats/BTauObjects/interface/BTagCalibrationReader.h"
 
+
+
 #include "TFile.h"
 #include "TTree.h"
 #include "TMath.h"
@@ -86,6 +88,7 @@ private:
   double smear(double pt, double genpt, double eta, string syst);
   double resolSF(double eta, string syst);
   double getScaleFactor(double pt, double eta, double partonFlavour, string syst);
+  double muonSF(bool isdata, float pt, float eta, int syst);
   
   //------------------ Soureek adding pile-up Info ------------------------------
   void getPUSF();
@@ -94,20 +97,25 @@ private:
   bool isInVector(std::vector<std::string> v, std::string s);
   std::vector<edm::ParameterSet > physObjects;
   std::vector<edm::InputTag > variablesFloat, variablesInt, singleFloat, singleInt;
-  edm::InputTag lhes_;
-  edm::InputTag genprod_;
-  edm::InputTag triggerNames_;
-  edm::InputTag triggerBits_;
-  edm::InputTag triggerPrescales_;
-  edm::InputTag lumiBlock_;
-  edm::InputTag runNumber_;
-  edm::InputTag eventNumber_;
-  edm::InputTag HBHEFilter_;
+  edm::EDGetTokenT< LHEEventProduct > t_lhes_;
+  edm::EDGetTokenT< GenEventInfoProduct > t_genprod_;
+  edm::EDGetTokenT< std::vector<string> > t_triggerNames_;
+  edm::EDGetTokenT< std::vector<float> > t_triggerBits_;
+  edm::EDGetTokenT< std::vector<int> > t_triggerPrescales_;
+  edm::EDGetTokenT< unsigned int > t_lumiBlock_;
+  edm::EDGetTokenT< unsigned int > t_runNumber_;
+  edm::EDGetTokenT< ULong64_t > t_eventNumber_;
+  edm::EDGetTokenT< bool > t_HBHEFilter_;
+  edm::EDGetTokenT< std::vector<string> > t_metNames_;
+  edm::EDGetTokenT< std::vector<float> > t_metBits_;
 
-  edm::InputTag metNames_;
-  edm::InputTag metBits_;
+  edm::EDGetTokenT< std::vector<float> > t_pvZ_,t_pvChi2_,t_pvRho_;
+  edm::EDGetTokenT< std::vector<int> > t_pvNdof_;
 
-  edm::InputTag pvZ_,pvChi2_,pvNdof_,pvRho_;
+  edm::EDGetTokenT<double> t_Rho_;
+  edm::EDGetTokenT<int> t_ntrpu_;
+
+  //====================================
 
   //  edm::LumiReWeighting LumiWeights_, LumiWeightsUp_, LumiWeightsDown_;
 
@@ -134,9 +142,14 @@ private:
   map<string, edm::Handle<float> > h_float;
   map<string, edm::Handle<int> >h_int;
 
-  string mu_label, ele_label, jets_label, met_label, jetsnohf_label; 
- 
-   
+  map<string, edm::EDGetTokenT< std::vector<float> >  > t_floats;
+  map<string, edm::EDGetTokenT< std::vector<int> > > t_ints;
+  map<string, edm::EDGetTokenT<float>  > t_float;
+  map<string, edm::EDGetTokenT<int> >t_int;
+
+  string mu_label, ele_label, jets_label, met_label, metnohf_label, jetsnohf_label;
+
+
   //MC info:
   edm::ParameterSet channelInfo;
   std::string channel;
@@ -146,9 +159,8 @@ private:
   string centralPdfSet,variationPdfSet;
   std::vector<string> leptonicTriggers, hadronicTriggers, metFilters;
   int maxPdf, maxWeights;
-  edm::Handle<LHEEventProduct > lhes;
   edm::Handle<GenEventInfoProduct> genprod;
-
+  edm::Handle<LHEEventProduct > lhes;
   edm::Handle<std::vector<float> > triggerBits;
   edm::Handle<std::vector<string> > triggerNames;
   edm::Handle<std::vector<int> > triggerPrescales;
@@ -295,8 +307,9 @@ private:
     b_weight_csvl_2_tags;
 
   double MCTagEfficiency(string algo, int flavor, double pt); 
-  //double TagScaleFactor(string algo, int flavor, string syst,double pt);
+  double TagScaleFactor(string algo, int flavor, string syst,double pt);
  
+  /*
   // read SF from csv file
   BTagCalibration btagsf_calib = BTagCalibration("","CSVv2_Aug24.csv");
   
@@ -339,6 +352,7 @@ private:
 								BTagEntry::OP_TIGHT,
 								"comb",
 								"down");
+  */
 
   //
   bool doBTagSF=true;
@@ -352,6 +366,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   ele_label = iConfig.getParameter<std::string >("eleLabel");
   jets_label = iConfig.getParameter<std::string >("jetsLabel");
   met_label = iConfig.getParameter<std::string >("metLabel");
+  metnohf_label = iConfig.getParameter<std::string >("metnohfLabel");
   jetsnohf_label = iConfig.getParameter<std::string >("jetsnohfLabel");
   physObjects = iConfig.template getParameter<std::vector<edm::ParameterSet> >("physicsObjects");
   
@@ -364,45 +379,72 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   useLHE = channelInfo.getUntrackedParameter<bool>("useLHE",false);
   //addLHAPDFWeights = channelInfo.getUntrackedParameter<bool>("addLHAPDFWeights",false);
   addLHAPDFWeights = channelInfo.getUntrackedParameter<bool>("addLHAPDFWeights",true);
-  
-  genprod_ = iConfig.getParameter<edm::InputTag>( "genprod" );
-  
+
+  if( useLHE ){
+    edm::InputTag lhes_ = iConfig.getParameter<edm::InputTag>( "lhes" );
+    t_lhes_ = consumes< LHEEventProduct >( lhes_ );
+  }
+
+  if( addLHAPDFWeights ){
+    edm::InputTag genprod_ = iConfig.getParameter<edm::InputTag>( "genprod" );
+    t_genprod_ = consumes<GenEventInfoProduct>( genprod_ );
+  }
+
   useTriggers = iConfig.getUntrackedParameter<bool>("useTriggers",true);
   cutOnTriggers = iConfig.getUntrackedParameter<bool>("cutOnTriggers",true);
 
-  lumiBlock_ = iConfig.getParameter<edm::InputTag>("lumiBlock");
-  runNumber_ = iConfig.getParameter<edm::InputTag>("runNumber");
-  eventNumber_ = iConfig.getParameter<edm::InputTag>("eventNumber");
+  edm::InputTag lumiBlock_ = iConfig.getParameter<edm::InputTag>("lumiBlock");
+  t_lumiBlock_ = consumes< unsigned int >( lumiBlock_ );
+  edm::InputTag runNumber_ = iConfig.getParameter<edm::InputTag>("runNumber");
+  t_runNumber_ = consumes< unsigned int >( runNumber_ );
+  edm::InputTag eventNumber_ = iConfig.getParameter<edm::InputTag>("eventNumber");
+  t_eventNumber_ = consumes< ULong64_t >( eventNumber_ );
 
   if(useTriggers){
-    triggerBits_ = iConfig.getParameter<edm::InputTag>("triggerBits");
-    triggerNames_ = iConfig.getParameter<edm::InputTag>("triggerNames");
-    triggerPrescales_ = iConfig.getParameter<edm::InputTag>("triggerPrescales");
+    edm::InputTag triggerBits_ = iConfig.getParameter<edm::InputTag>("triggerBits");
+    t_triggerBits_ = consumes< std::vector<float> >( triggerBits_ );
+    edm::InputTag triggerNames_ = iConfig.getParameter<edm::InputTag>("triggerNames");
+    t_triggerNames_ = consumes< std::vector<string> >( triggerNames_ );
+    edm::InputTag triggerPrescales_ = iConfig.getParameter<edm::InputTag>("triggerPrescales");
+    t_triggerPrescales_ = consumes< std::vector<int> >( triggerPrescales_ );
     leptonicTriggers= channelInfo.getParameter<std::vector<string> >("leptonicTriggers");
     hadronicTriggers= channelInfo.getParameter<std::vector<string> >("hadronicTriggers");
   }
   useMETFilters = iConfig.getUntrackedParameter<bool>("useMETFilters",true);
   if(useMETFilters){
     metFilters = channelInfo.getParameter<std::vector<string> >("metFilters");
-    metBits_ = iConfig.getParameter<edm::InputTag>("metBits");
-    metNames_ = iConfig.getParameter<edm::InputTag>("metNames");
-    HBHEFilter_ = iConfig.getParameter<edm::InputTag>("HBHEFilter");
+    edm::InputTag metBits_ = iConfig.getParameter<edm::InputTag>("metBits");
+    t_metBits_ = consumes< std::vector<float> >( metBits_ );
+    edm::InputTag metNames_ = iConfig.getParameter<edm::InputTag>("metNames");
+    t_metNames_ = consumes< std::vector<string> >( metNames_ );
+    edm::InputTag HBHEFilter_ = iConfig.getParameter<edm::InputTag>("HBHEFilter");
+    t_HBHEFilter_ = consumes< bool >( HBHEFilter_ );
   }
 
   addPV = iConfig.getUntrackedParameter<bool>("addPV",true);
   //changeJECs = iConfig.getUntrackedParameter<bool>("changeJECs",false);
   isData = iConfig.getUntrackedParameter<bool>("isData",false);
   useMETNoHF = iConfig.getUntrackedParameter<bool>("useMETNoHF",false);
+
+  if( changeJECs )
+    t_Rho_ = consumes<double>( edm::InputTag( "fixedGridRhoFastjetAll" ) ) ;
+
   if(addPV || changeJECs){
-    pvZ_ = iConfig.getParameter<edm::InputTag >("vertexZ");
-    pvChi2_ = iConfig.getParameter<edm::InputTag >("vertexChi2");
-    pvNdof_ = iConfig.getParameter<edm::InputTag >("vertexNdof");
-    pvRho_ = iConfig.getParameter<edm::InputTag >("vertexRho");
+    edm::InputTag pvZ_ = iConfig.getParameter<edm::InputTag >("vertexZ");
+    t_pvZ_ = consumes< std::vector<float> >( pvZ_ );
+    edm::InputTag pvChi2_ = iConfig.getParameter<edm::InputTag >("vertexChi2");
+    t_pvChi2_ = consumes< std::vector<float> >( pvChi2_ );
+    edm::InputTag pvRho_ = iConfig.getParameter<edm::InputTag >("vertexRho");
+    t_pvRho_ = consumes< std::vector<float> >( pvRho_ );
+    edm::InputTag pvNdof_ = iConfig.getParameter<edm::InputTag >("vertexNdof");
+    t_pvNdof_ = consumes< std::vector< int > >( pvNdof_ );
   }
 
   //---------------- Soureek adding PU info -----------------------------------------
   doPU_=iConfig.getParameter<bool>("doPU");
   dataPUFile_=iConfig.getParameter<std::string>("dataPUFile");
+  if( doPU_ )
+    t_ntrpu_ = consumes< int >( edm::InputTag( "eventUserData","puNtrueInt" ) );
   //---------------------------------------------------------------------------------
 
   if(useLHEWeights){
@@ -451,9 +493,6 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   trees["noSyst"] =  new TTree((channel+"__noSyst").c_str(),(channel+"__noSyst").c_str());
   
   
-  lhes_ = iConfig.getParameter<edm::InputTag>( "lhes" );
-
-
   for (;itPsets!=physObjects.end();++itPsets){ 
     int maxI = itPsets->getUntrackedParameter< int >("maxInstances",10);
     variablesFloat = itPsets->template getParameter<std::vector<edm::InputTag> >("variablesF"); 
@@ -491,6 +530,9 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
       names.push_back(name);
       obs_to_obj[name] = nameobs;
       obj_to_pref[nameobs] = prefix;
+
+      t_floats[ name ] = consumes< std::vector<float> >( *itF );
+
       cout << " branching name "<< name<< " for obs "<< nameobs << " instance "<< nameinstance << endl;
     }
     
@@ -504,6 +546,9 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
       names.push_back(name);
       obs_to_obj[name] = nameobs;
       obj_to_pref[nameobs] = prefix;
+
+
+      t_ints[ name ] = consumes< std::vector<int> >( *itI );
     }  
     
     if (variablesFloat.size()>0){
@@ -527,6 +572,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
       string nametobranch = makeBranchName(namelabel,prefix,nameshort);
       name = nametobranch;
       nameshort = nametobranch;
+      t_float[ name ] = consumes< float >( *itsF );
       if(saveBaseVariables|| isInVector(toSave,itsF->instance()))trees["noSyst"]->Branch(nameshort.c_str(), &float_values[name]);
     }
     for (;itsI != singleInt.end();++itsI){
@@ -535,6 +581,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
       string nametobranch = makeBranchName(namelabel,prefix,nameshort);
       name = nametobranch;
       nameshort = nametobranch;
+      t_int[ name ] = consumes< int >( *itsI );
       if(saveBaseVariables|| isInVector(toSave,itsI->instance()))trees["noSyst"]->Branch(nameshort.c_str(), &int_values[name]);
     }
   }
@@ -543,7 +590,10 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   vector<string> extravars = additionalVariables(nameshortv);
   for(size_t addv = 0; addv < extravars.size();++addv){
     string name = nameshortv+"_"+extravars.at(addv);
-    trees["noSyst"]->Branch(name.c_str(), &float_values[name],(name+"/F").c_str());
+    if (name.find("EventNumber") != std::string::npos)
+      trees["noSyst"]->Branch(name.c_str(), &int_values[name],(name+"/I").c_str());
+    else
+      trees["noSyst"]->Branch(name.c_str(), &float_values[name],(name+"/F").c_str());
   }
   
   //Prepare the trees cloning all branches and setting the correct names/titles:
@@ -584,29 +634,29 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
   //  if(addLHAPDFWeights){
 
   // event info
-  iEvent.getByLabel(lumiBlock_,lumiBlock );
-  iEvent.getByLabel(runNumber_,runNumber );
-  iEvent.getByLabel(eventNumber_,eventNumber );
+  iEvent.getByToken(t_lumiBlock_,lumiBlock );
+  iEvent.getByToken(t_runNumber_,runNumber );
+  iEvent.getByToken(t_eventNumber_,eventNumber );
 
   if(useLHE){
-    iEvent.getByLabel(lhes_, lhes);
+    iEvent.getByToken(t_lhes_, lhes);
   }
   if(addLHAPDFWeights){
-    iEvent.getByLabel(genprod_, genprod);
+    iEvent.getByToken(t_genprod_, genprod);
   }
 
   //Part 0: trigger preselection
   if(useTriggers){
-    iEvent.getByLabel(triggerBits_,triggerBits );
-    iEvent.getByLabel(triggerNames_,triggerNames );
-    iEvent.getByLabel(triggerPrescales_,triggerPrescales );
+    iEvent.getByToken(t_triggerBits_,triggerBits );
+    iEvent.getByToken(t_triggerNames_,triggerNames );
+    iEvent.getByToken(t_triggerPrescales_,triggerPrescales );
     bool triggerOr = getEventTriggers();
     if(cutOnTriggers && !triggerOr) return;
   }  
   if(useMETFilters){
-    iEvent.getByLabel(metBits_,metBits );
-    iEvent.getByLabel(metNames_,metNames );
-    iEvent.getByLabel(HBHEFilter_ ,HBHE);
+    iEvent.getByToken(t_metBits_,metBits );
+    iEvent.getByToken(t_metNames_,metNames );
+    iEvent.getByToken(t_HBHEFilter_ ,HBHE);
     if(isFirstEvent){
       for(size_t bt = 0; bt < metNames->size();++bt){
 	std::string tname = metNames->at(bt);
@@ -619,25 +669,26 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
   }
   
   if(changeJECs){
-    iEvent.getByLabel("fixedGridRhoFastjetAll",rho);
+    iEvent.getByToken(t_Rho_ ,rho);
     Rho = *rho; 
   }
   if( addPV || changeJECs){
-    iEvent.getByLabel(pvZ_,pvZ);
-    iEvent.getByLabel(pvChi2_,pvChi2);
-    iEvent.getByLabel(pvNdof_,pvNdof);
-    iEvent.getByLabel(pvRho_,pvRho);
+    iEvent.getByToken(t_pvZ_,pvZ);
+    iEvent.getByToken(t_pvChi2_,pvChi2);
+    iEvent.getByToken(t_pvNdof_,pvNdof);
+    iEvent.getByToken(t_pvRho_,pvRho);
     nPV = pvZ->size();
   }
 
-    /*    std::cout << " initTriggers "<< endl;
+  /*std::cout << " initTriggers "<< endl;
     for(size_t bt = 0; bt < triggerNames->size();++bt){
-      std::string tname = triggerNames->at(bt);
-      float bit = triggerBits->at(bt);
-      int presc = triggerPrescales->at(bt);
-      std::cout << "name "<< tname << " bit "<< bit << " prescale "<<presc<<endl;
-      }*/
+    std::string tname = triggerNames->at(bt);
+    float bit = triggerBits->at(bt);
+    int presc = triggerPrescales->at(bt);
+    std::cout << "name "<< tname << " bit "<< bit << " prescale "<<presc<<endl;
+    }*/
     
+  
     
   //std::cout<<"Collected # of primary vertices: "<<nPV<<std::endl;	  
 
@@ -654,7 +705,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     string namelabel = itPsets->getParameter< string >("label");
     string nameprefix = itPsets->getParameter< string >("prefix");
     size_t maxInstance=(size_t)max_instances[namelabel];
-    
+
     //Vectors of floats
     for (;itF != variablesFloat.end();++itF){
       string varname=itF->instance();
@@ -663,7 +714,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       
       //string namelabel;
       float tmp =1.0;
-      iEvent.getByLabel(*(itF),h_floats[name]);
+      iEvent.getByToken(t_floats[name] ,h_floats[name]);
       //      cout << "name "<< name <<endl;
       for (size_t fi = 0;fi < maxInstance ;++fi){
 	if(fi <h_floats[name]->size()){tmp = h_floats[name]->at(fi);}
@@ -681,7 +732,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       string varname=itI->instance();
       string name = makeBranchName(namelabel,nameprefix,varname);
       int tmp = 1;
-      iEvent.getByLabel(*(itI),h_ints[name]);
+      iEvent.getByToken(t_ints[name] ,h_ints[name]);
       for (size_t fi = 0;fi < maxInstance;++fi){
 	if(fi <h_ints[name]->size()){tmp = h_ints[name]->at(fi);}
 	else { tmp = -9999.; }
@@ -695,14 +746,13 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       string varname=itsF->instance();
       string name = makeBranchName(namelabel,nameprefix,varname);
 
-      iEvent.getByLabel(*(itsF),h_float[name]);
+      iEvent.getByToken(t_float[name],h_float[name]);
       float_values[name]=*h_float[name];
     }
     for (;itsI != singleInt.end();++itsI){
       string varname=itsI->instance();
       string name = makeBranchName(namelabel,nameprefix,varname);
-
-      iEvent.getByLabel(*(itsI),h_int[name]);
+      iEvent.getByToken(t_int[name],h_int[name]);
       int_values[name]=*h_int[name];
     }
     //    std::cout << " checkpoint singles"<<endl;
@@ -752,19 +802,19 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
   //---------------- Soureek Adding PU Info ------------------------------
     if(doPU_){
-//	  iEvent.getByLabel("eventUserData","npv",npv);
-      iEvent.getByLabel("eventUserData","puNtrueInt",ntrpu);
-//      nPV=*npv; 
+      iEvent.getByToken(t_ntrpu_,ntrpu);
       nTruePU=*ntrpu;
-      //std::cout<<"Check for PU re-weighting 1"<<std::endl;	 
       getPUSF();
-
     }
 
     //std::cout<<"Check for PU re-weighting 2"<<std::endl;
     /**************************
     Muons:
     **************************/
+    float mu_sf = 1;
+    float mu_sf_up = 1;
+    float mu_sf_down = 1;
+
     for(int mu = 0;mu < max_instances[mu_label] ;++mu){
       string pref = obj_to_pref[mu_label];
       //      std::cout << " now checking name " << makeName(mu_label,pref,"IsTightMuon")<<std::endl;
@@ -786,6 +836,11 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	muons.push_back(muon);
 	muons_t.push_back(muon);
 	leptons.push_back(muon);
+
+	mu_sf *= muonSF(isData,pt,eta,0);
+	mu_sf_up *= muonSF(isData,pt,eta,1);
+	mu_sf_down *= muonSF(isData,pt,eta,-1);
+
       }
       if(isLoose>0 && pt> 10 && abs(eta) < 2.1 && iso<0.2){
 	++float_values["Event_nLooseMuons"];
@@ -798,8 +853,11 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	muon.SetPtEtaPhiE(pt, eta, phi, energy);
 	loosemuons.push_back(muon);
       }
-
     }
+
+    float_values["Event_mu_eff"]=mu_sf;
+    float_values["Event_mu_eff_up"]=mu_sf_up;
+    float_values["Event_mu_eff_down"]=mu_sf_down;
 
     /**************************
     Electrons:
@@ -976,7 +1034,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
       //      ptCorr = ptCorr;
       //      energyCorr = energyCorr;
-      float csv = vfloats_values[makeName(jets_label,pref,"CSV")][j];
+      float csv = vfloats_values[makeName(jets_label,pref,"CSVv2")][j];
       float partonFlavour = vfloats_values[makeName(jets_label,pref,"PartonFlavour")][j];
       int flavor = int(partonFlavour);
       //      vfloats_values[jets_label+"_CorrPt"][j]=ptCorr;
@@ -986,10 +1044,9 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       vfloats_values[jets_label+"_CorrEta"][j]=eta;
       vfloats_values[jets_label+"_CorrPhi"][j]=phi;
       // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagPerformanceOP
-      bool isCSVT = csv  > 0.970;
-      bool isCSVM = csv  > 0.890;
-      //      bool isCSVM = csv  > 0.814;
-      bool isCSVL = csv  > 0.605;
+      bool isCSVT = csv  > 0.935;
+      bool isCSVM = csv  > 0.800;
+      bool isCSVL = csv  > 0.460;
       vfloats_values[jets_label+"_IsCSVT"][j]=isCSVT;
       vfloats_values[jets_label+"_IsCSVM"][j]=isCSVM;
       vfloats_values[jets_label+"_IsCSVL"][j]=isCSVL;
@@ -1123,6 +1180,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  double csvleff = MCTagEfficiency("csvl",flavor,ptCorr);
 	  double csvmeff = MCTagEfficiency("csvm",flavor,ptCorr);
 
+	  /*
 	  BTagEntry::JetFlavor jtflv;
 	  if (flavor == 5)
 	    jtflv = BTagEntry::FLAV_B;
@@ -1150,8 +1208,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  double sfcsvt_b_tag_up = reader_csvtup.eval(jtflv,eta,ptCorr);
 	  double sfcsvl_b_tag_up = reader_csvlup.eval(jtflv,eta,ptCorr);
 	  double sfcsvm_b_tag_up = reader_csvmup.eval(jtflv,eta,ptCorr);
+	  */
 	  
-	  /*
 	  double sfcsvt = TagScaleFactor("csvt", flavor, "noSyst", ptCorr);	 
 	  double sfcsvl = TagScaleFactor("csvl", flavor, "noSyst", ptCorr);
 	  double sfcsvm = TagScaleFactor("csvm", flavor, "noSyst", ptCorr);
@@ -1171,7 +1229,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  double sfcsvt_b_tag_up = TagScaleFactor("csvt", flavor, "b_tag_up", ptCorr);
 	  double sfcsvl_b_tag_up = TagScaleFactor("csvl", flavor, "b_tag_up", ptCorr);
 	  double sfcsvm_b_tag_up = TagScaleFactor("csvm", flavor, "b_tag_up", ptCorr);
-	  */
+	  
 
 	  jsfscsvt.push_back(BTagWeight::JetInfo(csvteff, sfcsvt));
 	  jsfscsvl.push_back(BTagWeight::JetInfo(csvleff, sfcsvl));
@@ -1466,7 +1524,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     float_values["Event_passesHBHE"]=(float)(*HBHE);
 
     //technical event information
-    float_values["Event_EventNumber"]=*eventNumber;
+    int_values["Event_EventNumber"]=(*eventNumber);
+    //float_values["Event_EventNumber"]=(float)(*eventNumber);
     float_values["Event_LumiBlock"]=*lumiBlock;
     float_values["Event_RunNumber"]=*runNumber;
 
@@ -1698,6 +1757,10 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     addvar.push_back("EventNumber");
     addvar.push_back("LumiBlock");
     addvar.push_back("RunNumber");
+
+    addvar.push_back("mu_eff");
+    addvar.push_back("mu_eff_up");
+    addvar.push_back("mu_eff_down");
 
     if(addPV){
       addvar.push_back("nPV");
@@ -1944,23 +2007,7 @@ double DMAnalysisTreeMaker::smear(double pt, double genpt, double eta, string sy
   return  smear;
 }
 
-
 /*
-// outdated 7 TeV scale factors
-double DMAnalysisTreeMaker::resolSF(double eta, string syst)
-{
-  double fac = 0.;
-  if (syst == "jer__up")fac = 1.;
-  if (syst == "jer__down")fac = -1.;
-  if (eta <= 0.5) return 0.052 + 0.063 * fac;
-  else if ( eta > 0.5 && eta <= 1.1 ) return 0.057 + 0.057 * fac;
-  else if ( eta > 1.1 && eta <= 1.7 ) return 0.096 + 0.065 * fac;
-  else if ( eta > 1.7 && eta <= 2.3 ) return 0.134 + 0.093 * fac;
-  else if ( eta > 2.3 && eta <= 5. ) return 0.288 + 0.200 * fac;
-  return 0.1;
-}
-*/
-
  // 8 TeV scale factors
 double DMAnalysisTreeMaker::resolSF(double eta, string syst)
 {
@@ -1974,6 +2021,23 @@ double DMAnalysisTreeMaker::resolSF(double eta, string syst)
   else if ( eta > 2.3 && eta <= 2.8 )   return 0.254 + (0.062 * fac);
   else if ( eta > 2.8 && eta <= 3.2 )   return 0.395 + (0.063 * fac);
   else if ( eta > 3.2 && eta <= 5.0 )   return 0.056 + (0.191 * fac);
+  return 0.1;
+}
+*/
+
+ // preliminary 13 TeV scale factors
+double DMAnalysisTreeMaker::resolSF(double eta, string syst)
+{
+  double fac = 0.;
+  if (syst == "jer__up")fac = 1.;
+  if (syst == "jer__down")fac = -1.;
+  if (eta <= 0.8)                       return 0.061 + (0.023 * fac);
+  else if ( eta > 0.8 && eta <= 1.3 )   return 0.088 + (0.029 * fac);
+  else if ( eta > 1.3 && eta <= 1.9 )   return 0.106 + (0.030 * fac);
+  else if ( eta > 1.9 && eta <= 2.5 )   return 0.126 + (0.094 * fac);
+  else if ( eta > 2.5 && eta <= 3.0 )   return 0.343 + (0.123 * fac);
+  else if ( eta > 3.0 && eta <= 3.2 )   return 0.303 + (0.111 * fac);
+  else if ( eta > 3.2 && eta <= 5.0 )   return 0.320 + (0.286 * fac);
   return 0.1;
 }
 
@@ -2076,21 +2140,20 @@ double DMAnalysisTreeMaker::MCTagEfficiency(string algo, int flavor, double pt){
   return 1.0;
 }
 
-/*
+
 double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst, double pt){
-  // source (08/24):
-  // https://indico.cern.ch/event/439699/contribution/2/attachments/1143400/1638534/BTag_150727_FirstResults13TeVData.pdf
-  // http://scodella.web.cern.ch/scodella/Work/CMS/BTagging/PerformanceCombination/Codes/CSVv2_Aug24.csv
+  // source (02/11):
+  // https://twiki.cern.ch/twiki/pub/CMS/BtagRecommendation76X/CSVv2_prelim.csv
   if(algo == "csvt"){
     if(syst ==  "noSyst") {
       if(abs(flavor)==5){
-	if (pt >= 30  && pt < 670) return 0.921826;
+	if (pt >= 30  && pt < 670) return 0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt)));
       }
       if(abs(flavor)==4){
-	if (pt >= 30  && pt < 670) return 0.921826;
+	if (pt >= 30  && pt < 670) return 0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt)));
       }
       if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 1.00;
+	return 0.992339;
       }
     }
     if(syst ==  "mistag_up") {
@@ -2101,7 +2164,7 @@ double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst,
 	return 1.00;
       }
       if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 1.40;
+	return 1.17457;
       }
     }
     if(syst ==  "mistag_down") {
@@ -2112,28 +2175,29 @@ double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst,
 	return 1.00;
       }
       if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 0.6;
+	return 0.810103;
       }
     }
 
     if(syst ==  "b_tag_up") {
       if(abs(flavor)==5){
-	if (pt >= 30  && pt < 50 ) return 0.921826+0.038185462355613708;
-	if (pt >= 50  && pt < 70 ) return 0.921826+0.048359211534261703;
-	if (pt >= 70  && pt < 100) return 0.921826+0.036345392465591431;
-	if (pt >= 100 && pt < 140) return 0.921826+0.090967245399951935;
-	if (pt >= 140 && pt < 200) return 0.921826+0.087966755032539368;
-	if (pt >= 200 && pt < 300) return 0.921826+0.26064527034759521;
-	if (pt >= 300 && pt < 670) return 0.921826+0.20989412069320679;
+	if (pt >= 30  && pt < 50 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.019803794100880623;
+	if (pt >= 50  && pt < 70 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.026958625763654709;
+	if (pt >= 70  && pt < 100) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.024285079911351204;
+	if (pt >= 100 && pt < 140) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.028512096032500267;
+	if (pt >= 140 && pt < 200) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.029808893799781799;
+	if (pt >= 200 && pt < 300) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.026503190398216248;
+	if (pt >= 300 && pt < 670) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.042264193296432495 ;
       }
+
       if(abs(flavor)==4){
-	if (pt >= 30  && pt < 50 ) return 0.921826+0.076370924711227417;
-	if (pt >= 50  && pt < 70 ) return 0.921826+0.096718423068523407;
-	if (pt >= 70  && pt < 100) return 0.921826+0.072690784931182861;
-	if (pt >= 100 && pt < 140) return 0.921826+0.18193449079990387;
-	if (pt >= 140 && pt < 200) return 0.921826+0.17593351006507874;
-	if (pt >= 200 && pt < 300) return 0.921826+0.52129054069519043;
-	if (pt >= 300 && pt < 670) return 0.921826+0.41978824138641357;
+	if (pt >= 30  && pt < 50 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.039607588201761246;
+	if (pt >= 50  && pt < 70 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.053917251527309418;
+	if (pt >= 70  && pt < 100) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.048570159822702408;
+	if (pt >= 100 && pt < 140) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.057024192065000534;
+	if (pt >= 140 && pt < 200) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.059617787599563599;
+	if (pt >= 200 && pt < 300) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.053006380796432495;
+	if (pt >= 300 && pt < 670) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.08452838659286499;
       }
       if(abs(flavor)!=5 && abs(flavor)!=4){
 	return 1.0;
@@ -2142,22 +2206,23 @@ double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst,
 
     if(syst ==  "b_tag_down") {
       if(abs(flavor)==5){
-	if (pt >= 30  && pt < 50 ) return 0.921826-0.038185462355613708;
-	if (pt >= 50  && pt < 70 ) return 0.921826-0.048359211534261703;
-	if (pt >= 70  && pt < 100) return 0.921826-0.036345392465591431;
-	if (pt >= 100 && pt < 140) return 0.921826-0.090967245399951935;
-	if (pt >= 140 && pt < 200) return 0.921826-0.087966755032539368;
-	if (pt >= 200 && pt < 300) return 0.921826-0.26064527034759521;
-	if (pt >= 300 && pt < 670) return 0.921826-0.20989412069320679;
+	if (pt >= 30  && pt < 50 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.019803794100880623;
+	if (pt >= 50  && pt < 70 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.026958625763654709;
+	if (pt >= 70  && pt < 100) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.024285079911351204;
+	if (pt >= 100 && pt < 140) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.028512096032500267;
+	if (pt >= 140 && pt < 200) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.029808893799781799;
+	if (pt >= 200 && pt < 300) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.026503190398216248;
+	if (pt >= 300 && pt < 670) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.042264193296432495;
       }
+
       if(abs(flavor)==4){
-	if (pt >= 30  && pt < 50 ) return 0.921826-0.076370924711227417;
-	if (pt >= 50  && pt < 70 ) return 0.921826-0.096718423068523407;
-	if (pt >= 70  && pt < 100) return 0.921826-0.072690784931182861;
-	if (pt >= 100 && pt < 140) return 0.921826-0.18193449079990387;
-	if (pt >= 140 && pt < 200) return 0.921826-0.17593351006507874;
-	if (pt >= 200 && pt < 300) return 0.921826-0.52129054069519043;
-	if (pt >= 300 && pt < 670) return 0.921826-0.41978824138641357;
+	if (pt >= 30  && pt < 50 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.039607588201761246;
+	if (pt >= 50  && pt < 70 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.053917251527309418;
+	if (pt >= 70  && pt < 100) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.048570159822702408;
+	if (pt >= 100 && pt < 140) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.057024192065000534;
+	if (pt >= 140 && pt < 200) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.059617787599563599;
+	if (pt >= 200 && pt < 300) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.053006380796432495;
+	if (pt >= 300 && pt < 670) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.08452838659286499;
       }
       if(abs(flavor)!=5 && abs(flavor)!=4){
 	return 1.0;
@@ -2167,7 +2232,7 @@ double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst,
   return 1.0;
 }
 
-*/
+
 
 float DMAnalysisTreeMaker::BTagWeight::weightWithVeto(vector<JetInfo> jetsTags, int tags, vector<JetInfo> jetsVetoes, int vetoes)
 {//This function takes into account cases where you have n b-tags and m vetoes, but they have different thresholds. 
@@ -2214,6 +2279,185 @@ float DMAnalysisTreeMaker::BTagWeight::weightWithVeto(vector<JetInfo> jetsTags, 
   return pData / pMC;
 }
 
+// muon SF based on Muon POG values from Dec15
+double DMAnalysisTreeMaker::muonSF(bool isdata, float pt, float eta, int syst) {
+
+  if (isdata) return 1;
+
+  double eff_id = 0;
+  double eff_iso = 0;
+  double eff_trigger = 0;
+  
+  // tight id SF 
+  if (pt > 20 && pt <= 25) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_id = 0.9752116203308105 + 0.0030660638813280626 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_id = 0.9738101959228516 + 0.004502934246978295 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_id = 0.9983288645744324 + 0.002331323348626783 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_id = 0.9877836108207703 + 0.004915740433340289 * syst;
+  }
+
+  if (pt > 25 && pt <= 30) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_id = 0.9848297238349915 + 0.0016307213764927449 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_id = 0.978645384311676 + 0.0027064755458685794 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_id = 0.9905462265014648 + 0.001402578599690647 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_id = 0.9802553653717041 + 0.003173276637083633 * syst;
+  }
+
+  if (pt > 30 && pt <= 40) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_id = 0.9861794114112854 + 0.0006187187412138267 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_id = 0.9798933267593384 + 0.001057081371390319 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_id = 0.9923668503761292 + 0.0005653311393042486 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_id = 0.9785045385360718 + 0.0015542030446523895 * syst;
+  }
+
+  if (pt > 40 && pt <= 50) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_id = 0.987443208694458 + 0.000494159746725046 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_id = 0.980233907699585 + 0.000819615406448897 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_id = 0.9927627444267273 + 0.0004155573807947332 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_id = 0.9778544902801514 + 0.001456799997296391 * syst;
+  }
+
+  if (pt > 50 && pt <= 60) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_id = 0.9834294319152832 + 0.0011818999573518245 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_id = 0.9773300886154175 + 0.001955436343316424 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_id = 0.9886322021484375 + 0.0011254961157344963 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_id = 0.9654409885406494 + 0.003709169009223743 * syst;
+  }
+
+  if (pt > 60 && pt <= 120) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_id = 0.9863178730010986 + 0.002073330940717176 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_id = 0.9795225858688354 + 0.0035622593553725837 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_id = 0.9950451850891113 + 0.002673833447209764 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_id = 0.9689615368843079 + 0.011084748199568817 * syst;
+  }
+
+  if (abs(eta) > 2.4 || pt > 120) eff_id = 1;
+
+  // additional 1% syst. uncertainty
+  eff_id *= 1 + (0.01 * syst);
+
+
+  // tight iso SF 
+  if (pt > 20 && pt <= 25) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_iso = 1.0043761730194092 + 0.003959090391076143 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_iso = 1.004357933998108 + 0.006125539530136138 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_iso = 0.9970762133598328 + 0.003109125287470401 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_iso = 0.9957730770111084 + 0.006137193387970902 * syst;
+  }
+
+  if (pt > 25 && pt <= 30) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_iso = 0.9995378255844116 + 0.0022512071035640673 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_iso = 1.002331256866455 + 0.004003683572512011 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_iso = 1.0006532669067383 + 0.002067755362435184 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_iso = 0.9939026832580566 + 0.004261971076013437 * syst;
+  }
+
+  if (pt > 30 && pt <= 40) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_iso = 1.000901222229004 + 0.0007979481788689052 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_iso = 1.004658579826355 + 0.0014502638048416372 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_iso = 1.0023553371429443 + 0.0008445520691793605 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_iso = 0.997478187084198 + 0.001781225374381486 * syst;
+  }
+
+  if (pt > 40 && pt <= 50) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_iso = 0.9986253976821899 + 0.0004518361024064332 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_iso = 1.0013608932495117 + 0.0004888604573095644 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_iso = 0.999933660030365 + 0.0004309914887707696 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_iso = 1.002805233001709 + 0.001100242856214239 * syst;
+  }
+
+  if (pt > 50 && pt <= 60) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_iso = 1.0002487897872925 + 0.000772847340102783 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_iso = 0.9986217021942139 + 0.0012396364566794034 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_iso = 1.0002963542938232 + 0.0007614160360063238 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_iso = 1.0043764114379883 + 0.001806526581100641 * syst;
+  }
+
+  if (pt > 60 && pt <= 120) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_iso = 0.9986850023269653 + 0.0008907575174433545 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_iso = 1.0054655075073242 + 0.001589130019220112 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_iso = 1.0004935264587402 + 0.0009382223143922724 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_iso = 1.0010104179382324 + 0.0022795762936220253 * syst;
+  }
+
+  if (abs(eta) > 2.4 || pt > 120) eff_iso = 1;
+
+  // additional 1% syst. uncertainty
+  eff_iso *= 1 + (0.01 * syst);
+
+
+
+  // IsoMu20 trigger SF
+
+  /*
+   This is not trivial as there are two sets of SF depending on the HLT menu.
+   Values are the weighted average of both sets:
+
+   total lumi:
+   2197.95 pb-1
+
+   HLT v4.2: run <= 257819
+   393.47 pb-1
+   0.179
+
+   HLT v4.3: run > 257819
+   1804.48 pb-1
+   0.821
+  */
+
+  if (pt > 22 && pt <= 25) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_trigger = 0.987956 + 0.0044549 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_trigger = 1.0178482 + 0.0086129 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_trigger = 0.9971603 + 0.0047654 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_trigger = 1.0132546 + 0.0127635 * syst;
+  }
+
+  if (pt > 25 && pt <= 30) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_trigger = 0.9953616 + 0.0023685 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_trigger = 1.0096846 + 0.0048012 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_trigger = 0.9969169 + 0.0028327 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_trigger = 1.0136236 + 0.0073907 * syst;
+  }
+
+  if (pt > 30 && pt <= 40) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_trigger = 0.9939314 + 0.0003506 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_trigger = 1.0001498 + 0.0020148 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_trigger = 0.98972 + 0.0013253 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_trigger = 1.0178737 + 0.003679 * syst;
+  }
+
+  if (pt > 40 && pt <= 50) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_trigger = 0.9952441 + 0.0033988 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_trigger = 0.9939897 + 0.0015432 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_trigger = 0.9892971 + 0.000579 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_trigger = 1.0114995 + 0.0030685 * syst;
+  }
+
+  if (pt > 50 && pt <= 60) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_trigger = 0.9939026 + 0.0014432 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_trigger = 0.9977205 + 0.0243324 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_trigger = 0.9889162 + 0.001979 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_trigger = 1.019157 + 0.004705 * syst;
+  }
+
+  if (pt > 60 && pt <= 120) {
+    if (abs(eta) > 0   && abs(eta) <= 0.9) eff_trigger = 0.9878582 + 0.0018148 * syst;
+    if (abs(eta) > 0.9 && abs(eta) <= 1.2) eff_trigger = 0.9833346 + 0.0039938 * syst;
+    if (abs(eta) > 1.2 && abs(eta) <= 2.1) eff_trigger = 0.9912019 + 0.0026506 * syst;
+    if (abs(eta) > 2.1 && abs(eta) <= 2.4) eff_trigger = 1.0122248 + 0.0082802 * syst;
+  }
+
+  if (abs(eta) > 2.4 || pt > 120) eff_trigger = 1;
+
+  // additional 0.5% syst. uncertainty
+  eff_trigger *= 1 + (0.005 * syst);
+
+
+  // total SF
+  double eff_total = eff_id * eff_iso * eff_trigger;
+  return eff_total;
+
+}
 
 
 
