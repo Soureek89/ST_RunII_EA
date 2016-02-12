@@ -69,10 +69,10 @@ private:
   virtual void beginJob() {
     std::string distr = "pileUp" + dataPUFile_ + ".root";
     LumiWeights_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias.root",std::string("pileup"),std::string("pileup"));	
+    LumiWeightsUp_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias_up.root",std::string("pileup"),std::string("pileup"));
+    LumiWeightsDown_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias_down.root",std::string("pileup"),std::string("pileup"));
 
 //   	LumiWeights_ = edm::LumiReWeighting(distr,"PUdata_19468.3.root",std::string("pileup"),std::string("pileup"));
-//    LumiWeightsUp_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias_Up.root",std::string("pileup"),std::string("pileup"));
-//    LumiWeightsDown_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias_Down.root",std::string("pileup"),std::string("pileup"));
   }
 
   virtual void analyze(const edm::Event &, const edm::EventSetup & );
@@ -1914,13 +1914,13 @@ bool DMAnalysisTreeMaker::getEventTriggers(){
 
 void DMAnalysisTreeMaker::getPUSF(){
   puWeight=(float) LumiWeights_.weight(nTruePU);
-//  puWeightUp = (float) LumiWeightsUp_.weight(nTruePU);
-//  puWeightDown = (float) LumiWeightsDown_.weight(nTruePU);
+  puWeightUp = (float) LumiWeightsUp_.weight(nTruePU);
+  puWeightDown = (float) LumiWeightsDown_.weight(nTruePU);
   // std::cout<<"nTruePU: "<<nTruePU<<"\tnPV: "<<nPV<<std::endl;
   // std::cout<<"pileUp weight: "<<puWeight<<"\tpileUp weight Up: "<<puWeightUp<<"\tpileUp weight Down: "<<puWeightDown<<std::endl;
   float_values["Event_puWeight"]=puWeight;
-//  float_values["Event_puWeightUp"]=puWeightUp; 
-//  float_values["Event_puWeightDown"]=puWeightDown;
+  float_values["Event_puWeightUp"]=puWeightUp; 
+  float_values["Event_puWeightDown"]=puWeightDown;
   float_values["Event_nTruePU"]=(float)nTruePU;
 }
 
