@@ -422,7 +422,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   }
 
   addPV = iConfig.getUntrackedParameter<bool>("addPV",true);
-  //changeJECs = iConfig.getUntrackedParameter<bool>("changeJECs",false);
+  changeJECs = iConfig.getUntrackedParameter<bool>("changeJECs",false);
   isData = iConfig.getUntrackedParameter<bool>("isData",false);
   useMETNoHF = iConfig.getUntrackedParameter<bool>("useMETNoHF",false);
 
@@ -609,19 +609,18 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
     trees[syst]->SetTitle((channel+"__"+syst).c_str());
   }
   
-
-  //jecParsL1  = new JetCorrectorParameters("Summer15_25nsV6_MC_L1FastJet_AK4PFchs.txt");
-  //jecParsL2  = new JetCorrectorParameters("Summer15_25nsV6_MC_L2Relative_AK4PFchs.txt");
-  //jecParsL3  = new JetCorrectorParameters("Summer15_25nsV6_MC_L3Absolute_AK4PFchs.txt");
-  jecParsL2L3Residuals  = new JetCorrectorParameters("Summer15_25nsV6_DATA_L2L3Residual_AK4PFchs.txt");
-  //jecPars.push_back(*jecParsL1);
-  //jecPars.push_back(*jecParsL2);
-  //jecPars.push_back(*jecParsL3);
-  //if(isData)jecPars.push_back(*jecParsL2L3Residuals);
+  jecParsL1  = new JetCorrectorParameters("Fall15_25nsV1_MC_L1FastJet_AK4PFchs.txt");
+  jecParsL2  = new JetCorrectorParameters("Fall15_25nsV1_MC_L2Relative_AK4PFchs.txt");
+  jecParsL3  = new JetCorrectorParameters("Fall15_25nsV1_MC_L3Absolute_AK4PFchs.txt");
+  jecParsL2L3Residuals  = new JetCorrectorParameters("Summer15_25nsV7_DATA_L2L3Residual_AK4PFchs.txt");
+  jecPars.push_back(*jecParsL1);
+  jecPars.push_back(*jecParsL2);
+  jecPars.push_back(*jecParsL3);
+  if(isData)jecPars.push_back(*jecParsL2L3Residuals);
 
   jecCorr = new FactorizedJetCorrector(jecPars);
   
-  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer15_25nsV6_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
+  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer15_25nsV7_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
   
   //  if(addNominal) systematics.push_back("noSyst");
  
