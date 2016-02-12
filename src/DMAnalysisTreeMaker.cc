@@ -1083,8 +1083,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	//passesID =  (nDau >1.0 && fabs(eta) < 4.7 && (fabs(eta)>=2.4 ||(chHadEnFrac>0.0 && chMulti>0 && chEmEnFrac<0.99 && neuEmEnFrac<0.99 && neuHadEnFrac <0.99) ) && mu_frac < 0.8);
 
 	// new recommendations from 14/08
-	if (fabs(eta)<=3.0) passesID =  (nDau >1.0 && fabs(eta) < 4.7 && (fabs(eta)>=2.4 ||(chHadEnFrac>0.0 && chMulti>0 && chEmEnFrac<0.99) ) && neuEmEnFrac<0.99 && neuHadEnFrac <0.99);
-	else passesID = (fabs(eta) < 4.7 && neuMulti > 10 && neuEmEnFrac < 0.9 );
+	if (fabs(eta)<=3.0) passesID =  (nDau >1.0 && (fabs(eta)>=2.4 ||(chHadEnFrac>0.0 && chMulti>0 && chEmEnFrac<0.99) ) && neuEmEnFrac<0.99 && neuHadEnFrac <0.99);
+	else passesID = (neuMulti > 10 && neuEmEnFrac < 0.9 );
 
 	vfloats_values[jets_label+"_JetID_numberOfDaughters"][j]=nDau;
 	vfloats_values[jets_label+"_JetID_muonEnergyFraction"][j]=mu_frac;
