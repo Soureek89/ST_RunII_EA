@@ -613,10 +613,10 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
 
 
   if(isData) {
-    jecParsL1  = new JetCorrectorParameters("Summer15_25nsV7_DATA_L1FastJet_AK4PFchs.txt");
-    jecParsL2  = new JetCorrectorParameters("Summer15_25nsV7_DATA_L2Relative_AK4PFchs.txt");
-    jecParsL3  = new JetCorrectorParameters("Summer15_25nsV7_DATA_L3Absolute_AK4PFchs.txt");
-    jecParsL2L3Residuals  = new JetCorrectorParameters("Summer15_25nsV7_DATA_L2L3Residual_AK4PFchs.txt");
+    jecParsL1  = new JetCorrectorParameters("Fall15_25nsV2_DATA_L1FastJet_AK4PFchs.txt");
+    jecParsL2  = new JetCorrectorParameters("Fall15_25nsV2_DATA_L2Relative_AK4PFchs.txt");
+    jecParsL3  = new JetCorrectorParameters("Fall15_25nsV2_DATA_L3Absolute_AK4PFchs.txt");
+    jecParsL2L3Residuals  = new JetCorrectorParameters("Fall15_25nsV2_DATA_L2L3Residual_AK4PFchs.txt");
   }
 
   else {
@@ -634,7 +634,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
 
   jecCorr = new FactorizedJetCorrector(jecPars);
   
-  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer15_25nsV7_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
+  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Fall15_25nsV2_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
   
   //  if(addNominal) systematics.push_back("noSyst");
  
@@ -1999,7 +1999,7 @@ void DMAnalysisTreeMaker::getEventLHEWeights(){
       //      cout <<" floatval after "<< float_values["Event_LHEWeight"+w_n.str()]<<endl;
 
     }
-    else cout << "WARNING! there are " << wgtsize << " weights, and you accomodated for only "<< maxWeights << " weights, check your configuration file/your lhe!!!"<<endl;
+    //else cout << "WARNING! there are " << wgtsize << " weights, and you accomodated for only "<< maxWeights << " weights, check your configuration file/your lhe!!!"<<endl;
   }
   
 }
