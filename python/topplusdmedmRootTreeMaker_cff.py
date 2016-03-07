@@ -23,10 +23,10 @@ metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices", "Flag_eeBadScFilter
 
 #Triggers
 leptonTriggers = [
-    "HLT_IsoMu20_v1",
     "HLT_IsoMu20_v2",
     "HLT_IsoMu20_v3",
-    "HLT_IsoMu20_v4",
+    "HLT_IsoTkMu20_v2"
+    "HLT_IsoTkMu20_v3"
     ]
 
 
@@ -235,20 +235,17 @@ DMTreesDumper.physicsObjects.append(
             cms.InputTag("electrons","elfull5x5siee"),
             cms.InputTag("electrons","elooEmooP"),
             cms.InputTag("electrons","elhasMatchedConVeto"),
-            cms.InputTag("electrons","elisVeto"),
-            cms.InputTag("electrons","elisLoose"),
-            cms.InputTag("electrons","elisMedium"),
-            cms.InputTag("electrons","elisTight"),
             cms.InputTag("electrons","elvidHEEP"),
             cms.InputTag("electrons","elvidLoose"),
             cms.InputTag("electrons","elvidMedium"),
             cms.InputTag("electrons","elvidTight"),
             cms.InputTag("electrons","elvidVeto"),
+            cms.InputTag("electrons","elSCEta"),
             ),
         variablesI = cms.VInputTag( ),
         singleI = cms.VInputTag(),
         singleF = cms.VInputTag(),
-        toSave = cms.vstring("elE","elPt","elEta","elPhi","elIso03","elisTight","elisMedium","elisLoose","elisVeto","allExtra","elvidHEEP","elvidLoose","elvidMedium","elvidTight","elvidVeto"),
+        toSave = cms.vstring("elE","elPt","elEta","elPhi","elIso03","allExtra","elvidHEEP","elvidLoose","elvidMedium","elvidTight","elvidVeto","elSCEta"),
         )
     )                                     
 
@@ -313,7 +310,7 @@ DMTreesDumper.physicsObjects.append(
         singleI = cms.VInputTag(),
         singleF = cms.VInputTag(),
         #toSave = cms.vstring(jpref+"Eta",jpref+"Phi","allExtra"),
-        toSave = cms.vstring(jpref+"E",jpref+"Pt",jpref+"Eta",jpref+"Phi",jpref+"GenJetPt",jpref+"GenJetEta",jpref+"CSVv2",jpref+"PartonFlavour","allExtra"),
+        toSave = cms.vstring(jpref+"E",jpref+"Pt",jpref+"Eta",jpref+"Phi",jpref+"GenJetPt",jpref+"GenJetEta",jpref+"CSVv2",jpref+"PartonFlavour","allExtra",jpref+"HadronFlavour"),
         ),
     )
 

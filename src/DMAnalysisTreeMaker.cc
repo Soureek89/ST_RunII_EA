@@ -620,9 +620,9 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   }
 
   else {
-    jecParsL1  = new JetCorrectorParameters("Fall15_25nsV1_MC_L1FastJet_AK4PFchs.txt");
-    jecParsL2  = new JetCorrectorParameters("Fall15_25nsV1_MC_L2Relative_AK4PFchs.txt");
-    jecParsL3  = new JetCorrectorParameters("Fall15_25nsV1_MC_L3Absolute_AK4PFchs.txt");
+    jecParsL1  = new JetCorrectorParameters("Fall15_25nsV2_MC_L1FastJet_AK4PFchs.txt");
+    jecParsL2  = new JetCorrectorParameters("Fall15_25nsV2_MC_L2Relative_AK4PFchs.txt");
+    jecParsL3  = new JetCorrectorParameters("Fall15_25nsV2_MC_L3Absolute_AK4PFchs.txt");
   }
 
   jecPars.push_back(*jecParsL1);
@@ -783,6 +783,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
   vector<TLorentzVector> loosemuons;
   vector<TLorentzVector> jets;
   vector<TLorentzVector> muons_t;
+  vector<TLorentzVector> muons_t_2p1;
 
   for (size_t s = 0; s< systematics.size();++s){
 
@@ -842,12 +843,16 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float iso = vfloats_values[makeName(mu_label,pref,"Iso04")][mu];
       //      std::cout << " muon #"<<el<< " pt " << pt << " isTight/Loose/Soft?"<< isTight<<isSoft<<isLoose<<std::endl;
       
-      if(isTight>0 && pt> 22 && abs(eta) < 2.1 && iso <0.06){
+      if(isTight>0 && pt> 22 && abs(eta) < 2.4 && iso <0.06){
 	++float_values["Event_nTightMuons"];
 	TLorentzVector muon;
 	muon.SetPtEtaPhiE(pt, eta, phi, energy);
 	muons.push_back(muon);
 	muons_t.push_back(muon);
+
+	if (abs(eta) < 2.1)
+	  muons_t_2p1.push_back(muon);
+
 	leptons.push_back(muon);
 
 	mu_sf *= muonSF(isData,pt,eta,0);
