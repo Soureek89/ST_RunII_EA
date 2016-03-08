@@ -25,8 +25,8 @@ metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices", "Flag_eeBadScFilter
 leptonTriggers = [
     "HLT_IsoMu20_v2",
     "HLT_IsoMu20_v3",
-    "HLT_IsoTkMu20_v2"
-    "HLT_IsoTkMu20_v3"
+    "HLT_IsoTkMu20_v3",
+    "HLT_IsoTkMu20_v4"
     ]
 
 
@@ -240,12 +240,11 @@ DMTreesDumper.physicsObjects.append(
             cms.InputTag("electrons","elvidMedium"),
             cms.InputTag("electrons","elvidTight"),
             cms.InputTag("electrons","elvidVeto"),
-            cms.InputTag("electrons","elSCEta"),
             ),
         variablesI = cms.VInputTag( ),
         singleI = cms.VInputTag(),
         singleF = cms.VInputTag(),
-        toSave = cms.vstring("elE","elPt","elEta","elPhi","elIso03","allExtra","elvidHEEP","elvidLoose","elvidMedium","elvidTight","elvidVeto","elSCEta"),
+        toSave = cms.vstring("elE","elPt","elEta","elPhi","elIso03","allExtra","elvidHEEP","elvidLoose","elvidMedium","elvidTight","elvidVeto"),
         )
     )                                     
 
