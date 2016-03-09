@@ -843,7 +843,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float iso = vfloats_values[makeName(mu_label,pref,"Iso04")][mu];
       //      std::cout << " muon #"<<el<< " pt " << pt << " isTight/Loose/Soft?"<< isTight<<isSoft<<isLoose<<std::endl;
       
-      if(isTight>0 && pt> 22 && abs(eta) < 2.4 && iso <0.06){
+      if(isTight>0 && pt> 22 && abs(eta) < 2.1 && iso <0.06){
 	++float_values["Event_nTightMuons"];
 	TLorentzVector muon;
 	muon.SetPtEtaPhiE(pt, eta, phi, energy);
