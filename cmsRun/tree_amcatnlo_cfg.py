@@ -66,7 +66,8 @@ options.register('syst',
 
 
 options.register('globalTag',
-                 '74X_mcRun2_asymptotic_v2',
+                 '76X_mcRun2_asymptotic_v12',
+                 #'76X_dataRun2_v15',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'global tag to be used')

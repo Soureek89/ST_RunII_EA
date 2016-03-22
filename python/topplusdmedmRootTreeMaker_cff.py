@@ -22,20 +22,11 @@ metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices", "Flag_eeBadScFilter
 #metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices"]
 
 #Triggers
-#leptonTriggers = ["HLT_Ele27_eta2p1_WP85_Gsf","HLT_IsoMu24_IterTrk02"] #<--Check those triggers!
-#leptonTriggers = ["HLT_IsoMu20_eta2p1_IterTrk02_v1","HLT_IsoTkMu20_eta2p1_IterTrk02_v1","HLT_IsoMu24_eta2p1_IterTrk02_v1","HLT_IsoTkMu24_eta2p1_IterTrk02_v1",
-#                  "HLT_Ele27_eta2p1_WP85_Gsf_v1","HLT_Ele32_eta2p1_WP85_Gsf_v1"]
 leptonTriggers = [
-    "HLT_IsoMu20_v1",
     "HLT_IsoMu20_v2",
     "HLT_IsoMu20_v3",
-    "HLT_IsoMu20_eta2p1_v1",    
-    "HLT_IsoMu20_eta2p1_v2",
-    "HLT_IsoTkMu20_v1",
-    "HLT_IsoTkMu20_v2",
-    "HLT_IsoTkMu20_eta2p1_v1",
-    "HLT_IsoTkMu20_eta2p1_v2",
-    "HLT_IsoMu20_eta2p1_IterTrk02_v1"
+    "HLT_IsoTkMu20_v3",
+    "HLT_IsoTkMu20_v4"
     ]
 
 
@@ -244,10 +235,6 @@ DMTreesDumper.physicsObjects.append(
             cms.InputTag("electrons","elfull5x5siee"),
             cms.InputTag("electrons","elooEmooP"),
             cms.InputTag("electrons","elhasMatchedConVeto"),
-            cms.InputTag("electrons","elisVeto"),
-            cms.InputTag("electrons","elisLoose"),
-            cms.InputTag("electrons","elisMedium"),
-            cms.InputTag("electrons","elisTight"),
             cms.InputTag("electrons","elvidHEEP"),
             cms.InputTag("electrons","elvidLoose"),
             cms.InputTag("electrons","elvidMedium"),
@@ -257,7 +244,7 @@ DMTreesDumper.physicsObjects.append(
         variablesI = cms.VInputTag( ),
         singleI = cms.VInputTag(),
         singleF = cms.VInputTag(),
-        toSave = cms.vstring("elE","elPt","elEta","elPhi","elIso03","elisTight","elisMedium","elisLoose","elisVeto","allExtra","elvidHEEP","elvidLoose","elvidMedium","elvidTight","elvidVeto"),
+        toSave = cms.vstring("elE","elPt","elEta","elPhi","elIso03","allExtra","elvidHEEP","elvidLoose","elvidMedium","elvidTight","elvidVeto"),
         )
     )                                     
 
@@ -322,7 +309,7 @@ DMTreesDumper.physicsObjects.append(
         singleI = cms.VInputTag(),
         singleF = cms.VInputTag(),
         #toSave = cms.vstring(jpref+"Eta",jpref+"Phi","allExtra"),
-        toSave = cms.vstring(jpref+"E",jpref+"Pt",jpref+"Eta",jpref+"Phi",jpref+"GenJetPt",jpref+"GenJetEta",jpref+"CSVv2",jpref+"PartonFlavour","allExtra"),
+        toSave = cms.vstring(jpref+"E",jpref+"Pt",jpref+"Eta",jpref+"Phi",jpref+"GenJetPt",jpref+"GenJetEta",jpref+"CSVv2",jpref+"PartonFlavour","allExtra",jpref+"HadronFlavour"),
         ),
     )
 

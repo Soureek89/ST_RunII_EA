@@ -4,7 +4,7 @@
 
 Usage: cmsRun xyz.cfg.py
 
-branch 'master' working with 7_4_14
+branch 'master' working with 7_6_3_patch2
 
 ## Additional info
 

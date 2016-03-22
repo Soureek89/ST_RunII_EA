@@ -69,10 +69,10 @@ private:
   virtual void beginJob() {
     std::string distr = "pileUp" + dataPUFile_ + ".root";
     LumiWeights_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias.root",std::string("pileup"),std::string("pileup"));	
+    LumiWeightsUp_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias_up.root",std::string("pileup"),std::string("pileup"));
+    LumiWeightsDown_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias_down.root",std::string("pileup"),std::string("pileup"));
 
 //   	LumiWeights_ = edm::LumiReWeighting(distr,"PUdata_19468.3.root",std::string("pileup"),std::string("pileup"));
-//    LumiWeightsUp_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias_Up.root",std::string("pileup"),std::string("pileup"));
-//    LumiWeightsDown_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias_Down.root",std::string("pileup"),std::string("pileup"));
   }
 
   virtual void analyze(const edm::Event &, const edm::EventSetup & );
@@ -423,7 +423,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   }
 
   addPV = iConfig.getUntrackedParameter<bool>("addPV",true);
-  //changeJECs = iConfig.getUntrackedParameter<bool>("changeJECs",false);
+  changeJECs = iConfig.getUntrackedParameter<bool>("changeJECs",false);
   isData = iConfig.getUntrackedParameter<bool>("isData",false);
   useMETNoHF = iConfig.getUntrackedParameter<bool>("useMETNoHF",false);
 
@@ -609,20 +609,32 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
     trees[syst]->SetName((channel+"__"+syst).c_str());
     trees[syst]->SetTitle((channel+"__"+syst).c_str());
   }
-  
 
-  //jecParsL1  = new JetCorrectorParameters("Summer15_25nsV6_MC_L1FastJet_AK4PFchs.txt");
-  //jecParsL2  = new JetCorrectorParameters("Summer15_25nsV6_MC_L2Relative_AK4PFchs.txt");
-  //jecParsL3  = new JetCorrectorParameters("Summer15_25nsV6_MC_L3Absolute_AK4PFchs.txt");
-  jecParsL2L3Residuals  = new JetCorrectorParameters("Summer15_25nsV6_DATA_L2L3Residual_AK4PFchs.txt");
-  //jecPars.push_back(*jecParsL1);
-  //jecPars.push_back(*jecParsL2);
-  //jecPars.push_back(*jecParsL3);
-  //if(isData)jecPars.push_back(*jecParsL2L3Residuals);
+
+
+  if(isData) {
+    jecParsL1  = new JetCorrectorParameters("Fall15_25nsV2_DATA_L1FastJet_AK4PFchs.txt");
+    jecParsL2  = new JetCorrectorParameters("Fall15_25nsV2_DATA_L2Relative_AK4PFchs.txt");
+    jecParsL3  = new JetCorrectorParameters("Fall15_25nsV2_DATA_L3Absolute_AK4PFchs.txt");
+    jecParsL2L3Residuals  = new JetCorrectorParameters("Fall15_25nsV2_DATA_L2L3Residual_AK4PFchs.txt");
+  }
+
+  else {
+    jecParsL1  = new JetCorrectorParameters("Fall15_25nsV2_MC_L1FastJet_AK4PFchs.txt");
+    jecParsL2  = new JetCorrectorParameters("Fall15_25nsV2_MC_L2Relative_AK4PFchs.txt");
+    jecParsL3  = new JetCorrectorParameters("Fall15_25nsV2_MC_L3Absolute_AK4PFchs.txt");
+  }
+
+  jecPars.push_back(*jecParsL1);
+  jecPars.push_back(*jecParsL2);
+  jecPars.push_back(*jecParsL3);
+
+  if(isData)
+    jecPars.push_back(*jecParsL2L3Residuals);
 
   jecCorr = new FactorizedJetCorrector(jecPars);
   
-  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer15_25nsV6_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
+  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Fall15_25nsV2_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
   
   //  if(addNominal) systematics.push_back("noSyst");
  
@@ -771,6 +783,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
   vector<TLorentzVector> loosemuons;
   vector<TLorentzVector> jets;
   vector<TLorentzVector> muons_t;
+  vector<TLorentzVector> muons_t_2p1;
 
   for (size_t s = 0; s< systematics.size();++s){
 
@@ -836,6 +849,10 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	muon.SetPtEtaPhiE(pt, eta, phi, energy);
 	muons.push_back(muon);
 	muons_t.push_back(muon);
+
+	if (abs(eta) < 2.1)
+	  muons_t_2p1.push_back(muon);
+
 	leptons.push_back(muon);
 
 	mu_sf *= muonSF(isData,pt,eta,0);
@@ -1084,8 +1101,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	//passesID =  (nDau >1.0 && fabs(eta) < 4.7 && (fabs(eta)>=2.4 ||(chHadEnFrac>0.0 && chMulti>0 && chEmEnFrac<0.99 && neuEmEnFrac<0.99 && neuHadEnFrac <0.99) ) && mu_frac < 0.8);
 
 	// new recommendations from 14/08
-	if (fabs(eta)<=3.0) passesID =  (nDau >1.0 && fabs(eta) < 4.7 && (fabs(eta)>=2.4 ||(chHadEnFrac>0.0 && chMulti>0 && chEmEnFrac<0.99) ) && neuEmEnFrac<0.99 && neuHadEnFrac <0.99);
-	else passesID = (fabs(eta) < 4.7 && neuMulti > 10 && neuEmEnFrac < 0.9 );
+	if (fabs(eta)<=3.0) passesID =  (nDau >1.0 && (fabs(eta)>=2.4 ||(chHadEnFrac>0.0 && chMulti>0 && chEmEnFrac<0.99) ) && neuEmEnFrac<0.99 && neuHadEnFrac <0.99);
+	else passesID = (neuMulti > 10 && neuEmEnFrac < 0.9 );
 
 	vfloats_values[jets_label+"_JetID_numberOfDaughters"][j]=nDau;
 	vfloats_values[jets_label+"_JetID_muonEnergyFraction"][j]=mu_frac;
@@ -1593,14 +1610,14 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
   //bool isResolvedTopSemiLep=object.find("resolvedTopSemiLep")!=std::string::npos;
   
   if(ismuon || iselectron){
-    addvar.push_back("SFTrigger");
-    addvar.push_back("SFReco");
-    addvar.push_back("isQCD");
+    //addvar.push_back("SFTrigger");
+    //addvar.push_back("SFReco");
+    //addvar.push_back("isQCD");
     //    addvar.push_back("isTightOffline");
     //    addvar.push_back("isLooseOffline");
   }
   if(iselectron){
-    addvar.push_back("PassesDRmu");
+    //addvar.push_back("PassesDRmu");
   }
   if(ismet){
     //    addvar.push_back("Pt");
@@ -1672,7 +1689,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
   }
   */
   if(isevent){
-    addvar.push_back("weight");
+    //addvar.push_back("weight");
     addvar.push_back("nTightMuons");
     addvar.push_back("nSoftMuons");
     addvar.push_back("nLooseMuons");
@@ -1680,16 +1697,16 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     addvar.push_back("nMediumElectrons");
     addvar.push_back("nLooseElectrons");
     addvar.push_back("nVetoElectrons");
-    addvar.push_back("nElectronsSF");
+    //addvar.push_back("nElectronsSF");
     //addvar.push_back("mt");
     //addvar.push_back("Mt2w");
     //addvar.push_back("category");
-    addvar.push_back("nMuonsSF");
-    addvar.push_back("nCSVTJets");
-    addvar.push_back("nCSVMJets");
-    addvar.push_back("nCSVLJets");
-    addvar.push_back("nTightJets");
-    addvar.push_back("nLooseJets");
+    //addvar.push_back("nMuonsSF");
+    //addvar.push_back("nCSVTJets");
+    //addvar.push_back("nCSVMJets");
+    //addvar.push_back("nCSVLJets");
+    //addvar.push_back("nTightJets");
+    //addvar.push_back("nLooseJets");
     //addvar.push_back("nType1TopJets");
     //addvar.push_back("nType2TopJets");
  
@@ -1834,7 +1851,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
       addvar.push_back("puWeight");
       addvar.push_back("puWeightUp");
       addvar.push_back("puWeightDown");
-	  addvar.push_back("nTruePU");
+      addvar.push_back("nTruePU");
     }
 
   }
@@ -1907,13 +1924,13 @@ bool DMAnalysisTreeMaker::getEventTriggers(){
 
 void DMAnalysisTreeMaker::getPUSF(){
   puWeight=(float) LumiWeights_.weight(nTruePU);
-//  puWeightUp = (float) LumiWeightsUp_.weight(nTruePU);
-//  puWeightDown = (float) LumiWeightsDown_.weight(nTruePU);
+  puWeightUp = (float) LumiWeightsUp_.weight(nTruePU);
+  puWeightDown = (float) LumiWeightsDown_.weight(nTruePU);
   // std::cout<<"nTruePU: "<<nTruePU<<"\tnPV: "<<nPV<<std::endl;
   // std::cout<<"pileUp weight: "<<puWeight<<"\tpileUp weight Up: "<<puWeightUp<<"\tpileUp weight Down: "<<puWeightDown<<std::endl;
   float_values["Event_puWeight"]=puWeight;
-//  float_values["Event_puWeightUp"]=puWeightUp; 
-//  float_values["Event_puWeightDown"]=puWeightDown;
+  float_values["Event_puWeightUp"]=puWeightUp; 
+  float_values["Event_puWeightDown"]=puWeightDown;
   float_values["Event_nTruePU"]=(float)nTruePU;
 }
 
@@ -1987,7 +2004,7 @@ void DMAnalysisTreeMaker::getEventLHEWeights(){
       //      cout <<" floatval after "<< float_values["Event_LHEWeight"+w_n.str()]<<endl;
 
     }
-    else cout << "WARNING! there are " << wgtsize << " weights, and you accomodated for only "<< maxWeights << " weights, check your configuration file/your lhe!!!"<<endl;
+    //else cout << "WARNING! there are " << wgtsize << " weights, and you accomodated for only "<< maxWeights << " weights, check your configuration file/your lhe!!!"<<endl;
   }
   
 }
