@@ -67,4 +67,5 @@
 <use name="DataFormats/MuonReco"/>
 <use name="DataFormats/VertexReco"/>
 <use   name="CondFormats/BTauObjects"/>
+<use name="CondTools/BTau"/>
 <flags   EDM_PLUGIN="1"/>

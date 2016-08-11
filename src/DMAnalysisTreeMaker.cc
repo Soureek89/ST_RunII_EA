@@ -35,7 +35,6 @@
 #include "CondFormats/BTauObjects/interface/BTagCalibrationReader.h"
 
 
-
 #include "TFile.h"
 #include "TTree.h"
 #include "TMath.h"
@@ -68,11 +67,9 @@ public:
 private:
   virtual void beginJob() {
     std::string distr = "pileUp" + dataPUFile_ + ".root";
-    LumiWeights_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias.root",std::string("pileup"),std::string("pileup"));	
-    LumiWeightsUp_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias_up.root",std::string("pileup"),std::string("pileup"));
-    LumiWeightsDown_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69mbMinBias_down.root",std::string("pileup"),std::string("pileup"));
-
-//   	LumiWeights_ = edm::LumiReWeighting(distr,"PUdata_19468.3.root",std::string("pileup"),std::string("pileup"));
+    LumiWeights_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69p2mbMinBias.root",std::string("pileup"),std::string("pileup"));	
+    LumiWeightsUp_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69p2mbMinBias_up.root",std::string("pileup"),std::string("pileup"));
+    LumiWeightsDown_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69p2mbMinBias_down.root",std::string("pileup"),std::string("pileup"));
   }
 
   virtual void analyze(const edm::Event &, const edm::EventSetup & );
@@ -88,7 +85,7 @@ private:
   //  double smearPt(double pt, double genpt, double eta, string syst);
   double smear(double pt, double genpt, double eta, string syst);
   double resolSF(double eta, string syst);
-  double getScaleFactor(double pt, double eta, double partonFlavour, string syst);
+//  double getScaleFactor(double pt, double eta, double partonFlavour, string syst);
   double muonSF(bool isdata, float pt, float eta, int syst);
   
   //------------------ Soureek adding pile-up Info ------------------------------
@@ -229,7 +226,8 @@ private:
     float weight(vector<JetInfo> jets, int tags);
     float weightWithVeto(vector<JetInfo> jetsTags, int tags, vector<JetInfo> jetsVetoes, int vetoes);
   };
-  vector<BTagWeight::JetInfo> jsfscsvt, 
+  
+/*  vector<BTagWeight::JetInfo> jsfscsvt, 
     jsfscsvt_b_tag_up, 
     jsfscsvt_b_tag_down, 
     jsfscsvt_mistag_up, 
@@ -306,56 +304,190 @@ private:
   double b_weight_csvl_0_tags,
     b_weight_csvl_1_tag,
     b_weight_csvl_2_tags;
-
+*/
   double MCTagEfficiency(string algo, int flavor, double pt); 
-  double TagScaleFactor(string algo, int flavor, string syst,double pt);
- 
-  /*
-  // read SF from csv file
-  BTagCalibration btagsf_calib = BTagCalibration("","CSVv2_Aug24.csv");
+//  double TagScaleFactor(string algo, int flavor, string syst,double pt); 
+
+  vector<BTagWeight::JetInfo> jsfscmvat, 
+    jsfscmvat_b_tag_up, 
+    jsfscmvat_b_tag_down; 
+//    jsfscmvat_mistag_up, 
+//    jsfscmvat_mistag_down;
+
+  vector<BTagWeight::JetInfo> jsfscmvam, 
+    jsfscmvam_b_tag_up, 
+    jsfscmvam_b_tag_down; 
+//    jsfscmvam_mistag_up, 
+//    jsfscmvam_mistag_down;
+
+  vector<BTagWeight::JetInfo> jsfscmval, 
+    jsfscmval_b_tag_up, 
+    jsfscmval_b_tag_down; 
+//    jsfscmval_mistag_up, 
+//    jsfscmval_mistag_down;
   
+  BTagWeight b_cmvat_0_tags= BTagWeight(0,0),
+    b_cmvat_1_tag= BTagWeight(1,1),
+    b_cmvat_2_tags= BTagWeight(2,2);
+  
+  double b_weight_cmvat_0_tags,
+    b_weight_cmvat_1_tag,
+    b_weight_cmvat_2_tags;
+//  double b_weight_cmvat_0_tags_mistag_up,
+//    b_weight_cmvat_1_tag_mistag_up,
+//    b_weight_cmvat_2_tags_mistag_up;
+//  double b_weight_cmvat_0_tags_mistag_down,
+//    b_weight_cmvat_1_tag_mistag_down,
+//    b_weight_cmvat_2_tags_mistag_down;
+  double b_weight_cmvat_0_tags_b_tag_down,
+    b_weight_cmvat_1_tag_b_tag_down,
+    b_weight_cmvat_2_tags_b_tag_down;
+  double b_weight_cmvat_0_tags_b_tag_up,
+    b_weight_cmvat_1_tag_b_tag_up,
+    b_weight_cmvat_2_tags_b_tag_up;
+
+  BTagWeight b_cmvam_0_tags= BTagWeight(0,0),
+    b_cmvam_1_tag= BTagWeight(1,1),
+    b_cmvam_2_tags= BTagWeight(2,2);
+
+  double b_weight_cmvam_0_tags,
+    b_weight_cmvam_1_tag,
+    b_weight_cmvam_2_tags;
+//  double b_weight_cmvam_0_tags_mistag_up,
+//    b_weight_cmvam_1_tag_mistag_up,
+//    b_weight_cmvam_2_tags_mistag_up;
+//  double b_weight_cmvam_0_tags_mistag_down,
+//    b_weight_cmvam_1_tag_mistag_down,
+//    b_weight_cmvam_2_tags_mistag_down;
+  double b_weight_cmvam_0_tags_b_tag_down,
+    b_weight_cmvam_1_tag_b_tag_down,
+    b_weight_cmvam_2_tags_b_tag_down;
+  double b_weight_cmvam_0_tags_b_tag_up,
+    b_weight_cmvam_1_tag_b_tag_up,
+    b_weight_cmvam_2_tags_b_tag_up;
+
+  BTagWeight b_cmval_0_tags= BTagWeight(0,0),
+    b_cmval_1_tag= BTagWeight(1,1),
+    b_cmval_2_tags= BTagWeight(2,2);
+  
+//  double b_weight_cmval_0_tags_mistag_up,
+//    b_weight_cmval_1_tag_mistag_up,
+//    b_weight_cmval_2_tags_mistag_up;
+//  double b_weight_cmval_0_tags_mistag_down,
+//    b_weight_cmval_1_tag_mistag_down,
+//    b_weight_cmval_2_tags_mistag_down;
+  double b_weight_cmval_0_tags_b_tag_down,
+    b_weight_cmval_1_tag_b_tag_down,
+    b_weight_cmval_2_tags_b_tag_down;
+  double b_weight_cmval_0_tags_b_tag_up,
+    b_weight_cmval_1_tag_b_tag_up,
+    b_weight_cmval_2_tags_b_tag_up;
+  double b_weight_cmval_0_tags,
+    b_weight_cmval_1_tag,
+    b_weight_cmval_2_tags;
+  
+// read SF from csv file
+//  BTagCalibration btagsf_calib = BTagCalibration("cMVAv2","cMVAv2_ichep.csv");
+  BTagCalibration* btagsf_calib= new BTagCalibration("cMVAv2","cMVAv2_ichep.csv");
+
+
+  BTagCalibrationReader reader_cmval = new BTagCalibrationReader(btagsf_calib,
+									BTagEntry::OP_LOOSE,
+									"ttbar",
+									"central");
+									
+  reader_cmval.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
+	  	
+  BTagCalibrationReader reader_cmvam = new BTagCalibrationReader(btagsf_calib,
+							    BTagEntry::OP_MEDIUM,
+							    "ttbar",
+							    "central");
+  reader_cmvam.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
+
+  BTagCalibrationReader reader_cmvat = new BTagCalibrationReader(btagsf_calib,
+							    BTagEntry::OP_TIGHT,
+							    "ttbar",
+							    "central");
+  reader_cmvat.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
+							    
+  // btag up
+  BTagCalibrationReader reader_cmvalup = new BTagCalibrationReader(btagsf_calib,BTagEntry::OP_LOOSE,"ttbar","up");
+  reader_cmvalup.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
+
+  BTagCalibrationReader reader_cmvamup = new BTagCalibrationReader(btagsf_calib,
+							      BTagEntry::OP_MEDIUM,
+							      "ttbar",
+							      "up");
+  reader_cmvamup.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
+
+  BTagCalibrationReader reader_cmvatup = new BTagCalibrationReader(btagsf_calib,
+							      BTagEntry::OP_TIGHT,
+							      "ttbar",
+							      "up");
+  reader_cmvatup.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");
+  																	
+  // btag down
+  BTagCalibrationReader reader_cmvaldown = new BTagCalibrationReader(btagsf_calib,
+								BTagEntry::OP_LOOSE,
+								"ttbar",
+								"down");
+  reader_cmvaldown.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
+
+  BTagCalibrationReader reader_cmvamdown = new BTagCalibrationReader(btagsf_calib,
+								BTagEntry::OP_MEDIUM,
+								"ttbar",
+								"down");
+  reader_cmvamdown.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
+
+  BTagCalibrationReader reader_cmvatdown = new BTagCalibrationReader(btagsf_calib,
+								BTagEntry::OP_TIGHT,
+								"ttbar",
+								"down");
+  reader_cmvatdown.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
+
+/*  
   // central
   BTagCalibrationReader reader_csvl = BTagCalibrationReader(&btagsf_calib,
 							    BTagEntry::OP_LOOSE,
-							    "comb",
+							    "",
 							    "central");
   BTagCalibrationReader reader_csvm = BTagCalibrationReader(&btagsf_calib,
 							    BTagEntry::OP_MEDIUM,
-							    "comb",
+							    "incl",
 							    "central");
+
   BTagCalibrationReader reader_csvt = BTagCalibrationReader(&btagsf_calib,
 							    BTagEntry::OP_TIGHT,
-							    "comb",
+							    "incl",
 							    "central");
   // btag up
   BTagCalibrationReader reader_csvlup = BTagCalibrationReader(&btagsf_calib,
 							      BTagEntry::OP_LOOSE,
-							      "comb",
+							      "incl",
 							      "up");
   BTagCalibrationReader reader_csvmup = BTagCalibrationReader(&btagsf_calib,
 							      BTagEntry::OP_MEDIUM,
-							      "comb",
+							      "incl",
 							      "up");
   BTagCalibrationReader reader_csvtup = BTagCalibrationReader(&btagsf_calib,
 							      BTagEntry::OP_TIGHT,
-							      "comb",
+							      "incl",
 							      "up");
   // btag down
   BTagCalibrationReader reader_csvldown = BTagCalibrationReader(&btagsf_calib,
 								BTagEntry::OP_LOOSE,
-								"comb",
+								"incl",
 								"down");
   BTagCalibrationReader reader_csvmdown = BTagCalibrationReader(&btagsf_calib,
 								BTagEntry::OP_MEDIUM,
-								"comb",
+								"incl",
 								"down");
   BTagCalibrationReader reader_csvtdown = BTagCalibrationReader(&btagsf_calib,
 								BTagEntry::OP_TIGHT,
-								"comb",
+								"incl",
 								"down");
-  */
-
   //
+*/
   bool doBTagSF=true;
   
 };
@@ -613,24 +745,23 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
 
 
   if(isData) {
-    jecParsL1  = new JetCorrectorParameters("Fall15_25nsV2_DATA_L1FastJet_AK4PFchs.txt");
-    jecParsL2  = new JetCorrectorParameters("Fall15_25nsV2_DATA_L2Relative_AK4PFchs.txt");
-    jecParsL3  = new JetCorrectorParameters("Fall15_25nsV2_DATA_L3Absolute_AK4PFchs.txt");
-    jecParsL2L3Residuals  = new JetCorrectorParameters("Fall15_25nsV2_DATA_L2L3Residual_AK4PFchs.txt");
+    jecParsL1  = new JetCorrectorParameters("Spring16_25nsV6_DATA_L1FastJet_AK4PFchs.txt");
+    jecParsL2  = new JetCorrectorParameters("Spring16_25nsV6_DATA_L2Relative_AK4PFchs.txt");
+    jecParsL3  = new JetCorrectorParameters("Spring16_25nsV6_DATA_L3Absolute_AK4PFchs.txt");
+    jecParsL2L3Residuals  = new JetCorrectorParameters("Spring16_25nsV6_DATA_L2L3Residual_AK4PFchs.txt");
   }
 
   else {
-    jecParsL1  = new JetCorrectorParameters("Fall15_25nsV2_MC_L1FastJet_AK4PFchs.txt");
-    jecParsL2  = new JetCorrectorParameters("Fall15_25nsV2_MC_L2Relative_AK4PFchs.txt");
-    jecParsL3  = new JetCorrectorParameters("Fall15_25nsV2_MC_L3Absolute_AK4PFchs.txt");
+    jecParsL1  = new JetCorrectorParameters("Spring16_25nsV6_MC_L1FastJet_AK4PFchs.txt");
+    jecParsL2  = new JetCorrectorParameters("Spring16_25nsV6_MC_L2Relative_AK4PFchs.txt");
+    jecParsL3  = new JetCorrectorParameters("Spring16_25nsV6_MC_L3Absolute_AK4PFchs.txt");
   }
 
   jecPars.push_back(*jecParsL1);
   jecPars.push_back(*jecParsL2);
   jecPars.push_back(*jecParsL3);
 
-  if(isData)
-    jecPars.push_back(*jecParsL2L3Residuals);
+  if(isData) jecPars.push_back(*jecParsL2L3Residuals);
 
   jecCorr = new FactorizedJetCorrector(jecPars);
   
@@ -703,7 +834,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     
   
     
-  //std::cout<<"Collected # of primary vertices: "<<nPV<<std::endl;	  
+  std::cout<<"Collected # of primary vertices: "<<nPV<<std::endl;	  
 
   //Part 1 taking the obs values from the edm file
   for (;itPsets!=physObjects.end();++itPsets){ 
@@ -739,7 +870,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       //      cout<< " size for "<< namelabel <<" is then "<< sizes[namelabel]<<endl; 
     }
     
-    //    std::cout << " checkpoint floats"<<endl;
+        std::cout << " checkpoint floats"<<endl;
     //Vectors of ints
     for (;itI != variablesInt.end();++itI){
       string varname=itI->instance();
@@ -753,7 +884,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       }
     }  
     
-    //    std::cout << " checkpoint ints"<<endl;
+        std::cout << " checkpoint ints"<<endl;
     //Single floats/ints
     for (;itsF != singleFloat.end();++itsF){
       string varname=itsF->instance();
@@ -768,10 +899,10 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       iEvent.getByToken(t_int[name],h_int[name]);
       int_values[name]=*h_int[name];
     }
-    //    std::cout << " checkpoint singles"<<endl;
+        std::cout << " checkpoint singles"<<endl;
   }
 
-  //  std::cout << " checkpoint part 1"<<endl;
+    std::cout << " checkpoint part 1"<<endl;
 
 
   //Part 2: selection and analysis-level changes
@@ -783,11 +914,13 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
   vector<TLorentzVector> loosemuons;
   vector<TLorentzVector> jets;
   vector<TLorentzVector> muons_t;
-  vector<TLorentzVector> muons_t_2p1;
+  vector<TLorentzVector> muons_t_2p4;
 
   for (size_t s = 0; s< systematics.size();++s){
 
-    int ncsvl_tags=0,ncsvt_tags=0,ncsvm_tags=0;//, njets_tottag=0;    
+//    int ncsvl_tags=0,ncsvt_tags=0,ncsvm_tags=0;//, njets_tottag=0;    
+    int ncmval_tags=0,ncmvat_tags=0,ncmvam_tags=0;//, njets_tottag=0;    
+
     getEventTriggers();
 
     electrons.clear();
@@ -796,23 +929,23 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     jets.clear();
     string syst = systematics.at(s);
 
-    jsfscsvt.clear();
-    jsfscsvt_b_tag_up.clear(); 
-    jsfscsvt_b_tag_down.clear(); 
-    jsfscsvt_mistag_up.clear(); 
-    jsfscsvt_mistag_down.clear();
+    jsfscmvat.clear();
+    jsfscmvat_b_tag_up.clear(); 
+    jsfscmvat_b_tag_down.clear(); 
+//    jsfscmvat_mistag_up.clear(); 
+//    jsfscmvat_mistag_down.clear();
 
-    jsfscsvm.clear(); 
-    jsfscsvm_b_tag_up.clear(); 
-    jsfscsvm_b_tag_down.clear(); 
-    jsfscsvm_mistag_up.clear(); 
-    jsfscsvm_mistag_down.clear();
+    jsfscmvam.clear(); 
+    jsfscmvam_b_tag_up.clear(); 
+    jsfscmvam_b_tag_down.clear(); 
+//    jsfscmvam_mistag_up.clear(); 
+//    jsfscmvam_mistag_down.clear();
     
-    jsfscsvl.clear(); 
-    jsfscsvl_b_tag_up.clear(); 
-    jsfscsvl_b_tag_down.clear(); 
-    jsfscsvl_mistag_up.clear();
-    jsfscsvl_mistag_down.clear();
+    jsfscmval.clear(); 
+    jsfscmval_b_tag_up.clear(); 
+    jsfscmval_b_tag_down.clear(); 
+//    jsfscmval_mistag_up.clear();
+//    jsfscmval_mistag_down.clear();
 
   //---------------- Soureek Adding PU Info ------------------------------
     if(doPU_){
@@ -821,7 +954,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       getPUSF();
     }
 
-    //std::cout<<"Check for PU re-weighting 2"<<std::endl;
+    std::cout<<"Check for PU re-weighting 2"<<std::endl;
     /**************************
     Muons:
     **************************/
@@ -841,17 +974,17 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float phi = vfloats_values[makeName(mu_label,pref,"Phi")][mu];
       float energy = vfloats_values[makeName(mu_label,pref,"E")][mu];
       float iso = vfloats_values[makeName(mu_label,pref,"Iso04")][mu];
-      //      std::cout << " muon #"<<el<< " pt " << pt << " isTight/Loose/Soft?"<< isTight<<isSoft<<isLoose<<std::endl;
+      //      std::cout << " muon #"<<mu<< " pt " << pt << " isTight/Loose/Soft?"<< isTight<<isSoft<<isLoose<<std::endl;
       
-      if(isTight>0 && pt> 22 && abs(eta) < 2.1 && iso <0.06){
+      if(isTight>0 && pt> 24 && abs(eta) < 2.4 && iso <0.06){
 	++float_values["Event_nTightMuons"];
 	TLorentzVector muon;
 	muon.SetPtEtaPhiE(pt, eta, phi, energy);
 	muons.push_back(muon);
 	muons_t.push_back(muon);
 
-	if (abs(eta) < 2.1)
-	  muons_t_2p1.push_back(muon);
+	if (abs(eta) < 2.4)
+	  muons_t_2p4.push_back(muon);
 
 	leptons.push_back(muon);
 
@@ -877,6 +1010,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     float_values["Event_mu_eff_up"]=mu_sf_up;
     float_values["Event_mu_eff_down"]=mu_sf_down;
 
+	std::cout<<"Ending Muons"<<std::endl;
+	
     /**************************
     Electrons:
     **************************/
@@ -945,6 +1080,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
     } 
 
+	std::cout<<"Ending Electrons"<<std::endl;
     /**************************
     MET:
     **************************/
@@ -959,6 +1095,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     float metZeroCorrX = metZeroCorrPt*cos(metZeroCorrPhi);
     float metPx = metpt*sin(metphi);
     float metPy = metpt*cos(metphi);
+    
+    std::cout<<"Ending MET"<<std::endl;
     
     //    cout << "syst "<<syst<<endl;
     /**************************
@@ -981,7 +1119,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float ptCorr = -9999;
       float energyCorr = -9999;
       float smearfact = -9999;
-      //      cout << "j is " <<j<< "label "<< jets_label << " maxinstances "<< max_instances[jets_label]<< "size "<< sizes[jets_label]<< " pt "<< vfloats_values[makeName(jets_label,pref,"Pt")][j]<< " eta "<< eta<< " phi "<< phi << " e "<< energy <<endl;
+      std::cout << "j is " <<j<< "label "<< jets_label << " maxinstances "<< max_instances[jets_label]<< "size "<< sizes[jets_label]<< " pt "<< vfloats_values[makeName(jets_label,pref,"Pt")][j]<< " eta "<< eta<< " phi "<< phi << " e "<< energy <<std::endl;
       float jecscale = vfloats_values[makeName(jets_label,pref,"jecFactor0")][j];
       float area = vfloats_values[makeName(jets_label,pref,"jetArea")][j];
 
@@ -1030,7 +1168,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  corrMetPy -=unc*(sin(phi)*ptCorr);
 	}
 	
-      	if (syst.find("jer__")!=std::string::npos && (fabs(eta)<3.0 || (!useMETNoHF))){//For JER propagation to met we use standard jets, as reclusteded ones don't have genparticle information
+    if (syst.find("jer__")!=std::string::npos && (fabs(eta)<3.0 || (!useMETNoHF))){//For JER propagation to met we use standard jets, as reclusteded ones don't have genparticle information
 	  corrMetPx -=pt * (smearfact-1) * cos(phi);
 	  corrMetPy -=pt * (smearfact-1) * sin(phi);
 	  
@@ -1038,7 +1176,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	ptCorr = ptCorr * (1 + unc);
 	energyCorr = energyCorr * (1 + unc);
       }
-      if(syst.find("unclusteredMet")!= std::string::npos && !useMETNoHF){
+    if(syst.find("unclusteredMet")!= std::string::npos && !useMETNoHF){
 	
 	DUnclusteredMETPx=metZeroCorrX+DUnclusteredMETPx;
 	DUnclusteredMETPy=metZeroCorrY+DUnclusteredMETPy;
@@ -1052,7 +1190,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
       //      ptCorr = ptCorr;
       //      energyCorr = energyCorr;
-      float csv = vfloats_values[makeName(jets_label,pref,"CSVv2")][j];
+//      float csv = vfloats_values[makeName(jets_label,pref,"CSVv2")][j]; 
+	  float cmva = vfloats_values[makeName(jets_label,pref,"CMVAv2")][j];
       float partonFlavour = vfloats_values[makeName(jets_label,pref,"PartonFlavour")][j];
       int flavor = int(partonFlavour);
       //      vfloats_values[jets_label+"_CorrPt"][j]=ptCorr;
@@ -1062,21 +1201,23 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       vfloats_values[jets_label+"_CorrEta"][j]=eta;
       vfloats_values[jets_label+"_CorrPhi"][j]=phi;
       // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagPerformanceOP
-      bool isCSVT = csv  > 0.935;
-      bool isCSVM = csv  > 0.800;
-      bool isCSVL = csv  > 0.460;
-      vfloats_values[jets_label+"_IsCSVT"][j]=isCSVT;
-      vfloats_values[jets_label+"_IsCSVM"][j]=isCSVM;
-      vfloats_values[jets_label+"_IsCSVL"][j]=isCSVL;
+      bool isCMVAT = cmva  > 0.875;
+      bool isCMVAM = cmva  > 0.185;
+      bool isCMVAL = cmva  > -0.715;
+      vfloats_values[jets_label+"_IsCMVAT"][j]=isCMVAT;
+      vfloats_values[jets_label+"_IsCMVAM"][j]=isCMVAM;
+      vfloats_values[jets_label+"_IsCMVAL"][j]=isCMVAL;
       
-      float bsf = getScaleFactor(ptCorr,eta,partonFlavour,"noSyst");
+      std::cout<<"Flavor: "<<flavor<<"\tDiscriminator: "<<cmva<<"\tIsCMVAT? "<<int(isCMVAT)<<"\tIsCMVAM? "<<int(isCMVAM)<<"\tIsCMVAL? "<<int(isCMVAL)<<std::endl;
+      
+/*      float bsf = getScaleFactor(ptCorr,eta,partonFlavour,"noSyst");
       float bsfup = getScaleFactor(ptCorr,eta,partonFlavour,"up");
       float bsfdown = getScaleFactor(ptCorr,eta,partonFlavour,"down");
       
       vfloats_values[jets_label+"_BSF"][j]=bsf;
       vfloats_values[jets_label+"_BSFUp"][j]=bsfup;
       vfloats_values[jets_label+"_BSFDown"][j]=bsfdown;
-
+*/
       //***** JET ID ****      
       bool passesID = true;
       
@@ -1113,21 +1254,22 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	vfloats_values[jets_label+"_JetID_neutralHadronEnergyFraction"][j]=neuHadEnFrac;
 	vfloats_values[jets_label+"_JetID_neutralMultiplicity"][j]=neuMulti;
 
-	/*
-	cout << "### JET ID ###" << endl;
-	cout << "ndau " << nDau << endl;
-	cout << "mu_frac " << mu_frac << endl;
-	cout << "chMulti " << chMulti << endl;
-	cout << "chHadEnFrac " << chHadEnFrac << endl;
-	cout << "chEmEnFrac " << chEmEnFrac << endl;
-	cout << "neuEmEnFrac " << neuEmEnFrac << endl;
-	cout << "neuHadEnFrac " << neuHadEnFrac << endl;
-	cout << "passes loose id " << int(passesID) << endl;
-	*/	
+	
+	std::cout << "### JET ID ###" << std::endl;
+	
+	std::cout << "ndau " << nDau << std::endl;
+	std::cout << "mu_frac " << mu_frac << std::endl;
+	std::cout << "chMulti " << chMulti << std::endl;
+	std::cout << "chHadEnFrac " << chHadEnFrac << std::endl;
+	std::cout << "chEmEnFrac " << chEmEnFrac << std::endl;
+	std::cout << "neuEmEnFrac " << neuEmEnFrac << std::endl;
+	std::cout << "neuHadEnFrac " << neuHadEnFrac << std::endl;
+	std::cout << "passes loose id " << int(passesID) << std::endl;
+		
       }
 
       vfloats_values[jets_label+"_PassesID"][j]=(float)passesID;
-      
+      std::cout<<"Check 1"<<std::endl;
       
       //remove overlap with tight electrons/muons
       double minDR=9999;
@@ -1166,18 +1308,18 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
       if( passesID && passesDR) vfloats_values[jets_label+"_IsLoose"][j]=1.0;
       for (size_t ji = 0; ji < (size_t)jetScanCuts.size(); ++ji){
-	stringstream j_n;
-	double jetval = jetScanCuts.at(ji);
-	j_n << "Cut" <<jetval;
-	bool passesCut = ( ptCorr > jetval && fabs(eta) < 4.7);
+		stringstream j_n;
+		double jetval = jetScanCuts.at(ji);
+		j_n << "Cut" <<jetval;
+		bool passesCut = ( ptCorr > jetval && fabs(eta) < 4.7);
 
 	
-	if(!passesID || !passesCut || !passesDR) continue;
-	if(ji==0){
-	  vfloats_values[jets_label+"_IsTight"][j]=1.0;
-	  TLorentzVector jet;
-	  jet.SetPtEtaPhiE(ptCorr, eta, phi, energyCorr);
-	  jets.push_back(jet);
+		if(!passesID || !passesCut || !passesDR) continue;
+		if(ji==0){
+			vfloats_values[jets_label+"_IsTight"][j]=1.0;
+			TLorentzVector jet;
+			jet.SetPtEtaPhiE(ptCorr, eta, phi, energyCorr);
+			jets.push_back(jet);
 
 	  //double MCTagEFFiciency(int flavor); 
 	  //  double TagScaleFactor(int flavor, string syst);    
@@ -1190,15 +1332,16 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  //    partonFlavour = vfloats_values[makeName(jets_label,pref,"PartonFlavour")][j];    
 	  
 	}
-	//      cout << " syst "<< syst<< " jet "<< j << " pt "<< ptCorr <<"cut "<< jetScanCuts.at(ji)<< " extra jet with pt "<< ptCorr<< "eventNJets before is" << float_values["Event_nJets"+j_n.str()]<< " csv "<< csv<< " isCSVM? "<< isCSVM<<endl;
+//	      cout << " syst "<< syst<< " jet "<< j << " pt "<< ptCorr <<"cut "<< jetScanCuts.at(ji)<< " extra jet with pt "<< ptCorr<< "eventNJets before is" << float_values["Event_nJets"+j_n.str()]<< " csv "<< csv<< " isCSVM? "<< isCSVM<<endl;
 	if(passesCut)	float_values["Event_nJets"+j_n.str()]+=1;
-	//	cout<<  "after: "<< float_values["Event_nJets"+j_n.str()]<<endl;
+		std::cout<<  "after: "<< float_values["Event_nJets"+j_n.str()]<<std::endl;
 	if(passesCut){
-	  double csvteff = MCTagEfficiency("csvt",flavor, ptCorr);
-	  double csvleff = MCTagEfficiency("csvl",flavor,ptCorr);
-	  double csvmeff = MCTagEfficiency("csvm",flavor,ptCorr);
+	  double cmvateff = MCTagEfficiency("cmvat",flavor, ptCorr);
+	  double cmvaleff = MCTagEfficiency("cmval",flavor,ptCorr);
+	  double cmvameff = MCTagEfficiency("cmvam",flavor,ptCorr);
+	
+	  std::cout<<"CMVAv2T eff: "<<cmvateff<<"\tCMVAv2M eff: "<<cmvameff<<"\tCMVAv2L eff: "<<cmvaleff<<std::endl;	
 
-	  /*
 	  BTagEntry::JetFlavor jtflv;
 	  if (flavor == 5)
 	    jtflv = BTagEntry::FLAV_B;
@@ -1207,88 +1350,73 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  else 
 	    jtflv = BTagEntry::FLAV_UDSG;
  
-	  double sfcsvl = reader_csvl.eval(jtflv,eta,ptCorr);
-	  double sfcsvm = reader_csvm.eval(jtflv,eta,ptCorr);
-	  double sfcsvt = reader_csvt.eval(jtflv,eta,ptCorr);
 
-	  double sfcsvt_mistag_up = reader_csvtup.eval(jtflv,eta,ptCorr);
-	  double sfcsvl_mistag_up = reader_csvlup.eval(jtflv,eta,ptCorr);
-	  double sfcsvm_mistag_up = reader_csvmup.eval(jtflv,eta,ptCorr);
-
-	  double sfcsvt_mistag_down = reader_csvtdown.eval(jtflv,eta,ptCorr);
-	  double sfcsvl_mistag_down = reader_csvldown.eval(jtflv,eta,ptCorr);
-	  double sfcsvm_mistag_down = reader_csvmdown.eval(jtflv,eta,ptCorr);
-
-	  double sfcsvt_b_tag_down = reader_csvtdown.eval(jtflv,eta,ptCorr);
-	  double sfcsvl_b_tag_down = reader_csvldown.eval(jtflv,eta,ptCorr);
-	  double sfcsvm_b_tag_down = reader_csvmdown.eval(jtflv,eta,ptCorr);
-
-	  double sfcsvt_b_tag_up = reader_csvtup.eval(jtflv,eta,ptCorr);
-	  double sfcsvl_b_tag_up = reader_csvlup.eval(jtflv,eta,ptCorr);
-	  double sfcsvm_b_tag_up = reader_csvmup.eval(jtflv,eta,ptCorr);
-	  */
+	  double sfcmval = reader_cmval.eval(jtflv,eta,ptCorr);
+	  double sfcmvam = reader_cmvam.eval(jtflv,eta,ptCorr);
+	  double sfcmvat = reader_cmvat.eval(jtflv,eta,ptCorr);
 	  
-	  double sfcsvt = TagScaleFactor("csvt", flavor, "noSyst", ptCorr);	 
-	  double sfcsvl = TagScaleFactor("csvl", flavor, "noSyst", ptCorr);
-	  double sfcsvm = TagScaleFactor("csvm", flavor, "noSyst", ptCorr);
+	  std::cout<< "jet :# "<< j << "sf is " <<sfcmvat << " eff is "<<cmvateff<<std::endl;
 
-	  double sfcsvt_mistag_up = TagScaleFactor("csvt", flavor, "mistag_up", ptCorr);
-	  double sfcsvl_mistag_up = TagScaleFactor("csvl", flavor, "mistag_up", ptCorr);	  
-	  double sfcsvm_mistag_up = TagScaleFactor("csvm", flavor, "mistag_up", ptCorr);
+/*	  double sfcmvat_mistag_up = reader_cmvatup.eval(jtflv,eta,ptCorr);
+	  double sfcmval_mistag_up = reader_cmvalup.eval(jtflv,eta,ptCorr);
+	  double sfcmvam_mistag_up = reader_cmvamup.eval(jtflv,eta,ptCorr);
 
-	  double sfcsvt_mistag_down = TagScaleFactor("csvt", flavor, "mistag_down", ptCorr);
-	  double sfcsvl_mistag_down = TagScaleFactor("csvl", flavor, "mistag_down", ptCorr);
-	  double sfcsvm_mistag_down = TagScaleFactor("csvm", flavor, "mistag_down", ptCorr);
+	  double sfcmvat_mistag_down = reader_cmvatdown.eval(jtflv,eta,ptCorr);
+	  double sfcmval_mistag_down = reader_cmvaldown.eval(jtflv,eta,ptCorr);
+	  double sfcmvam_mistag_down = reader_cmvamdown.eval(jtflv,eta,ptCorr);
+*/
+	  double sfcmvat_b_tag_down = reader_cmvatdown.eval(jtflv,eta,ptCorr);
+	  double sfcmval_b_tag_down = reader_cmvaldown.eval(jtflv,eta,ptCorr);
+	  double sfcmvam_b_tag_down = reader_cmvamdown.eval(jtflv,eta,ptCorr);
 
-	  double sfcsvt_b_tag_down = TagScaleFactor("csvt", flavor, "b_tag_down", ptCorr);
-	  double sfcsvl_b_tag_down = TagScaleFactor("csvl", flavor, "b_tag_down", ptCorr);
-	  double sfcsvm_b_tag_down = TagScaleFactor("csvm", flavor, "b_tag_down", ptCorr);	
+	  double sfcmvat_b_tag_up = reader_cmvatup.eval(jtflv,eta,ptCorr);
+	  double sfcmval_b_tag_up = reader_cmvalup.eval(jtflv,eta,ptCorr);
+	  double sfcmvam_b_tag_up = reader_cmvamup.eval(jtflv,eta,ptCorr);
 
-	  double sfcsvt_b_tag_up = TagScaleFactor("csvt", flavor, "b_tag_up", ptCorr);
-	  double sfcsvl_b_tag_up = TagScaleFactor("csvl", flavor, "b_tag_up", ptCorr);
-	  double sfcsvm_b_tag_up = TagScaleFactor("csvm", flavor, "b_tag_up", ptCorr);
+      
 	  
 
-	  jsfscsvt.push_back(BTagWeight::JetInfo(csvteff, sfcsvt));
-	  jsfscsvl.push_back(BTagWeight::JetInfo(csvleff, sfcsvl));
-	  jsfscsvm.push_back(BTagWeight::JetInfo(csvmeff, sfcsvm));
+	  jsfscmvat.push_back(BTagWeight::JetInfo(cmvateff, sfcmvat));
+	  jsfscmval.push_back(BTagWeight::JetInfo(cmvaleff, sfcmval));
+	  jsfscmvam.push_back(BTagWeight::JetInfo(cmvameff, sfcmvam));
 
-	  jsfscsvt_mistag_up.push_back(BTagWeight::JetInfo(csvteff, sfcsvt_mistag_up));
-	  jsfscsvl_mistag_up.push_back(BTagWeight::JetInfo(csvleff, sfcsvl_mistag_up));
-	  jsfscsvm_mistag_up.push_back(BTagWeight::JetInfo(csvmeff, sfcsvm_mistag_up));
+/*	  jsfscmvat_mistag_up.push_back(BTagWeight::JetInfo(cmvateff, sfcmvat_mistag_up));
+	  jsfscmval_mistag_up.push_back(BTagWeight::JetInfo(cmvaleff, sfcmval_mistag_up));
+	  jsfscmvam_mistag_up.push_back(BTagWeight::JetInfo(cmvameff, sfcmvam_mistag_up));
+*/
 
-	  jsfscsvt_b_tag_up.push_back(BTagWeight::JetInfo(csvteff, sfcsvt_b_tag_up));
-	  jsfscsvl_b_tag_up.push_back(BTagWeight::JetInfo(csvleff, sfcsvl_b_tag_up));
-	  jsfscsvm_b_tag_up.push_back(BTagWeight::JetInfo(csvmeff, sfcsvm_b_tag_up));
+	  jsfscmvat_b_tag_up.push_back(BTagWeight::JetInfo(cmvateff, sfcmvat_b_tag_up));
+	  jsfscmval_b_tag_up.push_back(BTagWeight::JetInfo(cmvaleff, sfcmval_b_tag_up));
+	  jsfscmvam_b_tag_up.push_back(BTagWeight::JetInfo(cmvameff, sfcmvam_b_tag_up));
 
-	  jsfscsvt_mistag_down.push_back(BTagWeight::JetInfo(csvteff, sfcsvt_mistag_down));
-	  jsfscsvl_mistag_down.push_back(BTagWeight::JetInfo(csvleff, sfcsvl_mistag_down));
-	  jsfscsvm_mistag_down.push_back(BTagWeight::JetInfo(csvmeff, sfcsvm_mistag_down));
+/*	  jsfscmvat_mistag_down.push_back(BTagWeight::JetInfo(cmvateff, sfcmvat_mistag_down));
+	  jsfscmval_mistag_down.push_back(BTagWeight::JetInfo(cmvaleff, sfcmval_mistag_down));
+	  jsfscmvam_mistag_down.push_back(BTagWeight::JetInfo(cmvameff, sfcmvam_mistag_down));
+*/
+	  jsfscmvat_b_tag_down.push_back(BTagWeight::JetInfo(cmvateff, sfcmvat_b_tag_down));
+	  jsfscmval_b_tag_down.push_back(BTagWeight::JetInfo(cmvaleff, sfcmval_b_tag_down));
+	  jsfscmvam_b_tag_down.push_back(BTagWeight::JetInfo(cmvameff, sfcmvam_b_tag_down));
+	
 
-	  jsfscsvt_b_tag_down.push_back(BTagWeight::JetInfo(csvteff, sfcsvt_b_tag_down));
-	  jsfscsvl_b_tag_down.push_back(BTagWeight::JetInfo(csvleff, sfcsvl_b_tag_down));
-	  jsfscsvm_b_tag_down.push_back(BTagWeight::JetInfo(csvmeff, sfcsvm_b_tag_down));
-
-	  //cout<< "jet :# "<< j << "sf is " <<sfcsvt << " eff is "<<csvteff<<endl;
 	}
 
-
 	//if(isCSVT && passesCut && fabs(eta) < 2.4) {
-	if(isCSVT && passesID && passesDRtight && ptCorr > 40 && fabs(eta) < 2.4) {
-	  float_values["Event_nCSVTJets"+j_n.str()]+=1.0;
-	  ncsvt_tags +=1;
+	if(isCMVAT && passesID && passesDRtight && ptCorr > 40 && fabs(eta) < 2.4) {
+	  float_values["Event_nCMVATJets"+j_n.str()]+=1.0;
+	  ncmvat_tags +=1;
 	}
 
 	//if(isCSVL && passesCut && fabs(eta) < 2.4) { 
-	if(isCSVL && passesID && passesDRtight && ptCorr > 40 && fabs(eta) < 2.4) {
-	  ncsvl_tags +=1;
+	if(isCMVAL && passesID && passesDRtight && ptCorr > 40 && fabs(eta) < 2.4) {
+	  ncmval_tags +=1; float_values["Event_nCMVALJets"+j_n.str()]+=1;
 	}
 
 	//if(isCSVM && passesCut && fabs(eta) < 2.4) { 
-	if(isCSVM && passesID && passesDRtight && ptCorr > 40 && fabs(eta) < 2.4) {
-	  float_values["Event_nCSVMJets"+j_n.str()]+=1.0;
-	  if(ji==0){
-	    ncsvm_tags +=1;
+	if(isCMVAM && passesID && passesDRtight && ptCorr > 40 && fabs(eta) < 2.4) {
+	  float_values["Event_nCMVAMJets"+j_n.str()]+=1.0; ncmvam_tags +=1;		
+	}
+/*	  if(ji==0){
+	    ncmvam_tags +=1;
 	    //    cout << " jet "<< j<< " isBJET "<<endl;
 	    //TLorentzVector bjet;
 	    //bjet.SetPtEtaPhiE(ptCorr, eta, phi, energyCorr);
@@ -1296,17 +1424,19 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	    //mapBJets[bjetidx]=j;
 	    //++bjetidx;
 	  }
+*/
 	  //	  if(ji==0){
 	    //	    cout << " jet "<< j<< " isBJET "<<endl;
 	    //	    TLorentzVector bjet;
 	    //  bjet.SetPtEtaPhiE(ptCorr, eta, phi, energyCorr);
 	    //	    bjets.push_back(bjet);
 	  //	  }
-	}
+//	}
 	
-	if(isCSVL && passesCut && abs(eta) < 2.4) float_values["Event_nCSVLJets"+j_n.str()]+=1;
-      }
-    } 
+//	if(isCMVAL && passesCut && abs(eta) < 2.4) float_values["Event_nCMVALJets"+j_n.str()]+=1;
+	std::cout<<  "after: "<< float_values["Event_nJets"+j_n.str()]<<"\t"<<float_values["Event_nCMVATJets"+j_n.str()]<<std::endl;
+   }
+ } 
     
     if(useMETNoHF){
       DUnclusteredMETPx=0.0;
@@ -1396,7 +1526,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
     //BTagging part
     if(doBTagSF){
-      //CSVT
+/*      //CSVT
       //0 tags
       b_weight_csvt_0_tags = b_csvt_0_tags.weight(jsfscsvt, ncsvt_tags);  
       b_weight_csvt_0_tags_mistag_up = b_csvt_0_tags.weight(jsfscsvt_mistag_up, ncsvt_tags);  
@@ -1495,11 +1625,154 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float_values["Event_bWeightBTagDown0CSVT"]=b_weight_csvt_0_tags_b_tag_down;
       float_values["Event_bWeightBTagDown1CSVT"]=b_weight_csvt_1_tag_b_tag_down;
       float_values["Event_bWeightBTagDown2CSVT"]=b_weight_csvt_2_tags_b_tag_down;
-    }
+*/
 
-
-
+///  CMVAT
+      //0 tags
+      b_weight_cmvat_0_tags = b_cmvat_0_tags.weight(jsfscmvat, ncmvat_tags);  
+//      b_weight_cmvat_0_tags_mistag_up = b_cmvat_0_tags.weight(jsfscmvat_mistag_up, ncmvat_tags);  
+//      b_weight_cmvat_0_tags_mistag_down = b_cmvat_0_tags.weight(jsfscmvat_mistag_down, ncmvat_tags);  
+      b_weight_cmvat_0_tags_b_tag_up = b_cmvat_0_tags.weight(jsfscmvat_b_tag_up, ncmvat_tags);  
+      b_weight_cmvat_0_tags_b_tag_down = b_cmvat_0_tags.weight(jsfscmvat_b_tag_down, ncmvat_tags);  
       
+      //1 tag
+      b_weight_cmvat_1_tag = b_cmvat_1_tag.weight(jsfscmvat, ncmvat_tags);  
+//      b_weight_cmvat_1_tag_mistag_up = b_cmvat_1_tag.weight(jsfscmvat_mistag_up, ncmvat_tags);  
+//      b_weight_cmvat_1_tag_mistag_down = b_cmvat_1_tag.weight(jsfscmvat_mistag_down, ncmvat_tags);  
+      b_weight_cmvat_1_tag_b_tag_up = b_cmvat_1_tag.weight(jsfscmvat_b_tag_up, ncmvat_tags);  
+      b_weight_cmvat_1_tag_b_tag_down = b_cmvat_1_tag.weight(jsfscmvat_b_tag_down, ncmvat_tags);  
+      //cout <<"w1t check: is"<< b_weight_cmvat_1_tag<<endl;
+      
+      //2 tags
+      b_weight_cmvat_2_tags = b_cmvat_2_tags.weight(jsfscmvat, ncmvat_tags);  
+//      b_weight_cmvat_2_tags_mistag_up = b_cmvat_2_tags.weight(jsfscmvat_mistag_up, ncmvat_tags);  
+//      b_weight_cmvat_2_tags_mistag_down = b_cmvat_2_tags.weight(jsfscmvat_mistag_down, ncmvat_tags);  
+      b_weight_cmvat_2_tags_b_tag_up = b_cmvat_2_tags.weight(jsfscmvat_b_tag_up, ncmvat_tags);  
+      b_weight_cmvat_2_tags_b_tag_down = b_cmvat_2_tags.weight(jsfscmvat_b_tag_down, ncmvat_tags);  
+
+/// CMVAM    
+      //0 tags
+      b_weight_cmvam_0_tags = b_cmvam_0_tags.weight(jsfscmvam, ncmvam_tags);  
+//      b_weight_cmvam_0_tags_mistag_up = b_cmvam_0_tags.weight(jsfscmvam_mistag_up, ncmvam_tags);  
+//      b_weight_cmvam_0_tags_mistag_down = b_cmvam_0_tags.weight(jsfscmvam_mistag_down, ncmvam_tags);  
+      b_weight_cmvam_0_tags_b_tag_up = b_cmvam_0_tags.weight(jsfscmvam_b_tag_up, ncmvam_tags);  
+      b_weight_cmvam_0_tags_b_tag_down = b_cmvam_0_tags.weight(jsfscmvam_b_tag_down, ncmvam_tags);  
+      
+      //1 tag
+      b_weight_cmvam_1_tag = b_cmvam_1_tag.weight(jsfscmvam, ncmvam_tags);  
+//      b_weight_cmvam_1_tag_mistag_up = b_cmvam_1_tag.weight(jsfscmvam_mistag_up, ncmvam_tags);  
+//      b_weight_cmvam_1_tag_mistag_down = b_cmvam_1_tag.weight(jsfscmvam_mistag_down, ncmvam_tags);  
+      b_weight_cmvam_1_tag_b_tag_up = b_cmvam_1_tag.weight(jsfscmvam_b_tag_up, ncmvam_tags);  
+      b_weight_cmvam_1_tag_b_tag_down = b_cmvam_1_tag.weight(jsfscmvam_b_tag_down, ncmvam_tags);  
+      //cout <<"w1t check: is"<< b_weight_cmvam_1_tag<<endl;
+      
+      //2 tags
+      b_weight_cmvam_2_tags = b_cmvam_2_tags.weight(jsfscmvam, ncmvam_tags);  
+//      b_weight_cmvam_2_tags_mistag_up = b_cmvam_2_tags.weight(jsfscmvam_mistag_up, ncmvam_tags);  
+//      b_weight_cmvam_2_tags_mistag_down = b_cmvam_2_tags.weight(jsfscmvam_mistag_down, ncmvam_tags);  
+      b_weight_cmvam_2_tags_b_tag_up = b_cmvam_2_tags.weight(jsfscmvam_b_tag_up, ncmvam_tags);  
+      b_weight_cmvam_2_tags_b_tag_down = b_cmvam_2_tags.weight(jsfscmvam_b_tag_down, ncmvam_tags);  
+
+/// CMVAL
+      //0 tags
+      b_weight_cmval_0_tags = b_cmval_0_tags.weight(jsfscmval, ncmval_tags);  
+//      b_weight_cmval_0_tags_mistag_up = b_cmval_0_tags.weight(jsfscmval_mistag_up, ncmval_tags);  
+//      b_weight_cmval_0_tags_mistag_down = b_cmval_0_tags.weight(jsfscmval_mistag_down, ncmval_tags);  
+      b_weight_cmval_0_tags_b_tag_up = b_cmval_0_tags.weight(jsfscmval_b_tag_up, ncmval_tags);  
+      b_weight_cmval_0_tags_b_tag_down = b_cmval_0_tags.weight(jsfscmval_b_tag_down, ncmval_tags);  
+      
+      //1 tag
+      b_weight_cmval_1_tag = b_cmval_1_tag.weight(jsfscmval, ncmval_tags);  
+//      b_weight_cmval_1_tag_mistag_up = b_cmval_1_tag.weight(jsfscmval_mistag_up, ncmval_tags);  
+//      b_weight_cmval_1_tag_mistag_down = b_cmval_1_tag.weight(jsfscmval_mistag_down, ncmval_tags);  
+      b_weight_cmval_1_tag_b_tag_up = b_cmval_1_tag.weight(jsfscmval_b_tag_up, ncmval_tags);  
+      b_weight_cmval_1_tag_b_tag_down = b_cmval_1_tag.weight(jsfscmval_b_tag_down, ncmval_tags);  
+      //cout <<"w1t check: is"<< b_weight_cmval_1_tag<<endl;
+      
+      //2 tags
+      b_weight_cmval_2_tags = b_cmval_2_tags.weight(jsfscmval, ncmval_tags);  
+//      b_weight_cmval_2_tags_mistag_up = b_cmval_2_tags.weight(jsfscmval_mistag_up, ncmval_tags);  
+//      b_weight_cmval_2_tags_mistag_down = b_cmval_2_tags.weight(jsfscmval_mistag_down, ncmval_tags);  
+      b_weight_cmval_2_tags_b_tag_up = b_cmval_2_tags.weight(jsfscmval_b_tag_up, ncmval_tags);  
+      b_weight_cmval_2_tags_b_tag_down = b_cmval_2_tags.weight(jsfscmval_b_tag_down, ncmval_tags);  
+
+
+      float_values["Event_bWeight0CMVAL"]=b_weight_cmval_0_tags;
+      float_values["Event_bWeight1CMVAL"]=b_weight_cmval_1_tag;
+      float_values["Event_bWeight2CMVAL"]=b_weight_cmval_2_tags;
+      
+      float_values["Event_bWeight0CMVAM"]=b_weight_cmvam_0_tags;
+      float_values["Event_bWeight1CMVAM"]=b_weight_cmvam_1_tag;
+      float_values["Event_bWeight2CMVAM"]=b_weight_cmvam_2_tags;
+      
+      float_values["Event_bWeight0CMVAT"]=b_weight_cmvat_0_tags;
+      float_values["Event_bWeight1CMVAT"]=b_weight_cmvat_1_tag;
+      float_values["Event_bWeight2CMVAT"]=b_weight_cmvat_2_tags;
+      
+      float_values["Event_bWeight0CMVAL"]=b_weight_cmval_0_tags;
+      float_values["Event_bWeight1CMVAL"]=b_weight_cmval_1_tag;
+      float_values["Event_bWeight2CMVAL"]=b_weight_cmval_2_tags;
+      
+      float_values["Event_bWeight0CMVAM"]=b_weight_cmvam_0_tags;
+      float_values["Event_bWeight1CMVAM"]=b_weight_cmvam_1_tag;
+      float_values["Event_bWeight2CMVAM"]=b_weight_cmvam_2_tags;
+      
+      float_values["Event_bWeight0CMVAT"]=b_weight_cmvat_0_tags;
+      float_values["Event_bWeight1CMVAT"]=b_weight_cmvat_1_tag;
+      float_values["Event_bWeight2CMVAT"]=b_weight_cmvat_2_tags;
+
+      //Mistag
+//      float_values["Event_bWeightMisTagUp0CMVAL"]=b_weight_cmval_0_tags_mistag_up;
+//      float_values["Event_bWeightMisTagUp1CMVAL"]=b_weight_cmval_1_tag_mistag_up;
+//      float_values["Event_bWeightMisTagUp2CMVAL"]=b_weight_cmval_2_tags_mistag_up;
+      
+//      float_values["Event_bWeightMisTagUp0CMVAM"]=b_weight_cmvam_0_tags_mistag_up;
+//      float_values["Event_bWeightMisTagUp1CMVAM"]=b_weight_cmvam_1_tag_mistag_up;
+//      float_values["Event_bWeightMisTagUp2CMVAM"]=b_weight_cmvam_2_tags_mistag_up;
+    
+//      float_values["Event_bWeightMisTagUp0CMVAT"]=b_weight_cmvat_0_tags_mistag_up;
+//      float_values["Event_bWeightMisTagUp1CMVAT"]=b_weight_cmvat_1_tag_mistag_up;
+//      float_values["Event_bWeightMisTagUp2CMVAT"]=b_weight_cmvat_2_tags_mistag_up;
+      
+      
+//      float_values["Event_bWeightMisTagDown0CMVAL"]=b_weight_cmval_0_tags_mistag_down;
+//      float_values["Event_bWeightMisTagDown1CMVAL"]=b_weight_cmval_1_tag_mistag_down;
+//      float_values["Event_bWeightMisTagDown2CMVAL"]=b_weight_cmval_2_tags_mistag_down;
+      
+//      float_values["Event_bWeightMisTagDown0CMVAM"]=b_weight_cmvam_0_tags_mistag_down;
+//      float_values["Event_bWeightMisTagDown1CMVAM"]=b_weight_cmvam_1_tag_mistag_down;
+//      float_values["Event_bWeightMisTagDown2CMVAM"]=b_weight_cmvam_2_tags_mistag_down;
+      
+//      float_values["Event_bWeightMisTagDown0CMVAT"]=b_weight_cmvat_0_tags_mistag_down;
+//      float_values["Event_bWeightMisTagDown1CMVAT"]=b_weight_cmvat_1_tag_mistag_down;
+//      float_values["Event_bWeightMisTagDown2CMVAT"]=b_weight_cmvat_2_tags_mistag_down;
+
+      //Btag
+      float_values["Event_bWeightBTagUp0CMVAL"]=b_weight_cmval_0_tags_b_tag_up;
+      float_values["Event_bWeightBTagUp1CMVAL"]=b_weight_cmval_1_tag_b_tag_up;
+      float_values["Event_bWeightBTagUp2CMVAL"]=b_weight_cmval_2_tags_b_tag_up;
+      
+      float_values["Event_bWeightBTagUp0CMVAM"]=b_weight_cmvam_0_tags_b_tag_up;
+      float_values["Event_bWeightBTagUp1CMVAM"]=b_weight_cmvam_1_tag_b_tag_up;
+      float_values["Event_bWeightBTagUp2CMVAM"]=b_weight_cmvam_2_tags_b_tag_up;
+      
+      float_values["Event_bWeightBTagUp0CMVAT"]=b_weight_cmvat_0_tags_b_tag_up;
+      float_values["Event_bWeightBTagUp1CMVAT"]=b_weight_cmvat_1_tag_b_tag_up;
+      float_values["Event_bWeightBTagUp2CMVAT"]=b_weight_cmvat_2_tags_b_tag_up;
+      
+      float_values["Event_bWeightBTagDown0CMVAL"]=b_weight_cmval_0_tags_b_tag_down;
+      float_values["Event_bWeightBTagDown1CMVAL"]=b_weight_cmval_1_tag_b_tag_down;
+      float_values["Event_bWeightBTagDown2CMVAL"]=b_weight_cmval_2_tags_b_tag_down;
+      
+      float_values["Event_bWeightBTagDown0CMVAM"]=b_weight_cmvam_0_tags_b_tag_down;
+      float_values["Event_bWeightBTagDown1CMVAM"]=b_weight_cmvam_1_tag_b_tag_down;
+      float_values["Event_bWeightBTagDown2CMVAM"]=b_weight_cmvam_2_tags_b_tag_down;
+      
+      float_values["Event_bWeightBTagDown0CMVAT"]=b_weight_cmvat_0_tags_b_tag_down;
+      float_values["Event_bWeightBTagDown1CMVAT"]=b_weight_cmvat_1_tag_b_tag_down;
+      float_values["Event_bWeightBTagDown2CMVAT"]=b_weight_cmvat_2_tags_b_tag_down;      
+    }
+     
     if(useLHE){
       //LHE and luminosity weights:
       float LHE_weight = lhes->hepeup().XWGTUP;
@@ -1633,9 +1906,9 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     //    addvar.push_back("CorrPhi");
     addvar.push_back("CorrE");
     addvar.push_back("MinDR");
-    addvar.push_back("IsCSVT");
-    addvar.push_back("IsCSVM");
-    addvar.push_back("IsCSVL");
+    addvar.push_back("IsCMVAT");
+    addvar.push_back("IsCMVAM");
+    addvar.push_back("IsCMVAL");
     //    addvar.push_back("BSF");
     //    addvar.push_back("BSFUp");
     //    addvar.push_back("BSFDown");
@@ -1670,7 +1943,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     addvar.push_back("TopMass");
     addvar.push_back("TopWMass");
     addvar.push_back("nJ");
-    addvar.push_back("nCSVM");
+    addvar.push_back("nCMVAM");
   }  
   if(isak8subjet){
     ;//    addvar.push_back("CorrPt");
@@ -1710,65 +1983,65 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     //addvar.push_back("nType1TopJets");
     //addvar.push_back("nType2TopJets");
  
-    addvar.push_back("bWeight0CSVT");
-    addvar.push_back("bWeight1CSVT");
-    addvar.push_back("bWeight2CSVT");
+    addvar.push_back("bWeight0CMVAT");
+    addvar.push_back("bWeight1CMVAT");
+    addvar.push_back("bWeight2CMVAT");
 
-    addvar.push_back("bWeight0CSVM");
-    addvar.push_back("bWeight1CSVM");
-    addvar.push_back("bWeight2CSVM");
+    addvar.push_back("bWeight0CMVAM");
+    addvar.push_back("bWeight1CMVAM");
+    addvar.push_back("bWeight2CMVAM");
 
-    addvar.push_back("bWeight0CSVL");
-    addvar.push_back("bWeight1CSVL");
-    addvar.push_back("bWeight2CSVL");
+    addvar.push_back("bWeight0CMVAL");
+    addvar.push_back("bWeight1CMVAL");
+    addvar.push_back("bWeight2CMVAL");
 
-    addvar.push_back("bWeightMisTagDown0CSVT");
-    addvar.push_back("bWeightMisTagDown1CSVT");
-    addvar.push_back("bWeightMisTagDown2CSVT");
+/*    addvar.push_back("bWeightMisTagDown0CMVAT");
+    addvar.push_back("bWeightMisTagDown1CMVAT");
+    addvar.push_back("bWeightMisTagDown2CMVAT");
 
-    addvar.push_back("bWeightMisTagDown0CSVM");
-    addvar.push_back("bWeightMisTagDown1CSVM");
-    addvar.push_back("bWeightMisTagDown2CSVM");
+    addvar.push_back("bWeightMisTagDown0CMVAM");
+    addvar.push_back("bWeightMisTagDown1CMVAM");
+    addvar.push_back("bWeightMisTagDown2CMVAM");
 
-    addvar.push_back("bWeightMisTagDown0CSVL");
-    addvar.push_back("bWeightMisTagDown1CSVL");
-    addvar.push_back("bWeightMisTagDown2CSVL");
+    addvar.push_back("bWeightMisTagDown0CMVAL");
+    addvar.push_back("bWeightMisTagDown1CMVAL");
+    addvar.push_back("bWeightMisTagDown2CMVAL");
 
-    addvar.push_back("bWeightMisTagUp0CSVT");
-    addvar.push_back("bWeightMisTagUp1CSVT");
-    addvar.push_back("bWeightMisTagUp2CSVT");
+    addvar.push_back("bWeightMisTagUp0CMVAT");
+    addvar.push_back("bWeightMisTagUp1CMVAT");
+    addvar.push_back("bWeightMisTagUp2CMVAT");
 
-    addvar.push_back("bWeightMisTagUp0CSVM");
-    addvar.push_back("bWeightMisTagUp1CSVM");
-    addvar.push_back("bWeightMisTagUp2CSVM");
+    addvar.push_back("bWeightMisTagUp0CMVAM");
+    addvar.push_back("bWeightMisTagUp1CMVAM");
+    addvar.push_back("bWeightMisTagUp2CMVAM");
 
-    addvar.push_back("bWeightMisTagUp0CSVL");
-    addvar.push_back("bWeightMisTagUp1CSVL");
-    addvar.push_back("bWeightMisTagUp2CSVL");
+    addvar.push_back("bWeightMisTagUp0CMVAL");
+    addvar.push_back("bWeightMisTagUp1CMVAL");
+    addvar.push_back("bWeightMisTagUp2CMVAL");
+*/
+    addvar.push_back("bWeightBTagUp0CMVAT");
+    addvar.push_back("bWeightBTagUp1CMVAT");
+    addvar.push_back("bWeightBTagUp2CMVAT");
 
-    addvar.push_back("bWeightBTagUp0CSVT");
-    addvar.push_back("bWeightBTagUp1CSVT");
-    addvar.push_back("bWeightBTagUp2CSVT");
+    addvar.push_back("bWeightBTagUp0CMVAM");
+    addvar.push_back("bWeightBTagUp1CMVAM");
+    addvar.push_back("bWeightBTagUp2CMVAM");
 
-    addvar.push_back("bWeightBTagUp0CSVM");
-    addvar.push_back("bWeightBTagUp1CSVM");
-    addvar.push_back("bWeightBTagUp2CSVM");
+    addvar.push_back("bWeightBTagUp0CMVAL");
+    addvar.push_back("bWeightBTagUp1CMVAL");
+    addvar.push_back("bWeightBTagUp2CMVAL");
 
-    addvar.push_back("bWeightBTagUp0CSVL");
-    addvar.push_back("bWeightBTagUp1CSVL");
-    addvar.push_back("bWeightBTagUp2CSVL");
+    addvar.push_back("bWeightBTagDown0CMVAT");
+    addvar.push_back("bWeightBTagDown1CMVAT");
+    addvar.push_back("bWeightBTagDown2CMVAT");
 
-    addvar.push_back("bWeightBTagDown0CSVT");
-    addvar.push_back("bWeightBTagDown1CSVT");
-    addvar.push_back("bWeightBTagDown2CSVT");
+    addvar.push_back("bWeightBTagDown0CMVAM");
+    addvar.push_back("bWeightBTagDown1CMVAM");
+    addvar.push_back("bWeightBTagDown2CMVAM");
 
-    addvar.push_back("bWeightBTagDown0CSVM");
-    addvar.push_back("bWeightBTagDown1CSVM");
-    addvar.push_back("bWeightBTagDown2CSVM");
-
-    addvar.push_back("bWeightBTagDown0CSVL");
-    addvar.push_back("bWeightBTagDown1CSVL");
-    addvar.push_back("bWeightBTagDown2CSVL");
+    addvar.push_back("bWeightBTagDown0CMVAL");
+    addvar.push_back("bWeightBTagDown1CMVAL");
+    addvar.push_back("bWeightBTagDown2CMVAL");
 
     addvar.push_back("LHEWeightSign");
     addvar.push_back("LHEWeight");
@@ -2020,7 +2293,7 @@ void DMAnalysisTreeMaker::getEventLHEWeights(){
 double DMAnalysisTreeMaker::smear(double pt, double genpt, double eta, string syst){
   double resolScale = resolSF(fabs(eta), syst);
   double smear =1.0;
-  if(genpt>0) smear = std::max((double)(0.0), (double)(pt + (pt - genpt) * resolScale) / pt);
+  if(genpt>0) smear = std::max((double)(0.0), (double)(genpt + (pt - genpt) * resolScale) / pt);
   return  smear;
 }
 
@@ -2042,20 +2315,25 @@ double DMAnalysisTreeMaker::resolSF(double eta, string syst)
 }
 */
 
- // preliminary 13 TeV scale factors
+// 80X Data/MC JER SFs
 double DMAnalysisTreeMaker::resolSF(double eta, string syst)
 {
   double fac = 0.;
   if (syst == "jer__up")fac = 1.;
   if (syst == "jer__down")fac = -1.;
-  if (eta <= 0.8)                       return 0.061 + (0.023 * fac);
-  else if ( eta > 0.8 && eta <= 1.3 )   return 0.088 + (0.029 * fac);
-  else if ( eta > 1.3 && eta <= 1.9 )   return 0.106 + (0.030 * fac);
-  else if ( eta > 1.9 && eta <= 2.5 )   return 0.126 + (0.094 * fac);
-  else if ( eta > 2.5 && eta <= 3.0 )   return 0.343 + (0.123 * fac);
-  else if ( eta > 3.0 && eta <= 3.2 )   return 0.303 + (0.111 * fac);
-  else if ( eta > 3.2 && eta <= 5.0 )   return 0.320 + (0.286 * fac);
-  return 0.1;
+  if( eta <= 0.5 )                      return 1.122 + (0.026 * fac);		
+  else if ( eta > 0.5 && eta <= 0.8 )   return 1.167 + (0.048 * fac);
+  else if ( eta > 0.8 && eta <= 1.1 )   return 1.168 + (0.046 * fac);
+  else if ( eta > 1.1 && eta <= 1.3 )   return 1.029 + (0.066 * fac);
+  else if ( eta > 1.3 && eta <= 1.7 )   return 1.115 + (0.030 * fac);
+  else if ( eta > 1.7 && eta <= 1.9 )   return 1.041 + (0.062 * fac);
+  else if ( eta > 1.9 && eta <= 2.1 )   return 1.167 + (0.086 * fac);
+  else if ( eta > 2.1 && eta <= 2.3 )   return 1.094 + (0.093 * fac);
+  else if ( eta > 2.3 && eta <= 2.5 )   return 1.168 + (0.120 * fac);
+  else if ( eta > 2.5 && eta <= 2.8 )   return 1.266 + (0.132 * fac);
+  else if ( eta > 2.8 && eta <= 3.0 )   return 1.595 + (0.175 * fac);
+  else if ( eta > 3.0 && eta <= 3.2 )   return 0.998 + (0.066 * fac);
+  else                                  return 1.226 + (0.145 * fac);
 }
 
 double DMAnalysisTreeMaker::jetUncertainty(double ptCorr, double eta, string syst)
@@ -2072,9 +2350,9 @@ double DMAnalysisTreeMaker::jetUncertainty(double ptCorr, double eta, string sys
   return 0.0;
 }
 
-double DMAnalysisTreeMaker::getScaleFactor(double ptCorr,double etaCorr,double partonFlavour, string syst){
-  return 1.0;
-}
+//double DMAnalysisTreeMaker::getScaleFactor(double ptCorr,double etaCorr,double partonFlavour, string syst){
+//  return 1.0;
+//}
 
 bool DMAnalysisTreeMaker::isInVector(std::vector<std::string> v, std::string s){
   for(size_t i = 0;i<v.size();++i){
@@ -2137,7 +2415,9 @@ float DMAnalysisTreeMaker::BTagWeight::weight(vector<JetInfo> jetTags, int tags)
 }
 
 double DMAnalysisTreeMaker::MCTagEfficiency(string algo, int flavor, double pt){
-  if (abs(flavor) ==5){
+
+	double eff=1.0;
+/*  if (abs(flavor) ==5){
     if(algo=="csvt") return 0.38;
     if(algo=="csvm") return 0.58;
     if(algo=="csvl") return 0.755;
@@ -2155,10 +2435,59 @@ double DMAnalysisTreeMaker::MCTagEfficiency(string algo, int flavor, double pt){
     if(algo=="csvl") return 0.079;
   }
   return 1.0;
+*/
+/// MC Tag Efficiencies calculated for cMVAv2 algorithm based on BTV-15-001
+	if(abs(flavor) == 5){
+		if(algo == "cmvat"){ 
+			if(pt>=30.0 && pt<160.0) eff = 0.127 + 0.01578*pt - 2.126*pow(10,-4)*pt*pt + 1.273*pow(10,-6)*pt*pt*pt - 2.88*pow(10,-9)*pt*pt*pt*pt;
+			if(pt>=160.0) eff = 0.634 - 6.74*pow(10,-4)*pt + 2.69*pow(10,-7)*pt*pt;
+		}
+		if(algo == "cmvam"){
+			if(pt>=30.0 && pt<175) eff = 0.421 + 0.0107*pt - 1.314*pow(10,-4)*pt*pt + 7.268*pow(10,-7)*pt*pt*pt - 1.523*pow(10,-9)*pt*pt*pt*pt;
+			if(pt>=175.0) eff = 0.79 - 3.17*pow(10,-4)*pt + 1.24*pow(10,-7)*pt*pt;
+		}
+		if(algo == "cmval"){
+			if(pt>=30.0 && pt<150.0) eff = 0.707+5.6*pow(10,-3)*pt - 6.27*pow(10,-5)*pt*pt + 3.10*pow(10,-7)*pt*pt*pt - 5.63*pow(10,-10)*pt*pt*pt*pt;
+			if(pt>=150.0) eff = 0.906 - 6.39*pow(10,-5)*pt + 4.11*pow(10,-8)*pt*pt;
+		}	
+	}
+	
+	if(abs(flavor) == 4){
+		if(algo == "cmvat"){ 
+			if(pt>=30.0 && pt<240.0) eff = 0.024 + 5.27*pow(10,-4)*pt - 3.72*pow(10,-6)*pt*pt + 9.87*pow(10,-9)*pt*pt*pt - 8.83*pow(10,-12)*pt*pt*pt*pt;
+			if(pt>=240.0) eff = 0.044;
+		}
+		if(algo == "cmvam"){
+			if(pt>=30.0 && pt<170.0) eff = 0.13 + 1.48*pow(10,-3)*pt - 1.00*pow(10,-5)*pt*pt + 2.65*pow(10,-8)*pt*pt*pt - 2.36*pow(10,-11)*pt*pt*pt*pt;
+			if(pt>=170.0) eff = 0.20;
+		}
+		if (algo == "cmval"){
+			if(pt>=30.0 && pt<205.0) eff = 0.40 + 1.23*pow(10,-3)*pt - 4.60*pow(10,-6)*pt*pt + 5.71*pow(10,-9)*pt*pt*pt;
+			if(pt>=205.0) eff = 0.478 + 1.573*pow(10,-4)*pt;
+		}
+	}
+	
+	if(abs(flavor)!=4 && abs(flavor)!=5){
+		if(algo == "cmvat"){ 
+			if(pt>=30.0 && pt<130.0) eff= 1.24*pow(10,-3) - 1.27*pow(10,-5)*pt + 1.98*pow(10,-7)*pt*pt - 7.46*pow(10,-10)*pt*pt*pt + 8.35*pow(10,-13)*pt*pt*pt*pt;
+			if(pt>=130.0) eff = 1.08*pow(10,-3)+ 3.54*pow(10,-6)*pt;
+		}
+		if(algo == "cmvam"){
+			if(pt>=30.0 && pt<170.0) eff = 9.59*pow(10,-3) - 1.96*pow(10,-5)*pt + 4.53*pow(10,-7)*pt*pt - 1.08*pow(10,-9)*pt*pt*pt + 7.62*pow(10,-13)*pt*pt*pt*pt;
+			if(pt>=170.0) eff = 5.07*pow(10,-3) + 6.02*pow(10,-5)*pt - 2.3*pow(10,-8)*pt*pt;
+		}
+		if (algo == "cmval"){
+			if(pt>=30.0 && pt<130.0) eff = 0.124 - 1.0*pow(10,-3)*pt + 1.06*pow(10,-5)*pt*pt - 3.18*pow(10,-8)*pt*pt*pt + 3.13*pow(10,-11)*pt*pt*pt*pt;
+			if(pt>=130.0) eff = 0.055 + 4.53*pow(10,-4)*pt -1.6*pow(10,-7)*pt*pt;
+		}	
+	}
+	
+	return eff;								
 }
 
 
-double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst, double pt){
+/*
+  double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst, double pt){
   // source (02/11):
   // https://twiki.cern.ch/twiki/pub/CMS/BtagRecommendation76X/CSVv2_prelim.csv
   if(algo == "csvt"){
@@ -2248,7 +2577,7 @@ double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst,
   }
   return 1.0;
 }
-
+*/
 
 
 float DMAnalysisTreeMaker::BTagWeight::weightWithVeto(vector<JetInfo> jetsTags, int tags, vector<JetInfo> jetsVetoes, int vetoes)

@@ -6,10 +6,10 @@ jetssize = cms.untracked.int32(20)
 
 mulabel = cms.string("muons")
 elelabel = cms.string("electrons")
-jetlabel = cms.string("jetsAK4")
-jetak8label = cms.string("jetsAK8")
-subjetak8label = cms.string("subjetsAK8")
-metlabel = cms.string("met")
+jetlabel = cms.string("jetsAK4CHS")
+jetak8label = cms.string("jetsAK8CHS")
+subjetak8label = cms.string("subjetsAK8CHS")
+metlabel = cms.string("metFull")
 metnohflabel = cms.string("metnohf")
 jetnohflabel = cms.string("jetsAK4NoHF")
 
@@ -23,10 +23,10 @@ metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices", "Flag_eeBadScFilter
 
 #Triggers
 leptonTriggers = [
-    "HLT_IsoMu20_v2",
-    "HLT_IsoMu20_v3",
-    "HLT_IsoTkMu20_v3",
-    "HLT_IsoTkMu20_v4"
+    "HLT_IsoMu22_v3",
+    "HLT_IsoMu22_v3",
+    "HLT_IsoTkMu22_v3",
+    "HLT_IsoTkMu22_v3"
     ]
 
 
@@ -36,14 +36,13 @@ cutOnTriggers = False
 
 #What to use for jets/other variables
 saveBase = cms.untracked.bool(False)
-j= "jetsAK4"
-jpref= "jetAK4"
-
+j= "jetsAK4CHS"
+jpref= "jetAK4CHS"
 jnohf= "jetsAK4NoHF"
 jprefnohf= "jetAK4NoHF"
 
-sj = "subjetsAK8"
-sjpref = "subjetAK8"
+sj = "subjetsAK8CHS"
+sjpref = "subjetAK8CHS"
 
 #sj = "subjetsCmsTopTag"
 #sjpref = "subjetsCmsTopTag"
@@ -262,8 +261,9 @@ DMTreesDumper.physicsObjects.append(
             cms.InputTag(j,jpref+"Phi"),
             cms.InputTag(j,jpref+"PartonFlavour"),
             cms.InputTag(j,jpref+"Phi"),
-            cms.InputTag(j,jpref+"CSVv2"),
+			#cms.InputTag(j,jpref+"CSVv2"),
             #cms.InputTag(j,jpref+"CSVv1"),
+			cms.InputTag(j,jpref+"CMVAv2"),
             cms.InputTag(j,jpref+"Charge"),
             cms.InputTag(j,jpref+"ChargeMuEnergy"),
             cms.InputTag(j,jpref+"ChargedHadronMultiplicity"),
@@ -309,7 +309,7 @@ DMTreesDumper.physicsObjects.append(
         singleI = cms.VInputTag(),
         singleF = cms.VInputTag(),
         #toSave = cms.vstring(jpref+"Eta",jpref+"Phi","allExtra"),
-        toSave = cms.vstring(jpref+"E",jpref+"Pt",jpref+"Eta",jpref+"Phi",jpref+"GenJetPt",jpref+"GenJetEta",jpref+"CSVv2",jpref+"PartonFlavour","allExtra",jpref+"HadronFlavour"),
+        toSave = cms.vstring(jpref+"E",jpref+"Pt",jpref+"Eta",jpref+"Phi",jpref+"GenJetPt",jpref+"GenJetEta",jpref+"CMVAv2",jpref+"PartonFlavour","allExtra",jpref+"HadronFlavour"),
         ),
     )
 
