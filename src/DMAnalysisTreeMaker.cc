@@ -627,7 +627,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     if(isFirstEvent){
       for(size_t bt = 0; bt < metNames->size();++bt){
 	std::string tname = metNames->at(bt);
-	cout << "test tname "<< tname << " passes "<< metBits->at(bt)<< endl;
+//	cout << "test tname "<< tname << " passes "<< metBits->at(bt)<< endl;
       }
       //cout << "test tname "<< tname <<endl;
       isFirstEvent = false;
@@ -657,7 +657,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     
   
     
-  std::cout<<"Collected # of primary vertices: "<<nPV<<std::endl;	  
+//  std::cout<<"Collected # of primary vertices: "<<nPV<<std::endl;	  
 
   //Part 1 taking the obs values from the edm file
   for (;itPsets!=physObjects.end();++itPsets){ 
@@ -693,7 +693,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       //      cout<< " size for "<< namelabel <<" is then "<< sizes[namelabel]<<endl; 
     }
     
-        std::cout << " checkpoint floats"<<endl;
+//        std::cout << " checkpoint floats"<<endl;
     //Vectors of ints
     for (;itI != variablesInt.end();++itI){
       string varname=itI->instance();
@@ -707,7 +707,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       }
     }  
     
-        std::cout << " checkpoint ints"<<endl;
+//        std::cout << " checkpoint ints"<<endl;
     //Single floats/ints
     for (;itsF != singleFloat.end();++itsF){
       string varname=itsF->instance();
@@ -722,10 +722,10 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       iEvent.getByToken(t_int[name],h_int[name]);
       int_values[name]=*h_int[name];
     }
-        std::cout << " checkpoint singles"<<endl;
+//        std::cout << " checkpoint singles"<<endl;
   }
 
-    std::cout << " checkpoint part 1"<<endl;
+//    std::cout << " checkpoint part 1"<<endl;
 
 
   //Part 2: selection and analysis-level changes
@@ -777,7 +777,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       getPUSF();
     }
 
-    std::cout<<"Check for PU re-weighting 2"<<std::endl;
+//    std::cout<<"Check for PU re-weighting 2"<<std::endl;
     /**************************
     Muons:
     **************************/
@@ -833,7 +833,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     float_values["Event_mu_eff_up"]=mu_sf_up;
     float_values["Event_mu_eff_down"]=mu_sf_down;
 
-	std::cout<<"Ending Muons"<<std::endl;
+//	std::cout<<"Ending Muons"<<std::endl;
 	
     /**************************
     Electrons:
@@ -903,7 +903,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
     } 
 
-	std::cout<<"Ending Electrons"<<std::endl;
+//	std::cout<<"Ending Electrons"<<std::endl;
     /**************************
     MET:
     **************************/
@@ -919,7 +919,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     float metPx = metpt*sin(metphi);
     float metPy = metpt*cos(metphi);
     
-    std::cout<<"Ending MET"<<std::endl;
+//   std::cout<<"Ending MET"<<std::endl;
     
     //    cout << "syst "<<syst<<endl;
     /**************************
@@ -942,7 +942,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float ptCorr = -9999;
       float energyCorr = -9999;
       float smearfact = -9999;
-      std::cout << "j is " <<j<< "label "<< jets_label << " maxinstances "<< max_instances[jets_label]<< "size "<< sizes[jets_label]<< " pt "<< vfloats_values[makeName(jets_label,pref,"Pt")][j]<< " eta "<< eta<< " phi "<< phi << " e "<< energy <<std::endl;
+//      std::cout << "j is " <<j<< "label "<< jets_label << " maxinstances "<< max_instances[jets_label]<< "size "<< sizes[jets_label]<< " pt "<< vfloats_values[makeName(jets_label,pref,"Pt")][j]<< " eta "<< eta<< " phi "<< phi << " e "<< energy <<std::endl;
       float jecscale = vfloats_values[makeName(jets_label,pref,"jecFactor0")][j];
       float area = vfloats_values[makeName(jets_label,pref,"jetArea")][j];
 
@@ -1031,7 +1031,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       vfloats_values[jets_label+"_IsCMVAM"][j]=isCMVAM;
       vfloats_values[jets_label+"_IsCMVAL"][j]=isCMVAL;
       
-      std::cout<<"Flavor: "<<flavor<<"\tDiscriminator: "<<cmva<<"\tIsCMVAT? "<<int(isCMVAT)<<"\tIsCMVAM? "<<int(isCMVAM)<<"\tIsCMVAL? "<<int(isCMVAL)<<std::endl;
+//      std::cout<<"Flavor: "<<flavor<<"\tDiscriminator: "<<cmva<<"\tIsCMVAT? "<<int(isCMVAT)<<"\tIsCMVAM? "<<int(isCMVAM)<<"\tIsCMVAL? "<<int(isCMVAL)<<std::endl;
       
 /*      float bsf = getScaleFactor(ptCorr,eta,partonFlavour,"noSyst");
       float bsfup = getScaleFactor(ptCorr,eta,partonFlavour,"up");
@@ -1078,7 +1078,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	vfloats_values[jets_label+"_JetID_neutralMultiplicity"][j]=neuMulti;
 
 	
-	std::cout << "### JET ID ###" << std::endl;
+/*	std::cout << "### JET ID ###" << std::endl;
 	
 	std::cout << "ndau " << nDau << std::endl;
 	std::cout << "mu_frac " << mu_frac << std::endl;
@@ -1088,11 +1088,11 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	std::cout << "neuEmEnFrac " << neuEmEnFrac << std::endl;
 	std::cout << "neuHadEnFrac " << neuHadEnFrac << std::endl;
 	std::cout << "passes loose id " << int(passesID) << std::endl;
-		
+*/		
       }
 
       vfloats_values[jets_label+"_PassesID"][j]=(float)passesID;
-      std::cout<<"Check 1"<<std::endl;
+//      std::cout<<"Check 1"<<std::endl;
       
       //remove overlap with tight electrons/muons
       double minDR=9999;
@@ -1157,7 +1157,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	}
 //	      cout << " syst "<< syst<< " jet "<< j << " pt "<< ptCorr <<"cut "<< jetScanCuts.at(ji)<< " extra jet with pt "<< ptCorr<< "eventNJets before is" << float_values["Event_nJets"+j_n.str()]<< " csv "<< csv<< " isCSVM? "<< isCSVM<<endl;
 	if(passesCut)	float_values["Event_nJets"+j_n.str()]+=1;
-		std::cout<<  "after: "<< float_values["Event_nJets"+j_n.str()]<<std::endl;
+//		std::cout<<  "after: "<< float_values["Event_nJets"+j_n.str()]<<std::endl;
 	if(passesCut){
 	  	
 	  if(abs(eta)>2.4) continue;
@@ -1166,7 +1166,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  double cmvaleff = MCTagEfficiency("cmval",flavor,ptCorr);
 	  double cmvameff = MCTagEfficiency("cmvam",flavor,ptCorr);
 	
-	  std::cout<<"CMVAv2T eff: "<<cmvateff<<"\tCMVAv2M eff: "<<cmvameff<<"\tCMVAv2L eff: "<<cmvaleff<<std::endl;	
+//	  std::cout<<"CMVAv2T eff: "<<cmvateff<<"\tCMVAv2M eff: "<<cmvameff<<"\tCMVAv2L eff: "<<cmvaleff<<std::endl;	
 
 	  	
 	  double sfcmval = TagScaleFactor("cmval",flavor,"noSyst",ptCorr);
@@ -1174,7 +1174,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	  double sfcmvat = TagScaleFactor("cmvat",flavor,"noSyst",ptCorr);
 	   
 	  
-	  std::cout<< "jet :# "<< j << "sf is " <<sfcmvat << " eff is "<<cmvateff<<std::endl;
+//	  std::cout<< "jet :# "<< j << "sf is " <<sfcmvat << " eff is "<<cmvateff<<std::endl;
 
       double sfcmvat_mistag_up = TagScaleFactor("cmvat",flavor,"mistag_up",ptCorr);
 	  double sfcmval_mistag_up = TagScaleFactor("cmval",flavor,"mistag_up",ptCorr);
@@ -1250,7 +1250,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 //	}
 	
 //	if(isCMVAL && passesCut && abs(eta) < 2.4) float_values["Event_nCMVALJets"+j_n.str()]+=1;
-	std::cout<<  "after: "<< float_values["Event_nJets"+j_n.str()]<<"\t"<<float_values["Event_nCMVATJets"+j_n.str()]<<std::endl;
+//	std::cout<<  "after: "<< float_values["Event_nJets"+j_n.str()]<<"\t"<<float_values["Event_nCMVATJets"+j_n.str()]<<std::endl;
    }
  } 
     
