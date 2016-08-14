@@ -32,14 +32,16 @@
 #include <Math/VectorUtil.h>
 
 #include "CondFormats/BTauObjects/interface/BTagCalibration.h"
-#include "CondFormats/BTauObjects/interface/BTagCalibrationReader.h"
-
+#include "CondFormats/BTauObjects/interface/BTagEntry.h"
+//#include "CondTools/BTau/interface/BTagCalibrationReader.h"
 
 #include "TFile.h"
 #include "TTree.h"
 #include "TMath.h"
-#include<vector>
-#include<algorithm>
+#include <vector>
+#include <algorithm>
+#include <iostream>
+#include <string>
 
 //using namespace reco;
 using namespace edm;
@@ -227,104 +229,27 @@ private:
     float weightWithVeto(vector<JetInfo> jetsTags, int tags, vector<JetInfo> jetsVetoes, int vetoes);
   };
   
-/*  vector<BTagWeight::JetInfo> jsfscsvt, 
-    jsfscsvt_b_tag_up, 
-    jsfscsvt_b_tag_down, 
-    jsfscsvt_mistag_up, 
-    jsfscsvt_mistag_down;
 
-  vector<BTagWeight::JetInfo> jsfscsvm, 
-    jsfscsvm_b_tag_up, 
-    jsfscsvm_b_tag_down, 
-    jsfscsvm_mistag_up, 
-    jsfscsvm_mistag_down;
-
-  vector<BTagWeight::JetInfo> jsfscsvl, 
-    jsfscsvl_b_tag_up, 
-    jsfscsvl_b_tag_down, 
-    jsfscsvl_mistag_up, 
-    jsfscsvl_mistag_down;
-  
-  BTagWeight b_csvt_0_tags= BTagWeight(0,0),
-    b_csvt_1_tag= BTagWeight(1,1),
-    b_csvt_2_tags= BTagWeight(2,2);
-  
-  double b_weight_csvt_0_tags,
-    b_weight_csvt_1_tag,
-    b_weight_csvt_2_tags;
-  double b_weight_csvt_0_tags_mistag_up,
-    b_weight_csvt_1_tag_mistag_up,
-    b_weight_csvt_2_tags_mistag_up;
-  double b_weight_csvt_0_tags_mistag_down,
-    b_weight_csvt_1_tag_mistag_down,
-    b_weight_csvt_2_tags_mistag_down;
-  double b_weight_csvt_0_tags_b_tag_down,
-    b_weight_csvt_1_tag_b_tag_down,
-    b_weight_csvt_2_tags_b_tag_down;
-  double b_weight_csvt_0_tags_b_tag_up,
-    b_weight_csvt_1_tag_b_tag_up,
-    b_weight_csvt_2_tags_b_tag_up;
-
-  BTagWeight b_csvm_0_tags= BTagWeight(0,0),
-    b_csvm_1_tag= BTagWeight(1,1),
-    b_csvm_2_tags= BTagWeight(2,2);
-
-  double b_weight_csvm_0_tags,
-    b_weight_csvm_1_tag,
-    b_weight_csvm_2_tags;
-  double b_weight_csvm_0_tags_mistag_up,
-    b_weight_csvm_1_tag_mistag_up,
-    b_weight_csvm_2_tags_mistag_up;
-  double b_weight_csvm_0_tags_mistag_down,
-    b_weight_csvm_1_tag_mistag_down,
-    b_weight_csvm_2_tags_mistag_down;
-  double b_weight_csvm_0_tags_b_tag_down,
-    b_weight_csvm_1_tag_b_tag_down,
-    b_weight_csvm_2_tags_b_tag_down;
-  double b_weight_csvm_0_tags_b_tag_up,
-    b_weight_csvm_1_tag_b_tag_up,
-    b_weight_csvm_2_tags_b_tag_up;
-
-  BTagWeight b_csvl_0_tags= BTagWeight(0,0),
-    b_csvl_1_tag= BTagWeight(1,1),
-    b_csvl_2_tags= BTagWeight(2,2);
-  
-  double b_weight_csvl_0_tags_mistag_up,
-    b_weight_csvl_1_tag_mistag_up,
-    b_weight_csvl_2_tags_mistag_up;
-  double b_weight_csvl_0_tags_mistag_down,
-    b_weight_csvl_1_tag_mistag_down,
-    b_weight_csvl_2_tags_mistag_down;
-  double b_weight_csvl_0_tags_b_tag_down,
-    b_weight_csvl_1_tag_b_tag_down,
-    b_weight_csvl_2_tags_b_tag_down;
-  double b_weight_csvl_0_tags_b_tag_up,
-    b_weight_csvl_1_tag_b_tag_up,
-    b_weight_csvl_2_tags_b_tag_up;
-  double b_weight_csvl_0_tags,
-    b_weight_csvl_1_tag,
-    b_weight_csvl_2_tags;
-*/
   double MCTagEfficiency(string algo, int flavor, double pt); 
-//  double TagScaleFactor(string algo, int flavor, string syst,double pt); 
+  double TagScaleFactor(string algo, int flavor, string syst,double pt); 
 
-  vector<BTagWeight::JetInfo> jsfscmvat, 
+  std::vector<BTagWeight::JetInfo> jsfscmvat, 
     jsfscmvat_b_tag_up, 
-    jsfscmvat_b_tag_down; 
-//    jsfscmvat_mistag_up, 
-//    jsfscmvat_mistag_down;
+    jsfscmvat_b_tag_down, 
+    jsfscmvat_mistag_up, 
+    jsfscmvat_mistag_down;
 
-  vector<BTagWeight::JetInfo> jsfscmvam, 
+  std::vector<BTagWeight::JetInfo> jsfscmvam, 
     jsfscmvam_b_tag_up, 
-    jsfscmvam_b_tag_down; 
-//    jsfscmvam_mistag_up, 
-//    jsfscmvam_mistag_down;
+    jsfscmvam_b_tag_down, 
+    jsfscmvam_mistag_up, 
+    jsfscmvam_mistag_down;
 
-  vector<BTagWeight::JetInfo> jsfscmval, 
+  std::vector<BTagWeight::JetInfo> jsfscmval, 
     jsfscmval_b_tag_up, 
-    jsfscmval_b_tag_down; 
-//    jsfscmval_mistag_up, 
-//    jsfscmval_mistag_down;
+    jsfscmval_b_tag_down, 
+    jsfscmval_mistag_up, 
+    jsfscmval_mistag_down;
   
   BTagWeight b_cmvat_0_tags= BTagWeight(0,0),
     b_cmvat_1_tag= BTagWeight(1,1),
@@ -333,12 +258,12 @@ private:
   double b_weight_cmvat_0_tags,
     b_weight_cmvat_1_tag,
     b_weight_cmvat_2_tags;
-//  double b_weight_cmvat_0_tags_mistag_up,
-//    b_weight_cmvat_1_tag_mistag_up,
-//    b_weight_cmvat_2_tags_mistag_up;
-//  double b_weight_cmvat_0_tags_mistag_down,
-//    b_weight_cmvat_1_tag_mistag_down,
-//    b_weight_cmvat_2_tags_mistag_down;
+  double b_weight_cmvat_0_tags_mistag_up,
+    b_weight_cmvat_1_tag_mistag_up,
+    b_weight_cmvat_2_tags_mistag_up;
+  double b_weight_cmvat_0_tags_mistag_down,
+    b_weight_cmvat_1_tag_mistag_down,
+    b_weight_cmvat_2_tags_mistag_down;
   double b_weight_cmvat_0_tags_b_tag_down,
     b_weight_cmvat_1_tag_b_tag_down,
     b_weight_cmvat_2_tags_b_tag_down;
@@ -353,12 +278,12 @@ private:
   double b_weight_cmvam_0_tags,
     b_weight_cmvam_1_tag,
     b_weight_cmvam_2_tags;
-//  double b_weight_cmvam_0_tags_mistag_up,
-//    b_weight_cmvam_1_tag_mistag_up,
-//    b_weight_cmvam_2_tags_mistag_up;
-//  double b_weight_cmvam_0_tags_mistag_down,
-//    b_weight_cmvam_1_tag_mistag_down,
-//    b_weight_cmvam_2_tags_mistag_down;
+  double b_weight_cmvam_0_tags_mistag_up,
+    b_weight_cmvam_1_tag_mistag_up,
+    b_weight_cmvam_2_tags_mistag_up;
+  double b_weight_cmvam_0_tags_mistag_down,
+    b_weight_cmvam_1_tag_mistag_down,
+    b_weight_cmvam_2_tags_mistag_down;
   double b_weight_cmvam_0_tags_b_tag_down,
     b_weight_cmvam_1_tag_b_tag_down,
     b_weight_cmvam_2_tags_b_tag_down;
@@ -370,12 +295,12 @@ private:
     b_cmval_1_tag= BTagWeight(1,1),
     b_cmval_2_tags= BTagWeight(2,2);
   
-//  double b_weight_cmval_0_tags_mistag_up,
-//    b_weight_cmval_1_tag_mistag_up,
-//    b_weight_cmval_2_tags_mistag_up;
-//  double b_weight_cmval_0_tags_mistag_down,
-//    b_weight_cmval_1_tag_mistag_down,
-//    b_weight_cmval_2_tags_mistag_down;
+  double b_weight_cmval_0_tags_mistag_up,
+    b_weight_cmval_1_tag_mistag_up,
+    b_weight_cmval_2_tags_mistag_up;
+  double b_weight_cmval_0_tags_mistag_down,
+    b_weight_cmval_1_tag_mistag_down,
+    b_weight_cmval_2_tags_mistag_down;
   double b_weight_cmval_0_tags_b_tag_down,
     b_weight_cmval_1_tag_b_tag_down,
     b_weight_cmval_2_tags_b_tag_down;
@@ -386,110 +311,8 @@ private:
     b_weight_cmval_1_tag,
     b_weight_cmval_2_tags;
   
-// read SF from csv file
-//  BTagCalibration btagsf_calib = BTagCalibration("cMVAv2","cMVAv2_ichep.csv");
-  BTagCalibration* btagsf_calib= new BTagCalibration("cMVAv2","cMVAv2_ichep.csv");
+  bool doBTagSF=true;  
 
-
-  BTagCalibrationReader reader_cmval = new BTagCalibrationReader(btagsf_calib,
-									BTagEntry::OP_LOOSE,
-									"ttbar",
-									"central");
-									
-  reader_cmval.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
-	  	
-  BTagCalibrationReader reader_cmvam = new BTagCalibrationReader(btagsf_calib,
-							    BTagEntry::OP_MEDIUM,
-							    "ttbar",
-							    "central");
-  reader_cmvam.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
-
-  BTagCalibrationReader reader_cmvat = new BTagCalibrationReader(btagsf_calib,
-							    BTagEntry::OP_TIGHT,
-							    "ttbar",
-							    "central");
-  reader_cmvat.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
-							    
-  // btag up
-  BTagCalibrationReader reader_cmvalup = new BTagCalibrationReader(btagsf_calib,BTagEntry::OP_LOOSE,"ttbar","up");
-  reader_cmvalup.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
-
-  BTagCalibrationReader reader_cmvamup = new BTagCalibrationReader(btagsf_calib,
-							      BTagEntry::OP_MEDIUM,
-							      "ttbar",
-							      "up");
-  reader_cmvamup.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
-
-  BTagCalibrationReader reader_cmvatup = new BTagCalibrationReader(btagsf_calib,
-							      BTagEntry::OP_TIGHT,
-							      "ttbar",
-							      "up");
-  reader_cmvatup.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");
-  																	
-  // btag down
-  BTagCalibrationReader reader_cmvaldown = new BTagCalibrationReader(btagsf_calib,
-								BTagEntry::OP_LOOSE,
-								"ttbar",
-								"down");
-  reader_cmvaldown.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
-
-  BTagCalibrationReader reader_cmvamdown = new BTagCalibrationReader(btagsf_calib,
-								BTagEntry::OP_MEDIUM,
-								"ttbar",
-								"down");
-  reader_cmvamdown.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
-
-  BTagCalibrationReader reader_cmvatdown = new BTagCalibrationReader(btagsf_calib,
-								BTagEntry::OP_TIGHT,
-								"ttbar",
-								"down");
-  reader_cmvatdown.load(btagsf_calib,BTagEntry::FLAV_B,"ttbar");								
-
-/*  
-  // central
-  BTagCalibrationReader reader_csvl = BTagCalibrationReader(&btagsf_calib,
-							    BTagEntry::OP_LOOSE,
-							    "",
-							    "central");
-  BTagCalibrationReader reader_csvm = BTagCalibrationReader(&btagsf_calib,
-							    BTagEntry::OP_MEDIUM,
-							    "incl",
-							    "central");
-
-  BTagCalibrationReader reader_csvt = BTagCalibrationReader(&btagsf_calib,
-							    BTagEntry::OP_TIGHT,
-							    "incl",
-							    "central");
-  // btag up
-  BTagCalibrationReader reader_csvlup = BTagCalibrationReader(&btagsf_calib,
-							      BTagEntry::OP_LOOSE,
-							      "incl",
-							      "up");
-  BTagCalibrationReader reader_csvmup = BTagCalibrationReader(&btagsf_calib,
-							      BTagEntry::OP_MEDIUM,
-							      "incl",
-							      "up");
-  BTagCalibrationReader reader_csvtup = BTagCalibrationReader(&btagsf_calib,
-							      BTagEntry::OP_TIGHT,
-							      "incl",
-							      "up");
-  // btag down
-  BTagCalibrationReader reader_csvldown = BTagCalibrationReader(&btagsf_calib,
-								BTagEntry::OP_LOOSE,
-								"incl",
-								"down");
-  BTagCalibrationReader reader_csvmdown = BTagCalibrationReader(&btagsf_calib,
-								BTagEntry::OP_MEDIUM,
-								"incl",
-								"down");
-  BTagCalibrationReader reader_csvtdown = BTagCalibrationReader(&btagsf_calib,
-								BTagEntry::OP_TIGHT,
-								"incl",
-								"down");
-  //
-*/
-  bool doBTagSF=true;
-  
 };
 
 
@@ -768,7 +591,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Fall15_25nsV2_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
   
   //  if(addNominal) systematics.push_back("noSyst");
- 
+
 }
 
 void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
@@ -932,20 +755,20 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     jsfscmvat.clear();
     jsfscmvat_b_tag_up.clear(); 
     jsfscmvat_b_tag_down.clear(); 
-//    jsfscmvat_mistag_up.clear(); 
-//    jsfscmvat_mistag_down.clear();
+    jsfscmvat_mistag_up.clear(); 
+    jsfscmvat_mistag_down.clear();
 
     jsfscmvam.clear(); 
     jsfscmvam_b_tag_up.clear(); 
     jsfscmvam_b_tag_down.clear(); 
-//    jsfscmvam_mistag_up.clear(); 
-//    jsfscmvam_mistag_down.clear();
+    jsfscmvam_mistag_up.clear(); 
+    jsfscmvam_mistag_down.clear();
     
     jsfscmval.clear(); 
     jsfscmval_b_tag_up.clear(); 
     jsfscmval_b_tag_down.clear(); 
-//    jsfscmval_mistag_up.clear();
-//    jsfscmval_mistag_down.clear();
+    jsfscmval_mistag_up.clear();
+    jsfscmval_mistag_down.clear();
 
   //---------------- Soureek Adding PU Info ------------------------------
     if(doPU_){
@@ -1188,8 +1011,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       }
 
 
-      //      ptCorr = ptCorr;
-      //      energyCorr = energyCorr;
+//      ptCorr = ptCorr;
+//      energyCorr = energyCorr;
 //      float csv = vfloats_values[makeName(jets_label,pref,"CSVv2")][j]; 
 	  float cmva = vfloats_values[makeName(jets_label,pref,"CMVAv2")][j];
       float partonFlavour = vfloats_values[makeName(jets_label,pref,"PartonFlavour")][j];
@@ -1336,68 +1159,61 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	if(passesCut)	float_values["Event_nJets"+j_n.str()]+=1;
 		std::cout<<  "after: "<< float_values["Event_nJets"+j_n.str()]<<std::endl;
 	if(passesCut){
+	  	
+	  if(abs(eta)>2.4) continue;
+	  
 	  double cmvateff = MCTagEfficiency("cmvat",flavor, ptCorr);
 	  double cmvaleff = MCTagEfficiency("cmval",flavor,ptCorr);
 	  double cmvameff = MCTagEfficiency("cmvam",flavor,ptCorr);
 	
 	  std::cout<<"CMVAv2T eff: "<<cmvateff<<"\tCMVAv2M eff: "<<cmvameff<<"\tCMVAv2L eff: "<<cmvaleff<<std::endl;	
 
-	  BTagEntry::JetFlavor jtflv;
-	  if (flavor == 5)
-	    jtflv = BTagEntry::FLAV_B;
-	  else if (flavor == 4)
-	    jtflv = BTagEntry::FLAV_C;
-	  else 
-	    jtflv = BTagEntry::FLAV_UDSG;
- 
-
-	  double sfcmval = reader_cmval.eval(jtflv,eta,ptCorr);
-	  double sfcmvam = reader_cmvam.eval(jtflv,eta,ptCorr);
-	  double sfcmvat = reader_cmvat.eval(jtflv,eta,ptCorr);
+	  	
+	  double sfcmval = TagScaleFactor("cmval",flavor,"noSyst",ptCorr);
+	  double sfcmvam = TagScaleFactor("cmvam",flavor,"noSyst",ptCorr);
+	  double sfcmvat = TagScaleFactor("cmvat",flavor,"noSyst",ptCorr);
+	   
 	  
 	  std::cout<< "jet :# "<< j << "sf is " <<sfcmvat << " eff is "<<cmvateff<<std::endl;
 
-/*	  double sfcmvat_mistag_up = reader_cmvatup.eval(jtflv,eta,ptCorr);
-	  double sfcmval_mistag_up = reader_cmvalup.eval(jtflv,eta,ptCorr);
-	  double sfcmvam_mistag_up = reader_cmvamup.eval(jtflv,eta,ptCorr);
+      double sfcmvat_mistag_up = TagScaleFactor("cmvat",flavor,"mistag_up",ptCorr);
+	  double sfcmval_mistag_up = TagScaleFactor("cmval",flavor,"mistag_up",ptCorr);
+	  double sfcmvam_mistag_up = TagScaleFactor("cmvam",flavor,"mistag_up",ptCorr);
 
-	  double sfcmvat_mistag_down = reader_cmvatdown.eval(jtflv,eta,ptCorr);
-	  double sfcmval_mistag_down = reader_cmvaldown.eval(jtflv,eta,ptCorr);
-	  double sfcmvam_mistag_down = reader_cmvamdown.eval(jtflv,eta,ptCorr);
-*/
-	  double sfcmvat_b_tag_down = reader_cmvatdown.eval(jtflv,eta,ptCorr);
-	  double sfcmval_b_tag_down = reader_cmvaldown.eval(jtflv,eta,ptCorr);
-	  double sfcmvam_b_tag_down = reader_cmvamdown.eval(jtflv,eta,ptCorr);
+	  double sfcmvat_mistag_down = TagScaleFactor("cmvat",flavor,"mistag_down",ptCorr);
+	  double sfcmval_mistag_down = TagScaleFactor("cmval",flavor,"mistag_down",ptCorr);
+	  double sfcmvam_mistag_down = TagScaleFactor("cmvam",flavor,"mistag_down",ptCorr);
 
-	  double sfcmvat_b_tag_up = reader_cmvatup.eval(jtflv,eta,ptCorr);
-	  double sfcmval_b_tag_up = reader_cmvalup.eval(jtflv,eta,ptCorr);
-	  double sfcmvam_b_tag_up = reader_cmvamup.eval(jtflv,eta,ptCorr);
+	  double sfcmvat_b_tag_down = TagScaleFactor("cmvat",flavor,"btag_down",ptCorr);
+	  double sfcmval_b_tag_down = TagScaleFactor("cmval",flavor,"btag_down",ptCorr);
+	  double sfcmvam_b_tag_down = TagScaleFactor("cmvam",flavor,"btag_down",ptCorr);
+
+	  double sfcmvat_b_tag_up = TagScaleFactor("cmvat",flavor,"btag_up",ptCorr);
+	  double sfcmval_b_tag_up = TagScaleFactor("cmval",flavor,"btag_up",ptCorr);
+	  double sfcmvam_b_tag_up = TagScaleFactor("cmvam",flavor,"btag_up",ptCorr);
 
       
-	  
-
 	  jsfscmvat.push_back(BTagWeight::JetInfo(cmvateff, sfcmvat));
 	  jsfscmval.push_back(BTagWeight::JetInfo(cmvaleff, sfcmval));
 	  jsfscmvam.push_back(BTagWeight::JetInfo(cmvameff, sfcmvam));
 
-/*	  jsfscmvat_mistag_up.push_back(BTagWeight::JetInfo(cmvateff, sfcmvat_mistag_up));
+	  jsfscmvat_mistag_up.push_back(BTagWeight::JetInfo(cmvateff, sfcmvat_mistag_up));
 	  jsfscmval_mistag_up.push_back(BTagWeight::JetInfo(cmvaleff, sfcmval_mistag_up));
 	  jsfscmvam_mistag_up.push_back(BTagWeight::JetInfo(cmvameff, sfcmvam_mistag_up));
-*/
+
 
 	  jsfscmvat_b_tag_up.push_back(BTagWeight::JetInfo(cmvateff, sfcmvat_b_tag_up));
 	  jsfscmval_b_tag_up.push_back(BTagWeight::JetInfo(cmvaleff, sfcmval_b_tag_up));
 	  jsfscmvam_b_tag_up.push_back(BTagWeight::JetInfo(cmvameff, sfcmvam_b_tag_up));
 
-/*	  jsfscmvat_mistag_down.push_back(BTagWeight::JetInfo(cmvateff, sfcmvat_mistag_down));
+	  jsfscmvat_mistag_down.push_back(BTagWeight::JetInfo(cmvateff, sfcmvat_mistag_down));
 	  jsfscmval_mistag_down.push_back(BTagWeight::JetInfo(cmvaleff, sfcmval_mistag_down));
 	  jsfscmvam_mistag_down.push_back(BTagWeight::JetInfo(cmvameff, sfcmvam_mistag_down));
-*/
+
 	  jsfscmvat_b_tag_down.push_back(BTagWeight::JetInfo(cmvateff, sfcmvat_b_tag_down));
 	  jsfscmval_b_tag_down.push_back(BTagWeight::JetInfo(cmvaleff, sfcmval_b_tag_down));
 	  jsfscmvam_b_tag_down.push_back(BTagWeight::JetInfo(cmvameff, sfcmvam_b_tag_down));
 	
-
 	}
 
 	//if(isCSVT && passesCut && fabs(eta) < 2.4) {
@@ -1526,173 +1342,73 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
     //BTagging part
     if(doBTagSF){
-/*      //CSVT
-      //0 tags
-      b_weight_csvt_0_tags = b_csvt_0_tags.weight(jsfscsvt, ncsvt_tags);  
-      b_weight_csvt_0_tags_mistag_up = b_csvt_0_tags.weight(jsfscsvt_mistag_up, ncsvt_tags);  
-      b_weight_csvt_0_tags_mistag_down = b_csvt_0_tags.weight(jsfscsvt_mistag_down, ncsvt_tags);  
-      b_weight_csvt_0_tags_b_tag_up = b_csvt_0_tags.weight(jsfscsvt_b_tag_up, ncsvt_tags);  
-      b_weight_csvt_0_tags_b_tag_down = b_csvt_0_tags.weight(jsfscsvt_b_tag_down, ncsvt_tags);  
-      
-      //1 tag
-      b_weight_csvt_1_tag = b_csvt_1_tag.weight(jsfscsvt, ncsvt_tags);  
-      b_weight_csvt_1_tag_mistag_up = b_csvt_1_tag.weight(jsfscsvt_mistag_up, ncsvt_tags);  
-      b_weight_csvt_1_tag_mistag_down = b_csvt_1_tag.weight(jsfscsvt_mistag_down, ncsvt_tags);  
-      b_weight_csvt_1_tag_b_tag_up = b_csvt_1_tag.weight(jsfscsvt_b_tag_up, ncsvt_tags);  
-      b_weight_csvt_1_tag_b_tag_down = b_csvt_1_tag.weight(jsfscsvt_b_tag_down, ncsvt_tags);  
-      //cout <<"w1t check: is"<< b_weight_csvt_1_tag<<endl;
-      
-      //2 tags
-      b_weight_csvt_2_tags = b_csvt_2_tags.weight(jsfscsvt, ncsvt_tags);  
-      b_weight_csvt_2_tags_mistag_up = b_csvt_2_tags.weight(jsfscsvt_mistag_up, ncsvt_tags);  
-      b_weight_csvt_2_tags_mistag_down = b_csvt_2_tags.weight(jsfscsvt_mistag_down, ncsvt_tags);  
-      b_weight_csvt_2_tags_b_tag_up = b_csvt_2_tags.weight(jsfscsvt_b_tag_up, ncsvt_tags);  
-      b_weight_csvt_2_tags_b_tag_down = b_csvt_2_tags.weight(jsfscsvt_b_tag_down, ncsvt_tags);  
-      
-      //      cout << " n tight tags "<< ncsvt_tags  << " w0tag "<< b_weight_csvt_0_tags<<" w1tag " << b_weight_csvt_1_tag <<" w2tags "<<b_weight_csvt_2_tags  <<endl;
-      
-      float_values["Event_bWeight0CSVL"]=b_weight_csvl_0_tags;
-      float_values["Event_bWeight1CSVL"]=b_weight_csvl_1_tag;
-      float_values["Event_bWeight2CSVL"]=b_weight_csvl_2_tags;
-      
-      float_values["Event_bWeight0CSVM"]=b_weight_csvm_0_tags;
-      float_values["Event_bWeight1CSVM"]=b_weight_csvm_1_tag;
-      float_values["Event_bWeight2CSVM"]=b_weight_csvm_2_tags;
-      
-      float_values["Event_bWeight0CSVT"]=b_weight_csvt_0_tags;
-      float_values["Event_bWeight1CSVT"]=b_weight_csvt_1_tag;
-      float_values["Event_bWeight2CSVT"]=b_weight_csvt_2_tags;
-      
-      float_values["Event_bWeight0CSVL"]=b_weight_csvl_0_tags;
-      float_values["Event_bWeight1CSVL"]=b_weight_csvl_1_tag;
-      float_values["Event_bWeight2CSVL"]=b_weight_csvl_2_tags;
-      
-      float_values["Event_bWeight0CSVM"]=b_weight_csvm_0_tags;
-      float_values["Event_bWeight1CSVM"]=b_weight_csvm_1_tag;
-      float_values["Event_bWeight2CSVM"]=b_weight_csvm_2_tags;
-      
-      float_values["Event_bWeight0CSVT"]=b_weight_csvt_0_tags;
-      float_values["Event_bWeight1CSVT"]=b_weight_csvt_1_tag;
-      float_values["Event_bWeight2CSVT"]=b_weight_csvt_2_tags;
-
-      //Mistag
-      float_values["Event_bWeightMisTagUp0CSVL"]=b_weight_csvl_0_tags_mistag_up;
-      float_values["Event_bWeightMisTagUp1CSVL"]=b_weight_csvl_1_tag_mistag_up;
-      float_values["Event_bWeightMisTagUp2CSVL"]=b_weight_csvl_2_tags_mistag_up;
-      
-      float_values["Event_bWeightMisTagUp0CSVM"]=b_weight_csvm_0_tags_mistag_up;
-      float_values["Event_bWeightMisTagUp1CSVM"]=b_weight_csvm_1_tag_mistag_up;
-      float_values["Event_bWeightMisTagUp2CSVM"]=b_weight_csvm_2_tags_mistag_up;
-    
-      float_values["Event_bWeightMisTagUp0CSVT"]=b_weight_csvt_0_tags_mistag_up;
-      float_values["Event_bWeightMisTagUp1CSVT"]=b_weight_csvt_1_tag_mistag_up;
-      float_values["Event_bWeightMisTagUp2CSVT"]=b_weight_csvt_2_tags_mistag_up;
-      
-      
-      float_values["Event_bWeightMisTagDown0CSVL"]=b_weight_csvl_0_tags_mistag_down;
-      float_values["Event_bWeightMisTagDown1CSVL"]=b_weight_csvl_1_tag_mistag_down;
-      float_values["Event_bWeightMisTagDown2CSVL"]=b_weight_csvl_2_tags_mistag_down;
-      
-      float_values["Event_bWeightMisTagDown0CSVM"]=b_weight_csvm_0_tags_mistag_down;
-      float_values["Event_bWeightMisTagDown1CSVM"]=b_weight_csvm_1_tag_mistag_down;
-      float_values["Event_bWeightMisTagDown2CSVM"]=b_weight_csvm_2_tags_mistag_down;
-      
-      float_values["Event_bWeightMisTagDown0CSVT"]=b_weight_csvt_0_tags_mistag_down;
-      float_values["Event_bWeightMisTagDown1CSVT"]=b_weight_csvt_1_tag_mistag_down;
-      float_values["Event_bWeightMisTagDown2CSVT"]=b_weight_csvt_2_tags_mistag_down;
-
-      //Btag
-      float_values["Event_bWeightBTagUp0CSVL"]=b_weight_csvl_0_tags_b_tag_up;
-      float_values["Event_bWeightBTagUp1CSVL"]=b_weight_csvl_1_tag_b_tag_up;
-      float_values["Event_bWeightBTagUp2CSVL"]=b_weight_csvl_2_tags_b_tag_up;
-      
-      float_values["Event_bWeightBTagUp0CSVM"]=b_weight_csvm_0_tags_b_tag_up;
-      float_values["Event_bWeightBTagUp1CSVM"]=b_weight_csvm_1_tag_b_tag_up;
-      float_values["Event_bWeightBTagUp2CSVM"]=b_weight_csvm_2_tags_b_tag_up;
-      
-      float_values["Event_bWeightBTagUp0CSVT"]=b_weight_csvt_0_tags_b_tag_up;
-      float_values["Event_bWeightBTagUp1CSVT"]=b_weight_csvt_1_tag_b_tag_up;
-      float_values["Event_bWeightBTagUp2CSVT"]=b_weight_csvt_2_tags_b_tag_up;
-      
-      float_values["Event_bWeightBTagDown0CSVL"]=b_weight_csvl_0_tags_b_tag_down;
-      float_values["Event_bWeightBTagDown1CSVL"]=b_weight_csvl_1_tag_b_tag_down;
-      float_values["Event_bWeightBTagDown2CSVL"]=b_weight_csvl_2_tags_b_tag_down;
-      
-      float_values["Event_bWeightBTagDown0CSVM"]=b_weight_csvm_0_tags_b_tag_down;
-      float_values["Event_bWeightBTagDown1CSVM"]=b_weight_csvm_1_tag_b_tag_down;
-      float_values["Event_bWeightBTagDown2CSVM"]=b_weight_csvm_2_tags_b_tag_down;
-      
-      float_values["Event_bWeightBTagDown0CSVT"]=b_weight_csvt_0_tags_b_tag_down;
-      float_values["Event_bWeightBTagDown1CSVT"]=b_weight_csvt_1_tag_b_tag_down;
-      float_values["Event_bWeightBTagDown2CSVT"]=b_weight_csvt_2_tags_b_tag_down;
-*/
 
 ///  CMVAT
       //0 tags
       b_weight_cmvat_0_tags = b_cmvat_0_tags.weight(jsfscmvat, ncmvat_tags);  
-//      b_weight_cmvat_0_tags_mistag_up = b_cmvat_0_tags.weight(jsfscmvat_mistag_up, ncmvat_tags);  
-//      b_weight_cmvat_0_tags_mistag_down = b_cmvat_0_tags.weight(jsfscmvat_mistag_down, ncmvat_tags);  
+      b_weight_cmvat_0_tags_mistag_up = b_cmvat_0_tags.weight(jsfscmvat_mistag_up, ncmvat_tags);  
+      b_weight_cmvat_0_tags_mistag_down = b_cmvat_0_tags.weight(jsfscmvat_mistag_down, ncmvat_tags);  
       b_weight_cmvat_0_tags_b_tag_up = b_cmvat_0_tags.weight(jsfscmvat_b_tag_up, ncmvat_tags);  
       b_weight_cmvat_0_tags_b_tag_down = b_cmvat_0_tags.weight(jsfscmvat_b_tag_down, ncmvat_tags);  
       
       //1 tag
       b_weight_cmvat_1_tag = b_cmvat_1_tag.weight(jsfscmvat, ncmvat_tags);  
-//      b_weight_cmvat_1_tag_mistag_up = b_cmvat_1_tag.weight(jsfscmvat_mistag_up, ncmvat_tags);  
-//      b_weight_cmvat_1_tag_mistag_down = b_cmvat_1_tag.weight(jsfscmvat_mistag_down, ncmvat_tags);  
+      b_weight_cmvat_1_tag_mistag_up = b_cmvat_1_tag.weight(jsfscmvat_mistag_up, ncmvat_tags);  
+      b_weight_cmvat_1_tag_mistag_down = b_cmvat_1_tag.weight(jsfscmvat_mistag_down, ncmvat_tags);  
       b_weight_cmvat_1_tag_b_tag_up = b_cmvat_1_tag.weight(jsfscmvat_b_tag_up, ncmvat_tags);  
       b_weight_cmvat_1_tag_b_tag_down = b_cmvat_1_tag.weight(jsfscmvat_b_tag_down, ncmvat_tags);  
       //cout <<"w1t check: is"<< b_weight_cmvat_1_tag<<endl;
       
       //2 tags
       b_weight_cmvat_2_tags = b_cmvat_2_tags.weight(jsfscmvat, ncmvat_tags);  
-//      b_weight_cmvat_2_tags_mistag_up = b_cmvat_2_tags.weight(jsfscmvat_mistag_up, ncmvat_tags);  
-//      b_weight_cmvat_2_tags_mistag_down = b_cmvat_2_tags.weight(jsfscmvat_mistag_down, ncmvat_tags);  
+      b_weight_cmvat_2_tags_mistag_up = b_cmvat_2_tags.weight(jsfscmvat_mistag_up, ncmvat_tags);  
+      b_weight_cmvat_2_tags_mistag_down = b_cmvat_2_tags.weight(jsfscmvat_mistag_down, ncmvat_tags);  
       b_weight_cmvat_2_tags_b_tag_up = b_cmvat_2_tags.weight(jsfscmvat_b_tag_up, ncmvat_tags);  
       b_weight_cmvat_2_tags_b_tag_down = b_cmvat_2_tags.weight(jsfscmvat_b_tag_down, ncmvat_tags);  
 
 /// CMVAM    
       //0 tags
       b_weight_cmvam_0_tags = b_cmvam_0_tags.weight(jsfscmvam, ncmvam_tags);  
-//      b_weight_cmvam_0_tags_mistag_up = b_cmvam_0_tags.weight(jsfscmvam_mistag_up, ncmvam_tags);  
-//      b_weight_cmvam_0_tags_mistag_down = b_cmvam_0_tags.weight(jsfscmvam_mistag_down, ncmvam_tags);  
+      b_weight_cmvam_0_tags_mistag_up = b_cmvam_0_tags.weight(jsfscmvam_mistag_up, ncmvam_tags);  
+      b_weight_cmvam_0_tags_mistag_down = b_cmvam_0_tags.weight(jsfscmvam_mistag_down, ncmvam_tags);  
       b_weight_cmvam_0_tags_b_tag_up = b_cmvam_0_tags.weight(jsfscmvam_b_tag_up, ncmvam_tags);  
       b_weight_cmvam_0_tags_b_tag_down = b_cmvam_0_tags.weight(jsfscmvam_b_tag_down, ncmvam_tags);  
       
       //1 tag
       b_weight_cmvam_1_tag = b_cmvam_1_tag.weight(jsfscmvam, ncmvam_tags);  
-//      b_weight_cmvam_1_tag_mistag_up = b_cmvam_1_tag.weight(jsfscmvam_mistag_up, ncmvam_tags);  
-//      b_weight_cmvam_1_tag_mistag_down = b_cmvam_1_tag.weight(jsfscmvam_mistag_down, ncmvam_tags);  
+      b_weight_cmvam_1_tag_mistag_up = b_cmvam_1_tag.weight(jsfscmvam_mistag_up, ncmvam_tags);  
+      b_weight_cmvam_1_tag_mistag_down = b_cmvam_1_tag.weight(jsfscmvam_mistag_down, ncmvam_tags);  
       b_weight_cmvam_1_tag_b_tag_up = b_cmvam_1_tag.weight(jsfscmvam_b_tag_up, ncmvam_tags);  
       b_weight_cmvam_1_tag_b_tag_down = b_cmvam_1_tag.weight(jsfscmvam_b_tag_down, ncmvam_tags);  
       //cout <<"w1t check: is"<< b_weight_cmvam_1_tag<<endl;
       
       //2 tags
       b_weight_cmvam_2_tags = b_cmvam_2_tags.weight(jsfscmvam, ncmvam_tags);  
-//      b_weight_cmvam_2_tags_mistag_up = b_cmvam_2_tags.weight(jsfscmvam_mistag_up, ncmvam_tags);  
-//      b_weight_cmvam_2_tags_mistag_down = b_cmvam_2_tags.weight(jsfscmvam_mistag_down, ncmvam_tags);  
+      b_weight_cmvam_2_tags_mistag_up = b_cmvam_2_tags.weight(jsfscmvam_mistag_up, ncmvam_tags);  
+      b_weight_cmvam_2_tags_mistag_down = b_cmvam_2_tags.weight(jsfscmvam_mistag_down, ncmvam_tags);  
       b_weight_cmvam_2_tags_b_tag_up = b_cmvam_2_tags.weight(jsfscmvam_b_tag_up, ncmvam_tags);  
       b_weight_cmvam_2_tags_b_tag_down = b_cmvam_2_tags.weight(jsfscmvam_b_tag_down, ncmvam_tags);  
 
 /// CMVAL
       //0 tags
       b_weight_cmval_0_tags = b_cmval_0_tags.weight(jsfscmval, ncmval_tags);  
-//      b_weight_cmval_0_tags_mistag_up = b_cmval_0_tags.weight(jsfscmval_mistag_up, ncmval_tags);  
-//      b_weight_cmval_0_tags_mistag_down = b_cmval_0_tags.weight(jsfscmval_mistag_down, ncmval_tags);  
+      b_weight_cmval_0_tags_mistag_up = b_cmval_0_tags.weight(jsfscmval_mistag_up, ncmval_tags);  
+      b_weight_cmval_0_tags_mistag_down = b_cmval_0_tags.weight(jsfscmval_mistag_down, ncmval_tags);  
       b_weight_cmval_0_tags_b_tag_up = b_cmval_0_tags.weight(jsfscmval_b_tag_up, ncmval_tags);  
       b_weight_cmval_0_tags_b_tag_down = b_cmval_0_tags.weight(jsfscmval_b_tag_down, ncmval_tags);  
       
       //1 tag
       b_weight_cmval_1_tag = b_cmval_1_tag.weight(jsfscmval, ncmval_tags);  
-//      b_weight_cmval_1_tag_mistag_up = b_cmval_1_tag.weight(jsfscmval_mistag_up, ncmval_tags);  
-//      b_weight_cmval_1_tag_mistag_down = b_cmval_1_tag.weight(jsfscmval_mistag_down, ncmval_tags);  
+      b_weight_cmval_1_tag_mistag_up = b_cmval_1_tag.weight(jsfscmval_mistag_up, ncmval_tags);  
+      b_weight_cmval_1_tag_mistag_down = b_cmval_1_tag.weight(jsfscmval_mistag_down, ncmval_tags);  
       b_weight_cmval_1_tag_b_tag_up = b_cmval_1_tag.weight(jsfscmval_b_tag_up, ncmval_tags);  
       b_weight_cmval_1_tag_b_tag_down = b_cmval_1_tag.weight(jsfscmval_b_tag_down, ncmval_tags);  
       //cout <<"w1t check: is"<< b_weight_cmval_1_tag<<endl;
       
       //2 tags
       b_weight_cmval_2_tags = b_cmval_2_tags.weight(jsfscmval, ncmval_tags);  
-//      b_weight_cmval_2_tags_mistag_up = b_cmval_2_tags.weight(jsfscmval_mistag_up, ncmval_tags);  
-//      b_weight_cmval_2_tags_mistag_down = b_cmval_2_tags.weight(jsfscmval_mistag_down, ncmval_tags);  
+      b_weight_cmval_2_tags_mistag_up = b_cmval_2_tags.weight(jsfscmval_mistag_up, ncmval_tags);  
+      b_weight_cmval_2_tags_mistag_down = b_cmval_2_tags.weight(jsfscmval_mistag_down, ncmval_tags);  
       b_weight_cmval_2_tags_b_tag_up = b_cmval_2_tags.weight(jsfscmval_b_tag_up, ncmval_tags);  
       b_weight_cmval_2_tags_b_tag_down = b_cmval_2_tags.weight(jsfscmval_b_tag_down, ncmval_tags);  
 
@@ -1722,30 +1438,30 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float_values["Event_bWeight2CMVAT"]=b_weight_cmvat_2_tags;
 
       //Mistag
-//      float_values["Event_bWeightMisTagUp0CMVAL"]=b_weight_cmval_0_tags_mistag_up;
-//      float_values["Event_bWeightMisTagUp1CMVAL"]=b_weight_cmval_1_tag_mistag_up;
-//      float_values["Event_bWeightMisTagUp2CMVAL"]=b_weight_cmval_2_tags_mistag_up;
+      float_values["Event_bWeightMisTagUp0CMVAL"]=b_weight_cmval_0_tags_mistag_up;
+      float_values["Event_bWeightMisTagUp1CMVAL"]=b_weight_cmval_1_tag_mistag_up;
+      float_values["Event_bWeightMisTagUp2CMVAL"]=b_weight_cmval_2_tags_mistag_up;
       
-//      float_values["Event_bWeightMisTagUp0CMVAM"]=b_weight_cmvam_0_tags_mistag_up;
-//      float_values["Event_bWeightMisTagUp1CMVAM"]=b_weight_cmvam_1_tag_mistag_up;
-//      float_values["Event_bWeightMisTagUp2CMVAM"]=b_weight_cmvam_2_tags_mistag_up;
+      float_values["Event_bWeightMisTagUp0CMVAM"]=b_weight_cmvam_0_tags_mistag_up;
+      float_values["Event_bWeightMisTagUp1CMVAM"]=b_weight_cmvam_1_tag_mistag_up;
+      float_values["Event_bWeightMisTagUp2CMVAM"]=b_weight_cmvam_2_tags_mistag_up;
     
-//      float_values["Event_bWeightMisTagUp0CMVAT"]=b_weight_cmvat_0_tags_mistag_up;
-//      float_values["Event_bWeightMisTagUp1CMVAT"]=b_weight_cmvat_1_tag_mistag_up;
-//      float_values["Event_bWeightMisTagUp2CMVAT"]=b_weight_cmvat_2_tags_mistag_up;
+      float_values["Event_bWeightMisTagUp0CMVAT"]=b_weight_cmvat_0_tags_mistag_up;
+      float_values["Event_bWeightMisTagUp1CMVAT"]=b_weight_cmvat_1_tag_mistag_up;
+      float_values["Event_bWeightMisTagUp2CMVAT"]=b_weight_cmvat_2_tags_mistag_up;
       
       
-//      float_values["Event_bWeightMisTagDown0CMVAL"]=b_weight_cmval_0_tags_mistag_down;
-//      float_values["Event_bWeightMisTagDown1CMVAL"]=b_weight_cmval_1_tag_mistag_down;
-//      float_values["Event_bWeightMisTagDown2CMVAL"]=b_weight_cmval_2_tags_mistag_down;
+      float_values["Event_bWeightMisTagDown0CMVAL"]=b_weight_cmval_0_tags_mistag_down;
+      float_values["Event_bWeightMisTagDown1CMVAL"]=b_weight_cmval_1_tag_mistag_down;
+      float_values["Event_bWeightMisTagDown2CMVAL"]=b_weight_cmval_2_tags_mistag_down;
       
-//      float_values["Event_bWeightMisTagDown0CMVAM"]=b_weight_cmvam_0_tags_mistag_down;
-//      float_values["Event_bWeightMisTagDown1CMVAM"]=b_weight_cmvam_1_tag_mistag_down;
-//      float_values["Event_bWeightMisTagDown2CMVAM"]=b_weight_cmvam_2_tags_mistag_down;
+      float_values["Event_bWeightMisTagDown0CMVAM"]=b_weight_cmvam_0_tags_mistag_down;
+      float_values["Event_bWeightMisTagDown1CMVAM"]=b_weight_cmvam_1_tag_mistag_down;
+      float_values["Event_bWeightMisTagDown2CMVAM"]=b_weight_cmvam_2_tags_mistag_down;
       
-//      float_values["Event_bWeightMisTagDown0CMVAT"]=b_weight_cmvat_0_tags_mistag_down;
-//      float_values["Event_bWeightMisTagDown1CMVAT"]=b_weight_cmvat_1_tag_mistag_down;
-//      float_values["Event_bWeightMisTagDown2CMVAT"]=b_weight_cmvat_2_tags_mistag_down;
+      float_values["Event_bWeightMisTagDown0CMVAT"]=b_weight_cmvat_0_tags_mistag_down;
+      float_values["Event_bWeightMisTagDown1CMVAT"]=b_weight_cmvat_1_tag_mistag_down;
+      float_values["Event_bWeightMisTagDown2CMVAT"]=b_weight_cmvat_2_tags_mistag_down;
 
       //Btag
       float_values["Event_bWeightBTagUp0CMVAL"]=b_weight_cmval_0_tags_b_tag_up;
@@ -1995,7 +1711,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     addvar.push_back("bWeight1CMVAL");
     addvar.push_back("bWeight2CMVAL");
 
-/*    addvar.push_back("bWeightMisTagDown0CMVAT");
+    addvar.push_back("bWeightMisTagDown0CMVAT");
     addvar.push_back("bWeightMisTagDown1CMVAT");
     addvar.push_back("bWeightMisTagDown2CMVAT");
 
@@ -2018,7 +1734,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     addvar.push_back("bWeightMisTagUp0CMVAL");
     addvar.push_back("bWeightMisTagUp1CMVAL");
     addvar.push_back("bWeightMisTagUp2CMVAL");
-*/
+
     addvar.push_back("bWeightBTagUp0CMVAT");
     addvar.push_back("bWeightBTagUp1CMVAT");
     addvar.push_back("bWeightBTagUp2CMVAT");
@@ -2486,99 +2202,105 @@ double DMAnalysisTreeMaker::MCTagEfficiency(string algo, int flavor, double pt){
 }
 
 
-/*
-  double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst, double pt){
-  // source (02/11):
-  // https://twiki.cern.ch/twiki/pub/CMS/BtagRecommendation76X/CSVv2_prelim.csv
-  if(algo == "csvt"){
-    if(syst ==  "noSyst") {
-      if(abs(flavor)==5){
-	if (pt >= 30  && pt < 670) return 0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt)));
-      }
-      if(abs(flavor)==4){
-	if (pt >= 30  && pt < 670) return 0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt)));
-      }
-      if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 0.992339;
-      }
-    }
-    if(syst ==  "mistag_up") {
-      if(abs(flavor)==5){
-	return 1.00;
-      }
-      if(abs(flavor)==4){
-	return 1.00;
-      }
-      if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 1.17457;
-      }
-    }
-    if(syst ==  "mistag_down") {
-      if(abs(flavor)==5){
-	return 1.00;
-      }
-      if(abs(flavor)==4){
-	return 1.00;
-      }
-      if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 0.810103;
-      }
-    }
 
-    if(syst ==  "b_tag_up") {
-      if(abs(flavor)==5){
-	if (pt >= 30  && pt < 50 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.019803794100880623;
-	if (pt >= 50  && pt < 70 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.026958625763654709;
-	if (pt >= 70  && pt < 100) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.024285079911351204;
-	if (pt >= 100 && pt < 140) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.028512096032500267;
-	if (pt >= 140 && pt < 200) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.029808893799781799;
-	if (pt >= 200 && pt < 300) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.026503190398216248;
-	if (pt >= 300 && pt < 670) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.042264193296432495 ;
-      }
+double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst, double pt){
+// source (03/08/16):
+// https://twiki.cern.ch/twiki/pub/CMS/BtagRecommendation80X/CSVv2_ichep.csv
+  	
+	double ptTmp=0.0;
+	
+	if(algo=="cmvat"){
+		if(syst=="noSyst"){
+			if(abs(flavor)==5 || abs(flavor)==4){
+				if(pt>=30.0 && pt<300.0) return 0.806363+(0.000389927*pt);
+				if(pt>=300.0){ ptTmp= 300.0 - 0.0001; return 0.806363+(0.000389927*ptTmp);}
+			}
+			else{
+				if(pt>=20.0 && pt<1000.0) return 0.712074+293.026/(pt*pt);
+				if(pt>=1000.0){ ptTmp=1000.0 - 0.0001; return 0.712074+293.026/(ptTmp*ptTmp);}
+			}
+		}	
+		
+		if(syst=="btag_up"){
+			if(abs(flavor)==5){
+				if(pt>=30.0 && pt<50.0) return (0.806363+(0.000389927*pt))+0.036142464727163315;
+				if(pt>=50.0 && pt<70.0) return (0.806363+(0.000389927*pt))+0.02133803628385067;
+				if(pt>=70.0 && pt<100.0) return (0.806363+(0.000389927*pt))+0.015581912361085415;
+				if(pt>=100.0 && pt<140.0) return (0.806363+(0.000389927*pt))+0.018966136500239372;
+				if(pt>=140.0 && pt<200.0) return (0.806363+(0.000389927*pt))+0.024859944358468056;
+				if(pt>=200.0 && pt<300.0) return (0.806363+(0.000389927*pt))+0.062531806528568268;
+				if(pt>=300.0){
+					ptTmp=300.0 - 0.0001; 
+					return (0.806363+(0.000389927*ptTmp))+ 2 * 0.062531806528568268; // Double uncertainty if pt is out of range
+				}		  
+			}
+			else if(abs(flavor)==4){
+				if(pt>=30.0 && pt<50.0) return (0.806363+(0.000389927*pt))+0.07228492945432663;
+				if(pt>=50.0 && pt<70.0) return (0.806363+(0.000389927*pt))+0.04267607256770134;
+				if(pt>=70.0 && pt<100.0) return (0.806363+(0.000389927*pt))+0.03116382472217083;
+				if(pt>=100.0 && pt<140.0) return (0.806363+(0.000389927*pt))+0.037932273000478745;
+				if(pt>=140.0 && pt<200.0) return (0.806363+(0.000389927*pt))+0.049719888716936111;
+				if(pt>=200.0 && pt<300.0) return (0.806363+(0.000389927*pt))+0.12506361305713665;
+				if(pt>=300.0){ 
+					ptTmp=300.0 - 0.0001; 
+					return (0.806363+(0.000389927*ptTmp))+2 * 0.12506361305713665; // Double uncertainty if pt is out of range
+				}
+			}
+			else return 1.0;			
+		}
+		
+		if(syst=="btag_down"){
+			if(abs(flavor)==5){
+				if(pt>=30.0 && pt<50.0) return 0.806363+((0.000389927*pt)-0.036142464727163315);
+				if(pt>=50.0 && pt<70.0) return 0.806363+((0.000389927*pt)-0.02133803628385067);
+				if(pt>=70.0 && pt<100.0) return 0.806363+((0.000389927*pt)-0.015581912361085415);
+				if(pt>=100.0 && pt<140.0) return 0.806363+((0.000389927*pt)-0.018966136500239372);
+				if(pt>=140.0 && pt<200.0) return 0.806363+((0.000389927*pt)-0.024859944358468056);
+				if(pt>=200.0 && pt<300.0) return 0.806363+((0.000389927*pt)-0.062531806528568268);
+				if(pt>=300.0){ 
+					ptTmp=300.0 - 0.0001; 
+					return 0.806363+((0.000389927*pt)- 2 * 0.062531806528568268); // Double uncertainty if pt is out of range
 
-      if(abs(flavor)==4){
-	if (pt >= 30  && pt < 50 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.039607588201761246;
-	if (pt >= 50  && pt < 70 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.053917251527309418;
-	if (pt >= 70  && pt < 100) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.048570159822702408;
-	if (pt >= 100 && pt < 140) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.057024192065000534;
-	if (pt >= 140 && pt < 200) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.059617787599563599;
-	if (pt >= 200 && pt < 300) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.053006380796432495;
-	if (pt >= 300 && pt < 670) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))+0.08452838659286499;
-      }
-      if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 1.0;
-      }
-    }
-
-    if(syst ==  "b_tag_down") {
-      if(abs(flavor)==5){
-	if (pt >= 30  && pt < 50 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.019803794100880623;
-	if (pt >= 50  && pt < 70 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.026958625763654709;
-	if (pt >= 70  && pt < 100) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.024285079911351204;
-	if (pt >= 100 && pt < 140) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.028512096032500267;
-	if (pt >= 140 && pt < 200) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.029808893799781799;
-	if (pt >= 200 && pt < 300) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.026503190398216248;
-	if (pt >= 300 && pt < 670) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.042264193296432495;
-      }
-
-      if(abs(flavor)==4){
-	if (pt >= 30  && pt < 50 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.039607588201761246;
-	if (pt >= 50  && pt < 70 ) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.053917251527309418;
-	if (pt >= 70  && pt < 100) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.048570159822702408;
-	if (pt >= 100 && pt < 140) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.057024192065000534;
-	if (pt >= 140 && pt < 200) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.059617787599563599;
-	if (pt >= 200 && pt < 300) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.053006380796432495;
-	if (pt >= 300 && pt < 670) return (0.886376*((1.+(0.00250226*pt))/(1.+(0.00193725*pt))))-0.08452838659286499;
-      }
-      if(abs(flavor)!=5 && abs(flavor)!=4){
-	return 1.0;
-      }
-    }
-  }
-  return 1.0;
-}
-*/
-
+				} 			}
+			else if(abs(flavor)==4){
+				if(pt>=30.0 && pt<50.0) return 0.806363+((0.000389927*ptTmp)-0.07228492945432663);
+				if(pt>=50.0 && pt<70.0) return 0.806363+((0.000389927*ptTmp)-0.04267607256770134);
+				if(pt>=70.0 && pt<100.0) return 0.806363+((0.000389927*ptTmp)-0.03116382472217083); 
+				if(pt>=100.0 && pt<140.0) return 0.806363+((0.000389927*ptTmp)-0.037932273000478745);
+				if(pt>=140.0 && pt<200.0) return 0.806363+((0.000389927*ptTmp)-0.049719888716936111);
+				if(pt>=200.0 && pt<300.0) return 0.806363+((0.000389927*ptTmp)-0.12506361305713665);
+				if(pt>=300.0){ 
+					ptTmp=300.0 - 0.0001; 
+					return 0.806363+((0.000389927*ptTmp)-2 * 0.12506361305713665); // Double uncertainty if pt is out of range
+				} 
+			}
+			else return 1.0;
+		}
+		
+		if(syst=="mistag_up"){
+			if(abs(flavor)== 5.0 || abs(flavor)== 4.0) return 1.0;
+			else{
+				if(pt>=20.0 && pt<1000.0) return (0.712074+293.026/(pt*pt))*(1 + (0.145849 + 8.95114e-05*pt + -9.63642e-08*pt*pt));
+				if(pt>=1000.0){
+					ptTmp=1000.0 - 0.0001; 
+					return (0.712074+293.026/(pt*pt))*(1 + 2* (0.145849 + 8.95114e-05*ptTmp + -9.63642e-08*ptTmp*ptTmp)); // Double uncertainty if pt is out of range
+				}
+			}	
+		}
+		
+		if(syst=="mistag_down"){
+			if(abs(flavor)== 5.0 || abs(flavor)== 4.0) return 1.0;
+			else{
+				if(pt>=20.0 && pt<1000.0) return (0.712074+293.026/(pt*pt))*(1- (0.145849 + 8.95114e-05*pt + -9.63642e-08*pt*pt));
+				if(pt>=1000.0){
+					ptTmp=1000.0 - 0.0001;
+					return (0.712074+293.026/(ptTmp*ptTmp))*(1- 2 * (0.145849 + 8.95114e-05*ptTmp + -9.63642e-08*pt*ptTmp)); // Double uncertainty if pt is out of range
+				}	
+			}			
+		}	
+	}		
+	return 1.0;					
+}			 
 
 float DMAnalysisTreeMaker::BTagWeight::weightWithVeto(vector<JetInfo> jetsTags, int tags, vector<JetInfo> jetsVetoes, int vetoes)
 {//This function takes into account cases where you have n b-tags and m vetoes, but they have different thresholds. 
