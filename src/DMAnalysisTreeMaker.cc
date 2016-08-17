@@ -506,6 +506,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
 
       t_ints[ name ] = consumes< std::vector<int> >( *itI );
     }  
+//    std::cout<<"Check point Constructor 1"<<std::endl;
     
     if (variablesFloat.size()>0){
       string nameshortv = namelabel;
@@ -542,6 +543,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
     }
   }
   
+//  std::cout<<"Check point Constructor 2"<<std::endl;
   string nameshortv= "Event";
   vector<string> extravars = additionalVariables(nameshortv);
   for(size_t addv = 0; addv < extravars.size();++addv){
@@ -551,6 +553,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
     else
       trees["noSyst"]->Branch(name.c_str(), &float_values[name],(name+"/F").c_str());
   }
+//  std::cout<<"Check point Constructor 3"<<std::endl;
   
   //Prepare the trees cloning all branches and setting the correct names/titles:
   if(!addNominal){
@@ -829,10 +832,11 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       }
     }
 
-    float_values["Event_mu_eff"]=mu_sf;
-    float_values["Event_mu_eff_up"]=mu_sf_up;
-    float_values["Event_mu_eff_down"]=mu_sf_down;
-
+	if(!isData){
+		float_values["Event_mu_eff"]=mu_sf;
+		float_values["Event_mu_eff_up"]=mu_sf_up;
+		float_values["Event_mu_eff_down"]=mu_sf_down;
+	}
 //	std::cout<<"Ending Muons"<<std::endl;
 	
     /**************************
@@ -1158,7 +1162,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 //	      cout << " syst "<< syst<< " jet "<< j << " pt "<< ptCorr <<"cut "<< jetScanCuts.at(ji)<< " extra jet with pt "<< ptCorr<< "eventNJets before is" << float_values["Event_nJets"+j_n.str()]<< " csv "<< csv<< " isCSVM? "<< isCSVM<<endl;
 	if(passesCut)	float_values["Event_nJets"+j_n.str()]+=1;
 //		std::cout<<  "after: "<< float_values["Event_nJets"+j_n.str()]<<std::endl;
-	if(passesCut){
+	if(!isData && passesCut){
 	  	
 	  if(abs(eta)>2.4) continue;
 	  
@@ -1341,7 +1345,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     vfloats_values[met_label+"_CorrPhi"][0]=metphiCorr;
 
     //BTagging part
-    if(doBTagSF){
+    if(!isData && doBTagSF){
 
 ///  CMVAT
       //0 tags
@@ -1497,7 +1501,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float_values["Event_LHEWeight"]=LHE_weight;
     }
     float weightLumi = crossSection/originalEvents;
-    float_values["Event_weight"]=weightLumi;
+    if(!isData) float_values["Event_weight"]=weightLumi;
   
   
     //Part 3: filling the additional variables
@@ -1686,6 +1690,10 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     addvar.push_back("nMediumElectrons");
     addvar.push_back("nLooseElectrons");
     addvar.push_back("nVetoElectrons");
+	addvar.push_back("EventNumber");
+    addvar.push_back("LumiBlock");
+    addvar.push_back("RunNumber");
+    
     //addvar.push_back("nElectronsSF");
     //addvar.push_back("mt");
     //addvar.push_back("Mt2w");
@@ -1699,76 +1707,79 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     //addvar.push_back("nType1TopJets");
     //addvar.push_back("nType2TopJets");
  
-    addvar.push_back("bWeight0CMVAT");
-    addvar.push_back("bWeight1CMVAT");
-    addvar.push_back("bWeight2CMVAT");
+    if(!isData && doBTagSF){
+		addvar.push_back("bWeight0CMVAT");
+		addvar.push_back("bWeight1CMVAT");
+		addvar.push_back("bWeight2CMVAT");
 
-    addvar.push_back("bWeight0CMVAM");
-    addvar.push_back("bWeight1CMVAM");
-    addvar.push_back("bWeight2CMVAM");
+		addvar.push_back("bWeight0CMVAM");
+		addvar.push_back("bWeight1CMVAM");
+		addvar.push_back("bWeight2CMVAM");
 
-    addvar.push_back("bWeight0CMVAL");
-    addvar.push_back("bWeight1CMVAL");
-    addvar.push_back("bWeight2CMVAL");
+		addvar.push_back("bWeight0CMVAL");
+		addvar.push_back("bWeight1CMVAL");
+		addvar.push_back("bWeight2CMVAL");
 
-    addvar.push_back("bWeightMisTagDown0CMVAT");
-    addvar.push_back("bWeightMisTagDown1CMVAT");
-    addvar.push_back("bWeightMisTagDown2CMVAT");
+		addvar.push_back("bWeightMisTagDown0CMVAT");
+		addvar.push_back("bWeightMisTagDown1CMVAT");
+		addvar.push_back("bWeightMisTagDown2CMVAT");
 
-    addvar.push_back("bWeightMisTagDown0CMVAM");
-    addvar.push_back("bWeightMisTagDown1CMVAM");
-    addvar.push_back("bWeightMisTagDown2CMVAM");
+		addvar.push_back("bWeightMisTagDown0CMVAM");
+		addvar.push_back("bWeightMisTagDown1CMVAM");
+		addvar.push_back("bWeightMisTagDown2CMVAM");
 
-    addvar.push_back("bWeightMisTagDown0CMVAL");
-    addvar.push_back("bWeightMisTagDown1CMVAL");
-    addvar.push_back("bWeightMisTagDown2CMVAL");
+		addvar.push_back("bWeightMisTagDown0CMVAL");
+		addvar.push_back("bWeightMisTagDown1CMVAL");
+		addvar.push_back("bWeightMisTagDown2CMVAL");
 
-    addvar.push_back("bWeightMisTagUp0CMVAT");
-    addvar.push_back("bWeightMisTagUp1CMVAT");
-    addvar.push_back("bWeightMisTagUp2CMVAT");
+		addvar.push_back("bWeightMisTagUp0CMVAT");
+		addvar.push_back("bWeightMisTagUp1CMVAT");
+		addvar.push_back("bWeightMisTagUp2CMVAT");
 
-    addvar.push_back("bWeightMisTagUp0CMVAM");
-    addvar.push_back("bWeightMisTagUp1CMVAM");
-    addvar.push_back("bWeightMisTagUp2CMVAM");
+		addvar.push_back("bWeightMisTagUp0CMVAM");
+		addvar.push_back("bWeightMisTagUp1CMVAM");
+		addvar.push_back("bWeightMisTagUp2CMVAM");
 
-    addvar.push_back("bWeightMisTagUp0CMVAL");
-    addvar.push_back("bWeightMisTagUp1CMVAL");
-    addvar.push_back("bWeightMisTagUp2CMVAL");
+		addvar.push_back("bWeightMisTagUp0CMVAL");
+		addvar.push_back("bWeightMisTagUp1CMVAL");
+		addvar.push_back("bWeightMisTagUp2CMVAL");
 
-    addvar.push_back("bWeightBTagUp0CMVAT");
-    addvar.push_back("bWeightBTagUp1CMVAT");
-    addvar.push_back("bWeightBTagUp2CMVAT");
+		addvar.push_back("bWeightBTagUp0CMVAT");
+		addvar.push_back("bWeightBTagUp1CMVAT");
+		addvar.push_back("bWeightBTagUp2CMVAT");
 
-    addvar.push_back("bWeightBTagUp0CMVAM");
-    addvar.push_back("bWeightBTagUp1CMVAM");
-    addvar.push_back("bWeightBTagUp2CMVAM");
+		addvar.push_back("bWeightBTagUp0CMVAM");
+		addvar.push_back("bWeightBTagUp1CMVAM");
+		addvar.push_back("bWeightBTagUp2CMVAM");
 
-    addvar.push_back("bWeightBTagUp0CMVAL");
-    addvar.push_back("bWeightBTagUp1CMVAL");
-    addvar.push_back("bWeightBTagUp2CMVAL");
+		addvar.push_back("bWeightBTagUp0CMVAL");
+		addvar.push_back("bWeightBTagUp1CMVAL");
+		addvar.push_back("bWeightBTagUp2CMVAL");
 
-    addvar.push_back("bWeightBTagDown0CMVAT");
-    addvar.push_back("bWeightBTagDown1CMVAT");
-    addvar.push_back("bWeightBTagDown2CMVAT");
+		addvar.push_back("bWeightBTagDown0CMVAT");
+		addvar.push_back("bWeightBTagDown1CMVAT");
+		addvar.push_back("bWeightBTagDown2CMVAT");
 
-    addvar.push_back("bWeightBTagDown0CMVAM");
-    addvar.push_back("bWeightBTagDown1CMVAM");
-    addvar.push_back("bWeightBTagDown2CMVAM");
+		addvar.push_back("bWeightBTagDown0CMVAM");
+		addvar.push_back("bWeightBTagDown1CMVAM");
+		addvar.push_back("bWeightBTagDown2CMVAM");
 
-    addvar.push_back("bWeightBTagDown0CMVAL");
-    addvar.push_back("bWeightBTagDown1CMVAL");
-    addvar.push_back("bWeightBTagDown2CMVAL");
-
-    addvar.push_back("LHEWeightSign");
-    addvar.push_back("LHEWeight");
-    addvar.push_back("EventNumber");
-    addvar.push_back("LumiBlock");
-    addvar.push_back("RunNumber");
-
-    addvar.push_back("mu_eff");
-    addvar.push_back("mu_eff_up");
-    addvar.push_back("mu_eff_down");
-
+		addvar.push_back("bWeightBTagDown0CMVAL");
+		addvar.push_back("bWeightBTagDown1CMVAL");
+		addvar.push_back("bWeightBTagDown2CMVAL");
+	}
+    
+    if(!isData && useLHE){
+		addvar.push_back("LHEWeightSign");
+		addvar.push_back("LHEWeight");
+    }
+	
+	if(!isData){
+		addvar.push_back("mu_eff");
+		addvar.push_back("mu_eff_up");
+		addvar.push_back("mu_eff_down");
+	}
+	
     if(addPV){
       addvar.push_back("nPV");
       addvar.push_back("nGoodPV");
@@ -1814,28 +1825,30 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     }
     if(useMETFilters){
       for (size_t lt = 0; lt < metFilters.size(); ++lt)  {
-	string trig = metFilters.at(lt);
-	addvar.push_back("passes"+trig);
+		string trig = metFilters.at(lt);
+		addvar.push_back("passes"+trig);
       }
       addvar.push_back("passesMETFilters");
       addvar.push_back("passesHBHE");
     }
     if(useTriggers){
-      for (size_t lt = 0; lt < leptonicTriggers.size(); ++lt)  {
-	string trig = leptonicTriggers.at(lt);
-	addvar.push_back("passes"+trig);
-	addvar.push_back("prescale"+trig);
-      }
-      for (size_t ht = 0; ht < hadronicTriggers.size(); ++ht)  {
-	string trig = hadronicTriggers.at(ht);
-	addvar.push_back("passes"+trig);
-	addvar.push_back("prescale"+trig);
-      }
+	  for (size_t lt = 0; lt < leptonicTriggers.size(); ++lt)  {
+		std::string trig = leptonicTriggers.at(lt);
+		addvar.push_back("passes"+trig);
+		addvar.push_back("prescale"+trig);
+	  }	
+
+	  for(size_t ht = 0; ht < hadronicTriggers.size(); ++ht){
+		std::string trig = hadronicTriggers.at(ht);
+		addvar.push_back("passes"+trig);
+		addvar.push_back("prescale"+trig);
+	  }
+	  								
       addvar.push_back("passesLeptonicTriggers");
       addvar.push_back("passesHadronicTriggers");
     }
 
-    //--- Soureek adding PU info -----------------    
+//------------ Soureek adding PU info -----------------    
     if(doPU_){
       addvar.push_back("puWeight");
       addvar.push_back("puWeightUp");
@@ -1883,13 +1896,13 @@ bool DMAnalysisTreeMaker::getMETFilters(){
 bool DMAnalysisTreeMaker::getEventTriggers(){
   bool leptonOR=false,hadronOR=false;
   for(size_t lt =0; lt< leptonicTriggers.size();++lt){
-    string lname = leptonicTriggers.at(lt);
+    std::string lname = leptonicTriggers.at(lt);
     for(size_t bt = 0; bt < triggerNames->size();++bt){
       std::string tname = triggerNames->at(bt);
-      if(tname.find(lname)!=std::string::npos){
+      if(TString(tname).Contains(TString(lname))){
 	leptonOR = leptonOR || (triggerBits->at(bt)>0);
-	float_values["Event_passes"+lname]=triggerBits->at(bt);
-	float_values["Event_prescale"+lname]=triggerPrescales->at(bt);
+	float_values["Event_passes"+tname]=triggerBits->at(bt);
+	float_values["Event_prescale"+tname]=triggerPrescales->at(bt);
       }
     }
   }

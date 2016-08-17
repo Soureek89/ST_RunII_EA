@@ -23,11 +23,11 @@ metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices", "Flag_eeBadScFilter
 
 #Triggers
 leptonTriggers = [
-    "HLT_IsoMu22_v3",
-    "HLT_IsoMu22_v3",
-    "HLT_IsoTkMu22_v3",
-    "HLT_IsoTkMu22_v3"
-    ]
+    "HLT_IsoMu22_v",
+    "HLT_IsoMu24_v",
+    "HLT_IsoTkMu22_v",
+    "HLT_IsoTkMu24_v"
+]
 
 
 hadronTriggers = [] #<--Check those triggers!

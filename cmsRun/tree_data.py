@@ -23,9 +23,10 @@ options.register('maxEvts',
 
 options.register('sample',
                  [#'file:/tmp/oiorio/B2GEDMNtuple_1.root'
-                 'file:/afs/cern.ch/user/s/smitra/work/scratch0/SingleTop/13TeV/Test/CMSSW_7_6_3_patch2/src/Analysis/B2GAnaFW/test/B2GEDMNtuple.root'
+#                 'file:/afs/cern.ch/user/s/smitra/work/scratch0/SingleTop/13TeV/Test/CMSSW_7_6_3_patch2/src/Analysis/B2GAnaFW/test/B2GEDMNtuple.root'
 #'root://xrootd.ba.infn.it//store/user/decosa/ttDM/Phys14_v2/TTDMDMJets_M600GeV_Tune4C_13TeV-madgraph-tauola/DM600_Phys14DR-PU20bx25_PHYS14_25_V1-v1_EDMNtuple/150212_173740/0000/B2GEDMNtuple_5.root', 
 #'root://xrootd.ba.infn.it//store/user/decosa/ttDM/Phys14_v2/TTDMDMJets_M600GeV_Tune4C_13TeV-madgraph-tauola/DM600_Phys14DR-PU20bx25_PHYS14_25_V1-v1_EDMNtuple/150212_173740/0000/B2GEDMNtuple_4.root'],
+#				'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/EDMTuple_80X/SingleMuon/SingleMu_2016B_PromptReco-v2/160718_110537/0000/SingleMu_2016B_EDMTuple_999.root'	
 ],
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
@@ -72,7 +73,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxE
 ### Source file
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-        options.sample
+#        options.sample
         )
 )
 
@@ -90,7 +91,8 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 #process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
 
 #process.GlobalTag.globaltag = '74X_dataRun2_Prompt_v0'
-process.GlobalTag.globaltag = '76X_dataRun2_v15'
+#process.GlobalTag.globaltag = '76X_dataRun2_v15'
+process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v8'
 
 #for pset in process.GlobalTag.toGet.value():
 #    pset.connect = pset.connect.value().replace('frontier://FrontierProd/', 'frontier://FrontierProd/')
@@ -102,7 +104,7 @@ process.GlobalTag.globaltag = '76X_dataRun2_v15'
 ### Rootplizer
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputLabel))
-process.load("Analysis.ST_RunII_EA.topplusdmedmRootTreeMaker_cff")
+process.load("TreeMaker.ST_RunII_EA.topplusdmedmRootTreeMaker_cff")
 #process.DMTreesDumper.lhes =cms.InputTag("externalLHEProducer")
 #if(options.useLHE):
 
@@ -111,16 +113,17 @@ process.load("Analysis.ST_RunII_EA.topplusdmedmRootTreeMaker_cff")
 #process.DMTreesDumper.doPU= cms.bool(False)
 #process.DMTreesDumper.dataPUFile=cms.string("DistrFall15_25ns")
 
+
 process.DMTreesDumper.lhes =cms.InputTag(options.lhes)
 process.DMTreesDumper.channelInfo.useLHE =(options.useLHE)
 #process.DMTreesDumper.systematics =(options.syst)
 process.DMTreesDumper.changeJECs = cms.untracked.bool(False)# JEC via GT
 process.DMTreesDumper.useMETNoHF = cms.untracked.bool(False)
-#process.DMTreesDumper.addPV = cms.untracked.bool(True)
+process.DMTreesDumper.addPV = cms.untracked.bool(True)
 process.DMTreesDumper.channelInfo.useLHEWeights =cms.untracked.bool(False)
 process.DMTreesDumper.isData = cms.untracked.bool(True)#This adds the L2L3Residuals
 process.DMTreesDumper.doPU= cms.bool(False)
-process.DMTreesDumper.dataPUFile=cms.string("DistrFall15_25ns")                                                                                                                
+process.DMTreesDumper.dataPUFile=cms.string("DistrSpring16_25ns")                                                                                                                
 
 
 process.analysisPath = cms.Path(
