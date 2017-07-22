@@ -6,28 +6,28 @@ jetssize = cms.untracked.int32(20)
 
 mulabel = cms.string("muons")
 elelabel = cms.string("electrons")
-jetlabel = cms.string("jetsAK4")
-jetak8label = cms.string("jetsAK8")
-subjetak8label = cms.string("subjetsAK8")
-metlabel = cms.string("met")
+jetlabel = cms.string("jetsAK4CHS")
+jetak8label = cms.string("jetsAK8CHS")
+subjetak8label = cms.string("subjetsAK8CHS")
+metlabel = cms.string("metFull")
 metnohflabel = cms.string("metnohf")
 jetnohflabel = cms.string("jetsAK4NoHF")
 
 #Systematics:
 # default, can be overwritten in the *_cfg.py
 systsToSave = ["noSyst"]
-#systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down","unclusteredMet__up","unclusteredMet__down"]
+#systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down"]#,"unclusteredMet__up","unclusteredMet__down"]
 
 metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices", "Flag_eeBadScFilter"]
 #metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices"]
 
 #Triggers
 leptonTriggers = [
-    "HLT_IsoMu20_v2",
-    "HLT_IsoMu20_v3",
-    "HLT_IsoTkMu20_v3",
-    "HLT_IsoTkMu20_v4"
-    ]
+    "HLT_IsoMu22_v",
+    "HLT_IsoMu24_v",
+    "HLT_IsoTkMu22_v",
+    "HLT_IsoTkMu24_v"
+]
 
 
 hadronTriggers = [] #<--Check those triggers!
@@ -36,14 +36,13 @@ cutOnTriggers = False
 
 #What to use for jets/other variables
 saveBase = cms.untracked.bool(False)
-j= "jetsAK4"
-jpref= "jetAK4"
+j= "jetsAK4CHS"
+jpref= "jetAK4CHS"
+#jnohf= "jetsAK4NoHF"
+#jprefnohf= "jetAK4NoHF"
 
-jnohf= "jetsAK4NoHF"
-jprefnohf= "jetAK4NoHF"
-
-sj = "subjetsAK8"
-sjpref = "subjetAK8"
+sj = "subjetsAK8CHS"
+sjpref = "subjetAK8CHS"
 
 #sj = "subjetsCmsTopTag"
 #sjpref = "subjetsCmsTopTag"
@@ -76,7 +75,7 @@ DMTreesDumper = cms.EDAnalyzer(
                 cms.InputTag("metFull","metFulluncorPhi"),
                 cms.InputTag("metFull","metFulluncorPt"),
                 cms.InputTag("metFull","metFulluncorSumEt"),
-                ),
+            ),
             variablesI = cms.VInputTag(),
             singleI = cms.VInputTag(),
             singleF = cms.VInputTag(),
@@ -98,7 +97,9 @@ DMTreesDumper = cms.EDAnalyzer(
     runNumber = cms.InputTag("eventInfo","evtInfoRunNumber"),
     eventNumber = cms.InputTag("eventInfo","evtInfoEventNumber"),
     #HBHE
-    HBHEFilter = cms.InputTag("HBHENoiseFilterResultProducer","HBHENoiseFilterResult"),
+#    HBHEFilter = cms.InputTag("HBHENoiseFilterResultProducer","HBHENoiseFilterResult"),
+#	HBHEFilter = cms.InputTag("HBHENoiseFilterResultProducer","HBHENoiseFilterResultRun2Loose"),
+#	HBHEIsoFilter = cms.InputTag("HBHENoiseFilterResultProducer","HBHEIsoNoiseFilterResult"),
     #vertex
     vertexZ =  cms.InputTag("vertexInfo","z"),
     vertexChi2 =  cms.InputTag("vertexInfo","chi"),
@@ -108,7 +109,7 @@ DMTreesDumper = cms.EDAnalyzer(
     #doResolvedTopHad=cms.untracked.bool(True),
     #doResolvedTopSemiLep=cms.untracked.bool(True),
     #cuts for the jet scan
-    jetScanCuts=cms.vdouble(40), #Note: the order is important, as the jet collection with the first cut is used for the definition of mt2w.
+    jetScanCuts=cms.vdouble(30), #Note: the order is important, as the jet collection with the first cut is used for the definition of mt2w.
     
     #Systematics trees to produce. Include:
     #jes__up,jes__down,jer__up,jer__down,unclusteredMet__up,unclusteredMet__down    
@@ -123,6 +124,7 @@ DMTreesDumper = cms.EDAnalyzer(
         
         #useLHE = cms.untracked.bool(False),#Whether one uses the weights from the LHE in order to get scale uncertainties
         useLHE = cms.untracked.bool(True),
+		topPtreweight= cms.untracked.bool(False),
         useLHEWeights = cms.untracked.bool(True),#Whether one uses the weights from the LHE in order to get scale uncertainties
         addLHAPDFWeights = cms.untracked.bool(False), #Whether to add the PDF for uncertainty evaluation (time consuming)
         maxWeights = cms.untracked.int32(110) 
@@ -162,23 +164,22 @@ DMTreesDumper.physicsObjects.append(
         variablesF = cms.VInputTag(
             cms.InputTag("muons","muE"),
             cms.InputTag("muons","muPt"),
-            cms.InputTag("muons","muMass"),
             cms.InputTag("muons","muEta"),
             cms.InputTag("muons","muPhi"),
             cms.InputTag("muons","muCharge"),
             cms.InputTag("muons","muIsLooseMuon"),
             cms.InputTag("muons","muIsSoftMuon"),
             cms.InputTag("muons","muIsTightMuon"),
-            cms.InputTag("muons","muD0"),
-            cms.InputTag("muons","muD0err"),
+			cms.InputTag("muons","muDxy"),
+#            cms.InputTag("muons","muDBerr"),
             cms.InputTag("muons","muDz"),
-            cms.InputTag("muons","muDzerr"),
+#            cms.InputTag("muons","muDzerr"),
             cms.InputTag("muons","muGenMuonCharge"),
             cms.InputTag("muons","muGenMuonEta"),
             cms.InputTag("muons","muGenMuonPt"),
             cms.InputTag("muons","muGenMuonE"),
             cms.InputTag("muons","muGenMuonPhi"),
-            cms.InputTag("muons","muGenMuonY"),
+#            cms.InputTag("muons","muGenMuonY"),
             cms.InputTag("muons","muGlbTrkNormChi2"),
             #cms.InputTag("muons","muHLTmuonDeltaR"),
             #cms.InputTag("muons","muHLTmuonE"),
@@ -200,8 +201,8 @@ DMTreesDumper.physicsObjects.append(
             cms.InputTag("muons","muSumNeutralHadronPt"),
             cms.InputTag("muons","muSumPUPt"),
             cms.InputTag("muons","muSumPhotonPt"),
-            cms.InputTag("muons","muY"),
-            
+#            cms.InputTag("muons","muY"),            
+
             ),
         variablesI = cms.VInputTag(),
         singleI = cms.VInputTag(),
@@ -219,32 +220,31 @@ DMTreesDumper.physicsObjects.append(
         variablesF = cms.VInputTag(
             cms.InputTag("electrons","elE"),
             cms.InputTag("electrons","elPt"),
-            cms.InputTag("electrons","elMass"),
+#            cms.InputTag("electrons","elMass"),
             cms.InputTag("electrons","elEta"),
             cms.InputTag("electrons","elPhi"),
             cms.InputTag("electrons","elCharge"),
-            cms.InputTag("electrons","elD0"),
-            cms.InputTag("electrons","elDz"),
-            cms.InputTag("electrons","elEta"),
+            cms.InputTag("electrons","elSCEta"),
             cms.InputTag("electrons","elHoE"),
             cms.InputTag("electrons","elIso03"),
-            cms.InputTag("electrons","elY"),
+#            cms.InputTag("electrons","elY"),
             cms.InputTag("electrons","eldEtaIn"),
             cms.InputTag("electrons","eldPhiIn"),
             cms.InputTag("electrons","elmissHits"),
             cms.InputTag("electrons","elfull5x5siee"),
             cms.InputTag("electrons","elooEmooP"),
             cms.InputTag("electrons","elhasMatchedConVeto"),
-            cms.InputTag("electrons","elvidHEEP"),
-            cms.InputTag("electrons","elvidLoose"),
-            cms.InputTag("electrons","elvidMedium"),
-            cms.InputTag("electrons","elvidTight"),
             cms.InputTag("electrons","elvidVeto"),
-            ),
+            cms.InputTag("electrons","elvidTight"),
+            cms.InputTag("electrons","elvidMedium"),
+            cms.InputTag("electrons","elDz"),
+            cms.InputTag("electrons","elDxy"),
+			cms.InputTag("electrons","elvidHEEP"),
+        ),
         variablesI = cms.VInputTag( ),
         singleI = cms.VInputTag(),
         singleF = cms.VInputTag(),
-        toSave = cms.vstring("elE","elPt","elEta","elPhi","elIso03","allExtra","elvidHEEP","elvidLoose","elvidMedium","elvidTight","elvidVeto"),
+		toSave = cms.vstring("elE","elPt","elEta","elPhi","elIso03","elvidTight","elCharge","elvidMedium","elvidLoose","elvidVeto","elvidHEEP","elSCEta","allExtra"),
         )
     )                                     
 
@@ -257,59 +257,88 @@ DMTreesDumper.physicsObjects.append(
         variablesF = cms.VInputTag(
             cms.InputTag(j,jpref+"E"),
             cms.InputTag(j,jpref+"Pt"),
-            cms.InputTag(j,jpref+"Mass"),
+#           cms.InputTag(j,jpref+"Mass"),
             cms.InputTag(j,jpref+"Eta"),
             cms.InputTag(j,jpref+"Phi"),
+#           cms.InputTag(j,jpref+"QGL"),
             cms.InputTag(j,jpref+"PartonFlavour"),
             cms.InputTag(j,jpref+"Phi"),
             cms.InputTag(j,jpref+"CSVv2"),
-            #cms.InputTag(j,jpref+"CSVv1"),
+            cms.InputTag(j,jpref+"CMVAv2"),
+#           cms.InputTag(j,jpref+"CSVV1"),
             cms.InputTag(j,jpref+"Charge"),
-            cms.InputTag(j,jpref+"ChargeMuEnergy"),
-            cms.InputTag(j,jpref+"ChargedHadronMultiplicity"),
-            cms.InputTag(j,jpref+"ElectronEnergy"),
+#           cms.InputTag(j,jpref+"ChargeMuEnergy"),
+#           cms.InputTag(j,jpref+"ChargedHadronMultiplicity"),
+#           cms.InputTag(j,jpref+"ElectronEnergy"),
             cms.InputTag(j,jpref+"GenJetCharge"),
             cms.InputTag(j,jpref+"GenJetE"),
             cms.InputTag(j,jpref+"GenJetEta"),
             cms.InputTag(j,jpref+"GenJetPhi"),
             cms.InputTag(j,jpref+"GenJetPt"),
-            cms.InputTag(j,jpref+"GenJetY"),
+#           cms.InputTag(j,jpref+"GenJetY"),
             cms.InputTag(j,jpref+"GenPartonCharge"),
             cms.InputTag(j,jpref+"GenPartonE"),
             cms.InputTag(j,jpref+"GenPartonEta"),
             cms.InputTag(j,jpref+"GenPartonPhi"),
             cms.InputTag(j,jpref+"GenPartonPt"),
-            cms.InputTag(j,jpref+"GenPartonY"),
-            cms.InputTag(j,jpref+"HFEMEnergy"),
-            cms.InputTag(j,jpref+"HFEMMultiplicity"),
-            cms.InputTag(j,jpref+"HFHadronEnergy"),
-            cms.InputTag(j,jpref+"HFHadronMultiplicity"),
+#           cms.InputTag(j,jpref+"GenPartonY"),
+#           cms.InputTag(j,jpref+"HFEMEnergy"),
+#           cms.InputTag(j,jpref+"HFEMMultiplicity"),
+#           cms.InputTag(j,jpref+"HFHadronEnergy"),
+#           cms.InputTag(j,jpref+"HFHadronMultiplicity"),
             cms.InputTag(j,jpref+"HadronFlavour"),
-            cms.InputTag(j,jpref+"SmearedE"),
-            cms.InputTag(j,jpref+"SmearedPt"),
-            cms.InputTag(j,jpref+"SmearedPEta"),
-            cms.InputTag(j,jpref+"SmearedPhi"),
-            cms.InputTag(j,jpref+"Y"),
-            cms.InputTag(j,jpref+"electronMultiplicity"),
+#           cms.InputTag(j,jpref+"SmearedE"),
+#           cms.InputTag(j,jpref+"SmearedPt"),
+#           cms.InputTag(j,jpref+"SmearedPEta"),
+#           cms.InputTag(j,jpref+"SmearedPhi"),
+#           cms.InputTag(j,jpref+"Y"),
             cms.InputTag(j,jpref+"MuonEnergy"),
-            cms.InputTag(j,jpref+"muonMultiplicity"),
-            cms.InputTag(j,jpref+"neutralHadronMultiplicity"),
+
+            cms.InputTag(j,jpref+"neutralHadronEnergyFrac"),
+            cms.InputTag(j,jpref+"neutralEmEnergyFrac"),
+            cms.InputTag(j,jpref+"chargedEmEnergyFrac"),
+            cms.InputTag(j,jpref+"chargedHadronEnergyFrac"),
+#           cms.InputTag(j,jpref+"NumConstituents"),
+#           cms.InputTag(j,jpref+"electronMultiplicity"),
+#           cms.InputTag(j,jpref+"muonMultiplicity"),
+#           cms.InputTag(j,jpref+"neutralHadronMultiplicity"),
             cms.InputTag(j,jpref+"neutralMultiplicity"),
-            cms.InputTag(j,jpref+"photonMultiplicity"),
-            cms.InputTag(j,jpref+"numberOfDaughters"),
-            cms.InputTag(j,jpref+"chargedHadronEnergy"),
+#           cms.InputTag(j,jpref+"photonMultiplicity"),
+#           cms.InputTag(j,jpref+"numberOfDaughters"),
+#           cms.InputTag(j,jpref+"chargedHadronEnergy"),
             cms.InputTag(j,jpref+"chargedMultiplicity"),
-            cms.InputTag(j,jpref+"chargedEmEnergy"),
-            cms.InputTag(j,jpref+"neutralEmEnergy"),
-            cms.InputTag(j,jpref+"neutralHadronEnergy"),
+#           cms.InputTag(j,jpref+"chargedEmEnergy"),
+#           cms.InputTag(j,jpref+"neutralEmEnergy"),
+#           cms.InputTag(j,jpref+"neutralHadronEnergy"),
             cms.InputTag(j,jpref+"jecFactor0"),
-            cms.InputTag(j,jpref+"jetArea")            
-            ),
+            cms.InputTag(j,jpref+"jetArea"),
+#           cms.InputTag(j,jpref+"pileupJetIdRMS"),#
+#           cms.InputTag(j,jpref+"pileupJetIdbeta"),
+#           cms.InputTag(j,jpref+"pileupJetIdbetaClassic"),
+#           cms.InputTag(j,jpref+"pileupJetIdbetaStar"),
+#           cms.InputTag(j,jpref+"pileupJetIdbetaStarClassic"),
+#           cms.InputTag(j,jpref+"pileupJetIddR2Mean"),
+#           cms.InputTag(j,jpref+"pileupJetIddRMean"),
+#           cms.InputTag(j,jpref+"pileupJetIddZ"),
+#           cms.InputTag(j,jpref+"pileupJetIdfrac01"),
+#           cms.InputTag(j,jpref+"pileupJetIdfrac02"),
+#           cms.InputTag(j,jpref+"pileupJetIdfrac03"),
+#           cms.InputTag(j,jpref+"pileupJetIdfrac04"),
+#           cms.InputTag(j,jpref+"pileupJetIdjetR"),
+#           cms.InputTag(j,jpref+"pileupJetIdjetRchg"),
+#           cms.InputTag(j,jpref+"pileupJetIdmajW"),
+#           cms.InputTag(j,jpref+"pileupJetIdminW"),
+#           cms.InputTag(j,jpref+"pileupJetIdnCharged"),
+#           cms.InputTag(j,jpref+"pileupJetIdnNeutrals"),
+#           cms.InputTag(j,jpref+"pileupJetIdnParticles"),
+#           cms.InputTag(j,jpref+"pileupJetIdptD"),
+#           cms.InputTag(j,jpref+"pileupJetIdpull")
+        ),
         variablesI = cms.VInputTag(),
         singleI = cms.VInputTag(),
         singleF = cms.VInputTag(),
         #toSave = cms.vstring(jpref+"Eta",jpref+"Phi","allExtra"),
-        toSave = cms.vstring(jpref+"E",jpref+"Pt",jpref+"Eta",jpref+"Phi",jpref+"GenJetPt",jpref+"GenJetEta",jpref+"CSVv2",jpref+"PartonFlavour","allExtra",jpref+"HadronFlavour"),
+        toSave = cms.vstring(jpref+"E",jpref+"Pt",jpref+"Eta",jpref+"Phi",jpref+"GenJetPt",jpref+"GenJetEta",jpref+"CMVAv2",jpref+"CSVv2",jpref+"HadronFlavour",jpref+"PartonFlavour",jpref+"jecFactor0","allExtra"),
         ),
     )
 
