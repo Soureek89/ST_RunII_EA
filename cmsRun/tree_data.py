@@ -10,7 +10,7 @@
 ### *****************************************************************************************
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as opts
-
+import FWCore.PythonUtilities.LumiList as LumiList
 
 
 options = opts.VarParsing ('analysis')
@@ -27,13 +27,17 @@ options.register('sample',
 #'root://xrootd.ba.infn.it//store/user/decosa/ttDM/Phys14_v2/TTDMDMJets_M600GeV_Tune4C_13TeV-madgraph-tauola/DM600_Phys14DR-PU20bx25_PHYS14_25_V1-v1_EDMNtuple/150212_173740/0000/B2GEDMNtuple_5.root', 
 #'root://xrootd.ba.infn.it//store/user/decosa/ttDM/Phys14_v2/TTDMDMJets_M600GeV_Tune4C_13TeV-madgraph-tauola/DM600_Phys14DR-PU20bx25_PHYS14_25_V1-v1_EDMNtuple/150212_173740/0000/B2GEDMNtuple_4.root'],
 #				'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/EDMTuple_80X/SingleMuon/SingleMu_2016B_PromptReco-v2/160718_110537/0000/SingleMu_2016B_EDMTuple_999.root'	
+#				 "file:B2GEDMNtuple_Data_RunH.root"
+#'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/SingleMuon/SingleMu_2016G_23SepReReco_v1/170405_101901/0001/SingleMu_2016G_EDMTuple_1093.root'
+#'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/SingleMuon/SingleMu_2016B_23SepReReco_v3/170401_145413/0000/SingleMu_2016B_v3_EDMTuple_101.root'
+'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/SingleMuon/SingleMu_2016C_23SepReReco_v1/170401_154505/0000/SingleMu_2016C_EDMTuple_107.root'
 ],
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Sample to analyze')
 
 options.register('outputLabel',
-                 'treesTest_NewSmall_Data.root',
+                 'Trees_Data_RunC_v1_ReReco_80X_107.root',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Output label')
@@ -57,6 +61,12 @@ options.register('lhes',
                  opts.VarParsing.varType.string,
                  'name from generator')
 
+options.register('Era',
+                 'RunB',
+                 opts.VarParsing.multiplicity.singleton,
+                 opts.VarParsing.varType.string,
+                 'Run Period')
+
 options.parseArguments()
 
 if(options.isData):
@@ -73,11 +83,13 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxE
 ### Source file
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-#        options.sample
+#         options.sample
         )
 )
 
+#process.source.lumisToProcess = LumiList.LumiList(filename = "Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt").getVLuminosityBlockRange()
 #process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 #process.GlobalTag.globaltag = options.globalTag 
@@ -92,7 +104,8 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
 #process.GlobalTag.globaltag = '74X_dataRun2_Prompt_v0'
 #process.GlobalTag.globaltag = '76X_dataRun2_v15'
-process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v8'
+#process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v15'
+process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'
 
 #for pset in process.GlobalTag.toGet.value():
 #    pset.connect = pset.connect.value().replace('frontier://FrontierProd/', 'frontier://FrontierProd/')
@@ -122,8 +135,9 @@ process.DMTreesDumper.useMETNoHF = cms.untracked.bool(False)
 process.DMTreesDumper.addPV = cms.untracked.bool(True)
 process.DMTreesDumper.channelInfo.useLHEWeights =cms.untracked.bool(False)
 process.DMTreesDumper.isData = cms.untracked.bool(True)#This adds the L2L3Residuals
+process.DMTreesDumper.era=cms.string(options.Era)
 process.DMTreesDumper.doPU= cms.bool(False)
-process.DMTreesDumper.dataPUFile=cms.string("DistrSpring16_25ns")                                                                                                                
+process.DMTreesDumper.dataPUFile=cms.string("DistrSummer16_25ns")                                                                                                                
 
 
 process.analysisPath = cms.Path(

@@ -37,6 +37,7 @@
 <use   name="DataFormats/L1GlobalTrigger"/>
 <use   name="DataFormats/L1GlobalMuonTrigger"/>
 <use   name="DataFormats/L1GlobalCaloTrigger"/>
+<use   name="DataFormats/HepMCCandidate"/>
 <use   name="clhep"/>
 <use   name="CalibCalorimetry/EcalLaserCorrection"/>
 <use   name="CalibCalorimetry/EcalTPGTools"/>
@@ -67,5 +68,5 @@
 <use name="DataFormats/MuonReco"/>
 <use name="DataFormats/VertexReco"/>
 <use   name="CondFormats/BTauObjects"/>
-<!--<use name="CondTools/BTau"/>-->
+<use name="CondTools/BTau"/>
 <flags   EDM_PLUGIN="1"/>
