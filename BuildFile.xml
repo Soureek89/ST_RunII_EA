@@ -63,9 +63,9 @@
 <use   name="EgammaAnalysis/ElectronTools"/>
 <use   name="lhapdf"/>
 <!-- MUON -->
-<use name="DataFormats/PatCandidates"/>
-<use name="DataFormats/MuonReco"/>
-<use name="DataFormats/VertexReco"/>
+<use   name="DataFormats/PatCandidates"/>
+<use   name="DataFormats/MuonReco"/>
+<use   name="DataFormats/VertexReco"/>
 <use   name="CondFormats/BTauObjects"/>
-<!--<use name="CondTools/BTau"/>-->
+<use   name="CondTools/BTau"/>
 <flags   EDM_PLUGIN="1"/>

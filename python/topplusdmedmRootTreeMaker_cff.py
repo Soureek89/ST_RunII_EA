@@ -15,8 +15,8 @@ jetnohflabel = cms.string("jetsAK4NoHF")
 
 #Systematics:
 # default, can be overwritten in the *_cfg.py
-#systsToSave = ["noSyst"]
-systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down"]#,"unclusteredMet__up","unclusteredMet__down"]
+systsToSave = ["noSyst"]
+#systsToSave = ["noSyst","jes__up","jes__down","jer__up","jer__down"]#,"unclusteredMet__up","unclusteredMet__down"]
 
 metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices", "Flag_eeBadScFilter"]
 #metFilters = ["Flag_CSCTightHaloFilter","Flag_goodVertices"]

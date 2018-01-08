@@ -16,7 +16,7 @@ import FWCore.ParameterSet.VarParsing as opts
 options = opts.VarParsing ('analysis')
 
 options.register('maxEvts',
-                 -1,# default value: process all events
+                 10,# default value: process all events
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.int,
                  'Number of events to process')
@@ -27,7 +27,8 @@ options.register('sample',
 #'root://xrootd.ba.infn.it//store/user/decosa/ttDM/Phys14_v2/TTDMDMJets_M600GeV_Tune4C_13TeV-madgraph-tauola/DM600_Phys14DR-PU20bx25_PHYS14_25_V1-v1_EDMNtuple/150212_173740/0000/B2GEDMNtuple_5.root', 
 #'root://xrootd.ba.infn.it//store/user/decosa/ttDM/Phys14_v2/TTDMDMJets_M600GeV_Tune4C_13TeV-madgraph-tauola/DM600_Phys14DR-PU20bx25_PHYS14_25_V1-v1_EDMNtuple/150212_173740/0000/B2GEDMNtuple_4.root'],
 #				'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/EDMTuple_80X/SingleMuon/SingleMu_2016B_PromptReco-v2/160718_110537/0000/SingleMu_2016B_EDMTuple_999.root'	
-],
+				'file:B2GEDMNtuple_Data_RunH.root'
+                 ],
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Sample to analyze')
@@ -57,6 +58,12 @@ options.register('lhes',
                  opts.VarParsing.varType.string,
                  'name from generator')
 
+options.register('Era',
+                 'RunH',
+                 opts.VarParsing.multiplicity.singleton,
+                 opts.VarParsing.varType.string,
+                 'Data collection Period')
+
 options.parseArguments()
 
 if(options.isData):
@@ -73,7 +80,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxE
 ### Source file
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-#        options.sample
+        options.sample
         )
 )
 
@@ -123,8 +130,8 @@ process.DMTreesDumper.addPV = cms.untracked.bool(True)
 process.DMTreesDumper.channelInfo.useLHEWeights =cms.untracked.bool(False)
 process.DMTreesDumper.isData = cms.untracked.bool(True)#This adds the L2L3Residuals
 process.DMTreesDumper.doPU= cms.bool(False)
-process.DMTreesDumper.dataPUFile=cms.string("DistrSpring16_25ns")                                                                                                                
-
+process.DMTreesDumper.dataPUFile=cms.string("DistrSpring16_25ns")
+process.DMTreesDumper.era= cms.string(options.Era)
 
 process.analysisPath = cms.Path(
     process.DMTreesDumper
