@@ -694,44 +694,44 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
 		if(isData) {
 
 			if(Era=="RunB" || Era=="RunC" || Era=="RunD"){
-				jecParsL1  = new JetCorrectorParameters("Summer16_23Sep2016BCDV4_DATA_L1FastJet_AK4PFchs.txt");
-				jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016BCDV4_DATA_L2Residual_AK4PFchs.txt");
-				jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016BCDV4_DATA_L3Absolute_AK4PFchs.txt");
-				jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16_23Sep2016BCDV4_DATA_L2L3Residual_AK4PFchs.txt");     
-				jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016BCDV4_DATA_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
+				jecParsL1  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016BCDV4_DATA_L1FastJet_AK4PFchs.txt");
+				jecParsL2  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016BCDV4_DATA_L2Residual_AK4PFchs.txt");
+				jecParsL3  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016BCDV4_DATA_L3Absolute_AK4PFchs.txt");
+				jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016BCDV4_DATA_L2L3Residual_AK4PFchs.txt");     
+				jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016BCDV4_DATA_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
 			}
 
 			if(Era=="RunE" || Era=="RunF"){
-				jecParsL1  = new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_L1FastJet_AK4PFchs.txt");
-				jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_L2Residual_AK4PFchs.txt");
-				jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_L3Absolute_AK4PFchs.txt");
-				jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_L2L3Residual_AK4PFchs.txt");     
-				jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
+				jecParsL1  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016EFV4_DATA_L1FastJet_AK4PFchs.txt");
+				jecParsL2  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016EFV4_DATA_L2Residual_AK4PFchs.txt");
+				jecParsL3  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016EFV4_DATA_L3Absolute_AK4PFchs.txt");
+				jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016EFV4_DATA_L2L3Residual_AK4PFchs.txt");     
+				jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016EFV4_DATA_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
 			}
 
 			if(Era=="RunG"){
-				jecParsL1  = new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_L1FastJet_AK4PFchs.txt");
-				jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_L2Residual_AK4PFchs.txt");
-				jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_L3Absolute_AK4PFchs.txt");
-				jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_L2L3Residual_AK4PFchs.txt");     
-				jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
+				jecParsL1  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016GV4_DATA_L1FastJet_AK4PFchs.txt");
+				jecParsL2  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016GV4_DATA_L2Residual_AK4PFchs.txt");
+				jecParsL3  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016GV4_DATA_L3Absolute_AK4PFchs.txt");
+				jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016GV4_DATA_L2L3Residual_AK4PFchs.txt");     
+				jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016GV4_DATA_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
 			}
 
 			if(Era=="RunH"){	
-				jecParsL1  = new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_L1FastJet_AK4PFchs.txt");
-				jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_L2Residual_AK4PFchs.txt");
-				jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_L3Absolute_AK4PFchs.txt");
-				jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_L2L3Residual_AK4PFchs.txt");		
-				jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
+				jecParsL1  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016HV4_DATA_L1FastJet_AK4PFchs.txt");
+				jecParsL2  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016HV4_DATA_L2Residual_AK4PFchs.txt");
+				jecParsL3  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016HV4_DATA_L3Absolute_AK4PFchs.txt");
+				jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016HV4_DATA_L2L3Residual_AK4PFchs.txt");		
+				jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016HV4_DATA_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
 			}
 
 		}
 
 		else {
-			jecParsL1 = new JetCorrectorParameters("Summer16_23Sep2016V4_MC_L1FastJet_AK4PFchs.txt");
-			jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016V4_MC_L2Relative_AK4PFchs.txt");
-			jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016V4_MC_L3Absolute_AK4PFchs.txt");
-			jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016V4_MC_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
+			jecParsL1 = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016V4_MC_L1FastJet_AK4PFchs.txt");
+			jecParsL2  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016V4_MC_L2Relative_AK4PFchs.txt");
+			jecParsL3  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016V4_MC_L3Absolute_AK4PFchs.txt");
+			jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016V4_MC_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
 		}
 
 		jecPars.push_back(*jecParsL1);
@@ -949,7 +949,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       //      cout<< " size for "<< namelabel <<" is then "<< sizes[namelabel]<<endl; 
     }
     
-//        std::cout << " checkpoint floats"<<endl;
+//       std::cout << " checkpoint floats"<<endl;
     //Vectors of ints
     for (;itI != variablesInt.end();++itI){
       string varname=itI->instance();
@@ -978,7 +978,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       iEvent.getByToken(t_int[name],h_int[name]);
       int_values[name]=*h_int[name];
     }
-//        std::cout << " checkpoint singles"<<endl;
+//       std::cout << " checkpoint singles"<<endl;
   }
 
 //    std::cout << " checkpoint part 1"<<endl;
@@ -1186,7 +1186,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     float metPy = metpt*cos(metphi);
     
 //   std::cout<<"Ending MET"<<std::endl;
-    
+  
     //    cout << "syst "<<syst<<endl;
     /**************************
     Jets:
@@ -1353,8 +1353,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	vfloats_values[jets_label+"_JetID_neutralMultiplicity"][j]=neuMulti;
 	vfloats_values[jets_label+"_JetID_numberOfDaughters"][j]=chMulti+neuMulti;
 
-	
-/*	std::cout << "### JET ID ###" << std::endl;
+/*	
+	std::cout << "### JET ID ###" << std::endl;
 	std::cout <<"enZero "<<enZero<< std::endl;
 	std::cout << "ndau " << chMulti+neuMulti << std::endl;
 	std::cout << "chMulti " << chMulti << std::endl;
@@ -1435,7 +1435,11 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 //	      cout << " syst "<< syst<< " jet "<< j << " pt "<< ptCorr <<"cut "<< jetScanCuts.at(ji)<< " extra jet with pt "<< ptCorr<< "eventNJets before is" << float_values["Event_nJets"+j_n.str()]<< " csv "<< csv<< " isCSVM? "<< isCSVM<<endl;
 		if(passesCut)	float_values["Event_nJets"+j_n.str()]+=1;
 //		std::cout<<  "after: "<< float_values["Event_nJets"+j_n.str()]<<std::endl;
+
 		if(!isData && passesCut){
+
+//		std::cout<<"b-tagging SF method starts"<<std::endl;
+//		std::cout<<ptCorr<<"\t"<<eta<<"\t"<<flavor<<std::endl;
 	  	
 	  	if(fabs(eta)>2.4) continue;
 	  
