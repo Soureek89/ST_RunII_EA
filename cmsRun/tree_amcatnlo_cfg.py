@@ -16,26 +16,29 @@ import FWCore.ParameterSet.VarParsing as opts
 options = opts.VarParsing ('analysis')
 
 options.register('maxEvts',
-                 10,# default value: process all events
+                 -1,# default value: process all events
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.int,
                  'Number of events to process')
 
 options.register('sample',
-				[#'file:/tmp/oiorio/B2GEDMNtuple_1.root'
-#                 'file:../../edm_mc/B2GEDMNtuple.root'
-#                 'file:/afs/cern.ch/work/n/nfalterm/public/B2GEDMNtuple.root'
-#                  'root://xrootd.ba.infn.it///store/user/decosa/ttDM/CMSSW_7_4_X/TT_TuneCUETP8M1_13TeV-powheg-pythia8/TT_TuneCUETP8M1_13TeV/150926_070344/0000/B2GEDMNtuple_1.root'
-#				'root://se01.indiacms.res.in//store/user/smitra/25ns/EDMTuple_74Xv8/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_EDMTuple_74Xv8/151109_200859/0000/DYJets_EDMTuple_1.root'	
-#				'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/EDMTuple_80X/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple/160714_102438/0000/TChannel_aMCatNLO_EDMTuple_9.root'
-                 'file:B2GEDMNtuple.root'
-				],
+                 [#'file:/tmp/oiorio/B2GEDMNtuple_1.root'
+        #                 'file:../../edm_mc/B2GEDMNtuple.root'
+        #                 'file:/afs/cern.ch/work/n/nfalterm/public/B2GEDMNtuple.root'
+        #                  'root://xrootd.ba.infn.it///store/user/decosa/ttDM/CMSSW_7_4_X/TT_TuneCUETP8M1_13TeV-powheg-pythia8/TT_TuneCUETP8M1_13TeV/150926_070344/0000/B2GEDMNtuple_1.root'
+        #				'root://se01.indiacms.res.in//store/user/smitra/25ns/EDMTuple_74Xv8/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_EDMTuple_74Xv8/151109_200859/0000/DYJets_EDMTuple_1.root'	
+        #				'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/EDMTuple_80X/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple/160714_102438/0000/TChannel_aMCatNLO_EDMTuple_9.root'
+        #'file:/store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple_Summer16/170309_045551/0000/TChannel_Powheg_EDMTuple_1.root'
+        'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple_Summer16/170309_045551/0000/TChannel_Powheg_EDMTuple_1.root'
+        ],
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Sample to analyze')
 
 options.register('outputLabel',
-                 'treesTest_NewSmall.root',
+                # 'treesTest_NewSmall_EleTrig.root',
+                # 'TChannel_Powheg.root',
+                 'tree.root',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Output label')
@@ -57,7 +60,7 @@ options.register('lhes',
                  'externalLHEProducer',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
-                 'name from generator')
+		                 'name from generator')
 
 options.register('syst',
                  ['noSyst'],
