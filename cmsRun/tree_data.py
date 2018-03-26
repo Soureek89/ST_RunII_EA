@@ -16,7 +16,7 @@ import FWCore.ParameterSet.VarParsing as opts
 options = opts.VarParsing ('analysis')
 
 options.register('maxEvts',
-                 10,# default value: process all events
+                 -1,# default value: process all events
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.int,
                  'Number of events to process')
@@ -27,14 +27,14 @@ options.register('sample',
 #'root://xrootd.ba.infn.it//store/user/decosa/ttDM/Phys14_v2/TTDMDMJets_M600GeV_Tune4C_13TeV-madgraph-tauola/DM600_Phys14DR-PU20bx25_PHYS14_25_V1-v1_EDMNtuple/150212_173740/0000/B2GEDMNtuple_5.root', 
 #'root://xrootd.ba.infn.it//store/user/decosa/ttDM/Phys14_v2/TTDMDMJets_M600GeV_Tune4C_13TeV-madgraph-tauola/DM600_Phys14DR-PU20bx25_PHYS14_25_V1-v1_EDMNtuple/150212_173740/0000/B2GEDMNtuple_4.root'],
 #				'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/EDMTuple_80X/SingleMuon/SingleMu_2016B_PromptReco-v2/160718_110537/0000/SingleMu_2016B_EDMTuple_999.root'	
-				'file:B2GEDMNtuple_Data_RunH.root'
+                  'file:B2GEDMNtuple_SingleElectron_RunB_data.root'
                  ],
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Sample to analyze')
 
 options.register('outputLabel',
-                 'treesTest_NewSmall_Data.root',
+                 'Trees_SingleElectron.root',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Output label')
@@ -59,7 +59,7 @@ options.register('lhes',
                  'name from generator')
 
 options.register('Era',
-                 'RunH',
+                 'RunB',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Data collection Period')
@@ -99,7 +99,8 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
 #process.GlobalTag.globaltag = '74X_dataRun2_Prompt_v0'
 #process.GlobalTag.globaltag = '76X_dataRun2_v15'
-process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v8'
+#process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v8'
+process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'
 
 #for pset in process.GlobalTag.toGet.value():
 #    pset.connect = pset.connect.value().replace('frontier://FrontierProd/', 'frontier://FrontierProd/')
@@ -132,6 +133,15 @@ process.DMTreesDumper.isData = cms.untracked.bool(True)#This adds the L2L3Residu
 process.DMTreesDumper.doPU= cms.bool(False)
 process.DMTreesDumper.dataPUFile=cms.string("DistrSpring16_25ns")
 process.DMTreesDumper.era= cms.string(options.Era)
+
+
+import FWCore.PythonUtilities.LumiList as LumiList
+import FWCore.ParameterSet.Types as CfgTypes
+process.source.lumisToProcess = CfgTypes.untracked(CfgTypes.VLuminosityBlockRange())
+JSONfile = 'Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt'
+myLumis = LumiList.LumiList(url = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions16/13TeV/Final/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt').getCMSSWString().split(',')
+process.source.lumisToProcess.extend(myLumis)
+
 
 process.analysisPath = cms.Path(
     process.DMTreesDumper

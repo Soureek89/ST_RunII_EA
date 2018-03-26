@@ -74,10 +74,12 @@ public:
   void endRun(const edm::Run & , const edm::EventSetup &); 
 private:
   virtual void beginJob() {
+    if(doPU_){
     std::string distr = "pileUp" + dataPUFile_ + ".root";
     LumiWeights_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69p2mbMinBias.root",std::string("pileup"),std::string("pileup"));	
     LumiWeightsUp_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69p2mbMinBias_up.root",std::string("pileup"),std::string("pileup"));
     LumiWeightsDown_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69p2mbMinBias_down.root",std::string("pileup"),std::string("pileup"));
+  }
   }
 
   virtual void analyze(const edm::Event &, const edm::EventSetup & );
@@ -2569,9 +2571,9 @@ float DMAnalysisTreeMaker::BTagWeight::weight(vector<JetInfo> jetTags, int tags)
   return pData / pMC;
 }
 
-/*double DMAnalysisTreeMaker::MCTagEfficiency(string algo, int flavor, double pt){
+//double DMAnalysisTreeMaker::MCTagEfficiency(string algo, int flavor, double pt){
 
-	double eff=1.0;
+//	double eff=1.0;
 /*	if (abs(flavor) ==5){
     if(algo=="csvt") return 0.38;
     if(algo=="csvm") return 0.58;
