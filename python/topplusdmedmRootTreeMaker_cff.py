@@ -26,7 +26,8 @@ leptonTriggers = [
     "HLT_IsoMu22_v",
     "HLT_IsoMu24_v",
     "HLT_IsoTkMu22_v",
-    "HLT_IsoTkMu24_v"
+    "HLT_IsoTkMu24_v",
+    "HLT_Ele32_eta2p1_WPTight_Gsf"
 ]
 
 
@@ -244,7 +245,7 @@ DMTreesDumper.physicsObjects.append(
         variablesI = cms.VInputTag( ),
         singleI = cms.VInputTag(),
         singleF = cms.VInputTag(),
-		toSave = cms.vstring("elE","elPt","elEta","elPhi","elIso03","elvidTight","elCharge","elvidMedium","elvidLoose","elvidVeto","elvidHEEP","elSCEta","allExtra"),
+		toSave = cms.vstring("elE","elPt","elEta","elPhi","elIso03","elvidTight","elCharge","elvidMedium","elvidLoose","elvidVeto","elDxy","elDz","elvidHEEP","elSCEta","allExtra"),
         )
     )                                     
 
