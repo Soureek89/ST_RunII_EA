@@ -54,6 +54,7 @@ DMTreesDumper = cms.EDAnalyzer(
     'DMAnalysisTreeMaker',
     lhes = cms.InputTag('source'),
     genprod = cms.InputTag('generator'),
+    genParticles= cms.InputTag('filteredPrunedGenParticles'),
     muLabel = mulabel,
     eleLabel = elelabel,
     jetsLabel = jetlabel,
@@ -125,11 +126,12 @@ DMTreesDumper = cms.EDAnalyzer(
         
         #useLHE = cms.untracked.bool(False),#Whether one uses the weights from the LHE in order to get scale uncertainties
         useLHE = cms.untracked.bool(True),
-		topPtreweight= cms.untracked.bool(False),
-        useLHEWeights = cms.untracked.bool(True),#Whether one uses the weights from the LHE in order to get scale uncertainties
+	topPtreweight= cms.untracked.bool(False),
+        useLHEWeights = cms.untracked.bool(False),#Whether one uses the weights from the LHE in order to get scale uncertainties
         addLHAPDFWeights = cms.untracked.bool(False), #Whether to add the PDF for uncertainty evaluation (time consuming)
-        maxWeights = cms.untracked.int32(110) 
-        )
+        maxWeights = cms.untracked.int32(9),
+        maxPdf = cms.untracked.int32(102) 
+       )
     )
 
 #Now taking the other input objects:

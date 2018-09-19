@@ -11,7 +11,6 @@
  * 
  * 
 */ 
-
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/GetterOfProducts.h"
@@ -92,7 +91,7 @@ private:
   void getEventLHEWeights();
   bool getMETFilters();
 
-  double getTopPtWeight(double ptT,double ptTbar, bool extrap = false);
+  double getTopPtWeight(double ptT,double ptTbar);
 
   double jetUncertainty(double pt, double eta, string syst);
   //  double smearPt(double pt, double genpt, double eta, string syst);
@@ -113,7 +112,7 @@ private:
   edm::EDGetTokenT< std::vector<reco::GenParticle>> t_genParticles_;
 
   edm::EDGetTokenT< std::vector<string> > t_triggerNames_;
-//  edm::GetterOfProducts<YourDataType> t_triggerNames_;
+//edm::GetterOfProducts<YourDataType> t_triggerNames_;
   edm::EDGetTokenT< std::vector<float> > t_triggerBits_;
   edm::EDGetTokenT< std::vector<int> > t_triggerPrescales_;
   edm::EDGetTokenT< unsigned int > t_lumiBlock_;
@@ -139,7 +138,7 @@ private:
   std::vector<string> names;
   std::vector<string> systematics;
   map< string , float[100] > vfloats_values;
-  map< string , int[100] > vints_values;
+  map< string , int[100] > vints_values;   
   map< string , string > obs_to_obj;
   map< string , string > obj_to_pref;
   
@@ -172,7 +171,12 @@ private:
   bool addLHAPDFWeights;
   string centralPdfSet,variationPdfSet;
   std::vector<string> leptonicTriggers, hadronicTriggers, metFilters;
+
   int maxPdf, maxWeights;
+
+  std::vector<float> genWeights;
+  std::vector<float> pdfWeights;
+  
   edm::Handle<GenEventInfoProduct> genprod;
   edm::Handle<std::vector<reco::GenParticle> > prunedGenParticles;
   edm::Handle<LHEEventProduct > lhes;
@@ -191,9 +195,6 @@ private:
   edm::Handle<ULong64_t> eventNumber;
 
   edm::InputTag metNames_, metBits_;	
-  //  float pdf_weights[140];
-  //float lhe_weights[20];  
-  // std::string lhe_weights_id[20];  
 
   edm::Handle<std::vector<float> > pvZ,pvChi2,pvRho;
   edm::Handle<std::vector<int> > pvNdof;
@@ -419,12 +420,13 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   channel = channelInfo.getParameter<std::string>("channel");
   crossSection = channelInfo.getParameter<double>("crossSection");
   originalEvents = channelInfo.getParameter<double>("originalEvents");
-  useLHEWeights = channelInfo.getUntrackedParameter<bool>("useLHEWeights",false);
-  //useLHE = channelInfo.getUntrackedParameter<bool>("useLHE",false);
+
   useLHE = channelInfo.getUntrackedParameter<bool>("useLHE",false);
+  useLHEWeights = channelInfo.getUntrackedParameter<bool>("useLHEWeights",false);
+  addLHAPDFWeights = channelInfo.getUntrackedParameter<bool>("addLHAPDFWeights",false);
+//  addLHAPDFWeights = channelInfo.getUntrackedParameter<bool>("addLHAPDFWeights",true);
   doTopPtReweight= channelInfo.getUntrackedParameter<bool>("topPtreweight",false);	
-  //addLHAPDFWeights = channelInfo.getUntrackedParameter<bool>("addLHAPDFWeights",false);
-  addLHAPDFWeights = channelInfo.getUntrackedParameter<bool>("addLHAPDFWeights",true);
+
 
   if( useLHE ){
     edm::InputTag lhes_ = iConfig.getParameter<edm::InputTag>( "lhes" );
@@ -432,7 +434,8 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   }
 
   if(doTopPtReweight){
-	t_genParticles_ = consumes <std::vector<reco::GenParticle> >(iConfig.getParameter<edm::InputTag>( "filteredPrunedGenParticles" ));
+	edm::InputTag genParticles_= iConfig.getParameter<edm::InputTag>( "genParticles" );  
+	t_genParticles_ = consumes < std::vector<reco::GenParticle> >( genParticles_ );
   }
 		
   if( addLHAPDFWeights ){
@@ -508,14 +511,13 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
     maxWeights = channelInfo.getUntrackedParameter<int>("maxWeights",9);//Usually we do have 9 weights for the scales, might vary depending on the lhe
   }
 
-  
   if(addLHAPDFWeights){
-    centralPdfSet = channelInfo.getUntrackedParameter<string>("pdfSet","CT10");
-    //centralPdfSet = channelInfo.getUntrackedParameter<string>("pdfSet","NNPDF");
-    variationPdfSet = channelInfo.getUntrackedParameter<string>("pdfSet","CT10");
-    //variationPdfSet = channelInfo.getUntrackedParameter<string>("pdfSet","NNPDF");
+	maxPdf = channelInfo.getUntrackedParameter<int>("maxPdf",102);  
+//  centralPdfSet = channelInfo.getUntrackedParameter<string>("pdfSet","CT10");
+    centralPdfSet = channelInfo.getUntrackedParameter<string>("pdfSet","NNPDF");
+//  variationPdfSet = channelInfo.getUntrackedParameter<string>("pdfSet","CT10");
+    variationPdfSet = channelInfo.getUntrackedParameter<string>("pdfSet","NNPDF");
     initializePdf(centralPdfSet,variationPdfSet);
-
   }
   
 
@@ -616,12 +618,13 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
       string nameshortv = namelabel;
       vector<string> extravars = additionalVariables(nameshortv);
       for(size_t addv = 0; addv < extravars.size();++addv){
-	string name = nameshortv+"_"+extravars.at(addv);
-	if (saveBaseVariables || isInVector(toSave, extravars.at(addv)) || isInVector(toSave, "allExtra") )trees["noSyst"]->Branch(name.c_str(), &vfloats_values[name],(name+"["+nameobs+"_size"+"]/F").c_str());
-	obs_to_obj[name] = nameobs;
-	obj_to_pref[nameobs] = prefix;
+		  string name = nameshortv+"_"+extravars.at(addv);
+		  if (saveBaseVariables || isInVector(toSave, extravars.at(addv)) || isInVector(toSave, "allExtra") )trees["noSyst"]->Branch(name.c_str(), &vfloats_values[name],(name+"["+nameobs+"_size"+"]/F").c_str());
+		  obs_to_obj[name] = nameobs;
+		  obj_to_pref[nameobs] = prefix;
       }
     }
+
     names.push_back(nameobs);
     cout << "size part: nameobs is  "<< nameobs<<endl;
     trees["noSyst"]->Branch((nameobs+"_size").c_str(), &sizes[nameobs]);
@@ -660,7 +663,14 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
       trees["noSyst"]->Branch(name.c_str(), &float_values[name],(name+"/F").c_str());
   }
 //  std::cout<<"Check point Constructor 3"<<std::endl;
-  
+  if(!isData && addLHAPDFWeights){ 
+	  trees["noSyst"]->Branch("maxPDF", &maxPdf, "maxPDF/I");
+	  trees["noSyst"]->Branch("pdfWeights", &pdfWeights);
+  }	  
+  if(!isData && useLHEWeights){ 
+	  trees["noSyst"]->Branch("maxGenWeights", &maxWeights, "maxGenWeights/I");
+	  trees["noSyst"]->Branch("genWeights", &genWeights);	  
+   }		
   //Prepare the trees cloning all branches and setting the correct names/titles:
   if(!addNominal){
     DMTrees = fs->mkdir( "systematics_trees" );
@@ -845,8 +855,6 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 
   std::vector<edm::ParameterSet >::const_iterator itPsets = physObjects.begin();
 
-  //  if(addLHAPDFWeights){
-
   // event info
   iEvent.getByToken(t_lumiBlock_,lumiBlock );
   iEvent.getByToken(t_runNumber_,runNumber );
@@ -860,7 +868,6 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
   }
 
   if(doTopPtReweight){
-//    edm::Handle<std::vector<reco::GenParticle>> prunedGenParticles;
     iEvent.getByToken(t_genParticles_,prunedGenParticles);
   }  	
   //Part 0: trigger preselection
@@ -1008,6 +1015,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     muons.clear();
     loosemuons.clear();
     jets.clear();
+    genWeights.clear();
+    pdfWeights.clear();		
     string syst = systematics.at(s);
 
     jsfscmvat.clear();
@@ -1058,32 +1067,32 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       //      std::cout << " muon #"<<mu<< " pt " << pt << " isTight/Loose/Soft?"<< isTight<<isSoft<<isLoose<<std::endl;
       
       if(isTight>0 && pt> 24 && abs(eta) < 2.4 && iso <0.06){
-	++float_values["Event_nTightMuons"];
-	TLorentzVector muon;
-	muon.SetPtEtaPhiE(pt, eta, phi, energy);
-	muons.push_back(muon);
-	muons_t.push_back(muon);
+		++float_values["Event_nTightMuons"];
+		TLorentzVector muon;
+		muon.SetPtEtaPhiE(pt, eta, phi, energy);
+		muons.push_back(muon);
+		muons_t.push_back(muon);
 
-	if (abs(eta) < 2.4)
-	  muons_t_2p4.push_back(muon);
+		if (abs(eta) < 2.4)
+		muons_t_2p4.push_back(muon);
 
-	leptons.push_back(muon);
+		leptons.push_back(muon);
 
-	mu_sf *= muonSF(isData,pt,eta,0);
-	mu_sf_up *= muonSF(isData,pt,eta,1);
-	mu_sf_down *= muonSF(isData,pt,eta,-1);
+		mu_sf *= muonSF(isData,pt,eta,0);
+		mu_sf_up *= muonSF(isData,pt,eta,1);
+		mu_sf_down *= muonSF(isData,pt,eta,-1);
 
-      }
-      if(isLoose>0 && pt> 10 && abs(eta) < 2.1 && iso<0.2){
-	++float_values["Event_nLooseMuons"];
+     }
+     if(isLoose>0 && pt> 10 && abs(eta) < 2.1 && iso<0.2){
+		++float_values["Event_nLooseMuons"];
       }
       if(isSoft>0 && pt> 30 && abs(eta) < 2.4){
-	++float_values["Event_nSoftMuons"]; 
+		++float_values["Event_nSoftMuons"]; 
       }
       if(isLoose>0 && pt > 15){
-	TLorentzVector muon;
-	muon.SetPtEtaPhiE(pt, eta, phi, energy);
-	loosemuons.push_back(muon);
+		TLorentzVector muon;
+		muon.SetPtEtaPhiE(pt, eta, phi, energy);
+		loosemuons.push_back(muon);
       }
     }
 
@@ -1107,9 +1116,9 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float phi = vfloats_values[makeName(ele_label,pref,"Phi")][el];
       float energy = vfloats_values[makeName(ele_label,pref,"E")][el];      
       float iso = vfloats_values[makeName(ele_label,pref,"Iso03")][el];
-	  float eldxy = vfloats_values[makeName(ele_label,pref,"Dxy")][el];
-	  float eldz =  vfloats_values[makeName(ele_label,pref,"Dz")][el];
-	  float elCharge = vfloats_values[makeName(ele_label,pref,"Charge")][el];	
+      float eldxy = vfloats_values[makeName(ele_label,pref,"Dxy")][el];
+      float eldz =  vfloats_values[makeName(ele_label,pref,"Dz")][el];
+      float elCharge = vfloats_values[makeName(ele_label,pref,"Charge")][el];	
 
 
       float isTight = vfloats_values[makeName(ele_label,pref,"vidTight")][el];
@@ -1133,30 +1142,29 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 		passesTightCuts = isTight >0.0 /*&& iso < 0.0571*/ ;
       }
 
-    if(pt> 30 && abs(eta) < 2.1 && passesTightCuts){
-	TLorentzVector ele;
-	ele.SetPtEtaPhiE(pt, eta, phi, energy);	
-	double minDR=999;
-	double deltaR = 999;
-	for (size_t m = 0; m < (size_t)loosemuons.size(); ++m){
-	  deltaR = ele.DeltaR(loosemuons[m]);
-	  minDR = min(minDR, deltaR);
-	}
-	if(!loosemuons.size()) minDR=999;
-	if(minDR>0.1){ 
-	  electrons.push_back(ele); 
-	  leptons.push_back(ele);
-	  ++float_values["Event_nTightElectrons"];
-
-	}
-	else {passesDRmu = false;}
+	  if(pt> 30 && abs(eta) < 2.1 && passesTightCuts){
+		TLorentzVector ele;
+		ele.SetPtEtaPhiE(pt, eta, phi, energy);	
+		double minDR=999;
+		double deltaR = 999;
+		for (size_t m = 0; m < (size_t)loosemuons.size(); ++m){
+			deltaR = ele.DeltaR(loosemuons[m]);
+			minDR = min(minDR, deltaR);
+		}
+		if(!loosemuons.size()) minDR=999;
+		if(minDR>0.1){ 
+		electrons.push_back(ele); 
+		leptons.push_back(ele);
+		++float_values["Event_nTightElectrons"];
+		}
+		else {passesDRmu = false;}
       }
 
       if(isLoose>0 && pt> 30 && abs(eta) < 2.5){
-	++float_values["Event_nLooseElectrons"];
+		++float_values["Event_nLooseElectrons"];
       }
       if(isMedium>0 && pt> 30 && abs(eta) < 2.5){
-	++float_values["Event_nMediumElectrons"]; 
+		++float_values["Event_nMediumElectrons"]; 
       }
 
       if(isVeto>0 && pt> 15 && abs(eta) < 2.5){
@@ -1794,6 +1802,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 		std::vector<TLorentzVector> gentop;
 		std::vector<TLorentzVector> genantitop;
 
+    	TLorentzVector vec;
+
 		gentop.clear();
 		genantitop.clear();				
 
@@ -1808,13 +1818,13 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 //    		float mass = lhes->hepeup().PUP[i][4];      
 //    		if(abs (id) == 6 )  cout << " px is"<< px << " py "<< py << " pz "<< pz << " e "<<energy<<endl;    
 
-			TLorentzVector vec;
 			math::XYZTLorentzVector part = math::XYZTLorentzVector(px, py, pz, energy);
 			float pt = part.pt();
 			float phi = part.phi();
 			float eta = part.eta();
-		    if(abs (id) == 6 )  std::cout << " pt is"<< pt << " eta "<< eta << " phi "<< phi << " e "<<energy<<std::endl;          
-			if(pt>0){
+
+			if(abs(id)==6 && pt>0){
+//				std::cout << "From LHE;\tid: "<<id<<"\tpt: "<< pt << "\teta: "<< eta << "\tphi: "<< phi << "\te: "<<energy<<std::endl;
 				vec.SetPtEtaPhiE(pt, eta, phi, energy);
 				if(id == 6 ) gentop.push_back(vec);
 				if(id == -6 ) genantitop.push_back(vec);
@@ -1836,50 +1846,58 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 			float_values["Event_LHE_Tbar_E"]=genantitop.at(0).Energy();
 			float_values["Event_LHE_Tbar_size"]=1.0;			
 		}
+
 		double ptT_LHE = gentop.at(0).Pt();
 		double ptTbar_LHE = genantitop.at(0).Pt();				
 		double topPtwgt_LHE = getTopPtWeight(ptT_LHE,ptTbar_LHE);
-		float_values["LHEtopPtWeight"]=topPtwgt_LHE;
+		float_values["Event_LHEtopPtWeight"]=topPtwgt_LHE;
 		
 		for( size_t j=0; j<prunedGenParticles->size(); ++j){
 			const reco::GenParticle & genIt = (*prunedGenParticles)[j];
-//			int absid=abs(genIt.pdgId());
 			
 			if(abs(genIt.pdgId())==6 && genIt.isLastCopy()){
 				genPartpt=genIt.pt();
 				genParteta= genIt.eta();
 				genPartphi= genIt.phi();
 				genPartE= genIt.energy();
-				genPartId= genIt.pdgId();	
-			}
-			TLorentzVector vec;
-			if(genPartpt>0){
-				vec.SetPtEtaPhiE(genPartpt, genParteta, genPartphi, genPartE);
-				if(genPartId == 6) gentop.push_back(vec);
-				if(genPartId == -6) genantitop.push_back(vec);
+				genPartId= genIt.pdgId();
+
+//				std::cout << "From GENParticles;\tid: "<<genPartId<<"\tpt: "<< genPartpt << "\teta: "<< genParteta << "\tphi: "<< genPartphi << "\te: "<<genPartE<<std::endl;	
+			
+				if(genPartpt > 0){
+					vec.SetPtEtaPhiE(genPartpt, genParteta, genPartphi, genPartE);
+					if(genPartId == 6) gentop.push_back(vec);
+					if(genPartId == -6) genantitop.push_back(vec);
+				}
 			}
 		}	
 		
 		if(gentop.size()==2){
-				float_values["Event_gen_T_Pt"]=gentop.at(1).Pt();
-				float_values["Event_gen_T_Eta"]=gentop.at(1).Eta();
-				float_values["Event_gen_T_Phi"]=gentop.at(1).Phi();
-				float_values["Event_gen_T_E"]=gentop.at(1).Energy();
-				float_values["Event_gen_T_size"]=1.0;
+//			std::cout<<"GEN top;\tpt: "<<gentop.at(1).Pt()<<"\teta: "<<gentop.at(1).Eta()<<"\tphi: "<<gentop.at(1).Phi()<<"\te: "<<gentop.at(1).Energy()<<std::endl;
+
+			float_values["Event_gen_T_Pt"]=gentop.at(1).Pt();
+			float_values["Event_gen_T_Eta"]=gentop.at(1).Eta();
+			float_values["Event_gen_T_Phi"]=gentop.at(1).Phi();
+			float_values["Event_gen_T_E"]=gentop.at(1).Energy();
+			float_values["Event_gen_T_size"]=1.0;
 		}
 		
 		if(genantitop.size()==2){
+//			std::cout<<"GEN anti-top;\tpt: "<<genantitop.at(1).Pt()<<"\teta: "<<genantitop.at(1).Eta()<<"\tphi: "<<genantitop.at(1).Phi()<<"\te: "<<genantitop.at(1).Energy()<<std::endl;
+			
 			float_values["Event_gen_Tbar_Pt"]=genantitop.at(1).Pt();
 			float_values["Event_gen_Tbar_Eta"]=genantitop.at(1).Eta();
 			float_values["Event_gen_Tbar_Phi"]=genantitop.at(1).Phi();
 			float_values["Event_gen_Tbar_E"]=genantitop.at(1).Energy();
 			float_values["Event_gen_Tbar_size"]=1.0;
 		}
+		
 		double ptT_gen = gentop.at(1).Pt();
 		double ptTbar_gen = genantitop.at(1).Pt();				
 		double topPtwgt_gen = getTopPtWeight(ptT_gen, ptTbar_gen);
-		float_values["topPtWeight"]=topPtwgt_gen;
-			
+		float_values["Event_topPtWeight"]=topPtwgt_gen;
+		
+//		std::cout<<"LHE topPtwgt: "<<topPtwgt_LHE<<"\tGEN particle topPtwgt: "<<topPtwgt_gen<<std::endl;			
 	  }		  		  
     }
     
@@ -2047,7 +2065,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     addvar.push_back("nCMVAM");
   }  
   if(isak8subjet){
-    ;//    addvar.push_back("CorrPt");
+    //addvar.push_back("CorrPt");
   }
   /*
   if(isResolvedTopHad ){
@@ -2071,7 +2089,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     addvar.push_back("nMediumElectrons");
     addvar.push_back("nLooseElectrons");
     addvar.push_back("nVetoElectrons");
-	addvar.push_back("EventNumber");
+    addvar.push_back("EventNumber");
     addvar.push_back("LumiBlock");
     addvar.push_back("RunNumber");
     
@@ -2089,103 +2107,105 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     //addvar.push_back("nType2TopJets");
  
     if(!isData && doBTagSF){
-		addvar.push_back("bWeight0CMVAT");
-		addvar.push_back("bWeight1CMVAT");
-		addvar.push_back("bWeight2CMVAT");
-		addvar.push_back("bWeight0CMVAM");
-		addvar.push_back("bWeight1CMVAM");
-		addvar.push_back("bWeight2CMVAM");
+	addvar.push_back("bWeight0CMVAT");
+	addvar.push_back("bWeight1CMVAT");
+	addvar.push_back("bWeight2CMVAT");
+	addvar.push_back("bWeight0CMVAM");
+	addvar.push_back("bWeight1CMVAM");
+	addvar.push_back("bWeight2CMVAM");
 
-		addvar.push_back("bWeight0CMVAL");
-		addvar.push_back("bWeight1CMVAL");
-		addvar.push_back("bWeight2CMVAL");
+	addvar.push_back("bWeight0CMVAL");
+	addvar.push_back("bWeight1CMVAL");
+	addvar.push_back("bWeight2CMVAL");
 
-		addvar.push_back("bWeightMisTagDown0CMVAT");
-		addvar.push_back("bWeightMisTagDown1CMVAT");
-		addvar.push_back("bWeightMisTagDown2CMVAT");
+	addvar.push_back("bWeightMisTagDown0CMVAT");
+	addvar.push_back("bWeightMisTagDown1CMVAT");
+	addvar.push_back("bWeightMisTagDown2CMVAT");
 
-		addvar.push_back("bWeightMisTagDown0CMVAM");
-		addvar.push_back("bWeightMisTagDown1CMVAM");
-		addvar.push_back("bWeightMisTagDown2CMVAM");
+	addvar.push_back("bWeightMisTagDown0CMVAM");
+	addvar.push_back("bWeightMisTagDown1CMVAM");
+	addvar.push_back("bWeightMisTagDown2CMVAM");
 
-		addvar.push_back("bWeightMisTagDown0CMVAL");
-		addvar.push_back("bWeightMisTagDown1CMVAL");
-		addvar.push_back("bWeightMisTagDown2CMVAL");
+	addvar.push_back("bWeightMisTagDown0CMVAL");
+	addvar.push_back("bWeightMisTagDown1CMVAL");
+	addvar.push_back("bWeightMisTagDown2CMVAL");
 
-		addvar.push_back("bWeightMisTagUp0CMVAT");
-		addvar.push_back("bWeightMisTagUp1CMVAT");
-		addvar.push_back("bWeightMisTagUp2CMVAT");
+	addvar.push_back("bWeightMisTagUp0CMVAT");
+	addvar.push_back("bWeightMisTagUp1CMVAT");
+	addvar.push_back("bWeightMisTagUp2CMVAT");
 
-		addvar.push_back("bWeightMisTagUp0CMVAM");
-		addvar.push_back("bWeightMisTagUp1CMVAM");
-		addvar.push_back("bWeightMisTagUp2CMVAM");
+	addvar.push_back("bWeightMisTagUp0CMVAM");
+	addvar.push_back("bWeightMisTagUp1CMVAM");
+	addvar.push_back("bWeightMisTagUp2CMVAM");
 
-		addvar.push_back("bWeightMisTagUp0CMVAL");
-		addvar.push_back("bWeightMisTagUp1CMVAL");
-		addvar.push_back("bWeightMisTagUp2CMVAL");
+	addvar.push_back("bWeightMisTagUp0CMVAL");
+	addvar.push_back("bWeightMisTagUp1CMVAL");
+	addvar.push_back("bWeightMisTagUp2CMVAL");
 
-		addvar.push_back("bWeightBTagUp0CMVAT");
-		addvar.push_back("bWeightBTagUp1CMVAT");
-		addvar.push_back("bWeightBTagUp2CMVAT");
-		addvar.push_back("bWeightBTagUp0CMVAM");
-		addvar.push_back("bWeightBTagUp1CMVAM");
-		addvar.push_back("bWeightBTagUp2CMVAM");
+	addvar.push_back("bWeightBTagUp0CMVAT");
+	addvar.push_back("bWeightBTagUp1CMVAT");
+	addvar.push_back("bWeightBTagUp2CMVAT");
+	addvar.push_back("bWeightBTagUp0CMVAM");
+	addvar.push_back("bWeightBTagUp1CMVAM");
+	addvar.push_back("bWeightBTagUp2CMVAM");
 
-		addvar.push_back("bWeightBTagUp0CMVAL");
-		addvar.push_back("bWeightBTagUp1CMVAL");
-		addvar.push_back("bWeightBTagUp2CMVAL");
+	addvar.push_back("bWeightBTagUp0CMVAL");
+	addvar.push_back("bWeightBTagUp1CMVAL");
+	addvar.push_back("bWeightBTagUp2CMVAL");
 
-		addvar.push_back("bWeightBTagDown0CMVAT");
-		addvar.push_back("bWeightBTagDown1CMVAT");
-		addvar.push_back("bWeightBTagDown2CMVAT");
+	addvar.push_back("bWeightBTagDown0CMVAT");
+	addvar.push_back("bWeightBTagDown1CMVAT");
+	addvar.push_back("bWeightBTagDown2CMVAT");
 
-		addvar.push_back("bWeightBTagDown0CMVAM");
-		addvar.push_back("bWeightBTagDown1CMVAM");
-		addvar.push_back("bWeightBTagDown2CMVAM");
+	addvar.push_back("bWeightBTagDown0CMVAM");
+	addvar.push_back("bWeightBTagDown1CMVAM");
+	addvar.push_back("bWeightBTagDown2CMVAM");
 
-		addvar.push_back("bWeightBTagDown0CMVAL");
-		addvar.push_back("bWeightBTagDown1CMVAL");
-		addvar.push_back("bWeightBTagDown2CMVAL");
-	}
+	addvar.push_back("bWeightBTagDown0CMVAL");
+	addvar.push_back("bWeightBTagDown1CMVAL");
+	addvar.push_back("bWeightBTagDown2CMVAL");
+    }
     
     if(!isData && useLHE){
-		addvar.push_back("LHEWeightSign");
-		addvar.push_back("LHEWeight");
-		addvar.push_back("LHEhepNUP");
+	addvar.push_back("LHEWeightSign");
+	addvar.push_back("LHEWeight");
+	addvar.push_back("LHEhepNUP");
     
-		if(doTopPtReweight){
-			addvar.push_back("LHEtopPtWeight");
-			addvar.push_back("topPtWeight");
+	if(doTopPtReweight){
+		addvar.push_back("LHEtopPtWeight");
+		addvar.push_back("topPtWeight");
 
-			addvar.push_back("Event_LHE_T_size");
-			addvar.push_back("Event_LHE_T_Pt");
-			addvar.push_back("Event_LHE_T_Eta");
-			addvar.push_back("Event_LHE_T_Phi");
-			addvar.push_back("Event_LHE_T_E");
-			addvar.push_back("Event_LHE_Tbar_size");
-			addvar.push_back("Event_LHE_Tbar_Pt");
-			addvar.push_back("Event_LHE_Tbar_Eta");
-			addvar.push_back("Event_LHE_Tbar_Phi");
-			addvar.push_back("Event_LHE_Tbar_E");
+		addvar.push_back("LHE_T_size");
+		addvar.push_back("LHE_T_Pt");
+		addvar.push_back("LHE_T_Eta");
+		addvar.push_back("LHE_T_Phi");
+		addvar.push_back("LHE_T_E");
+			
+		addvar.push_back("LHE_Tbar_size");
+		addvar.push_back("LHE_Tbar_Pt");
+		addvar.push_back("LHE_Tbar_Eta");
+		addvar.push_back("LHE_Tbar_Phi");
+		addvar.push_back("LHE_Tbar_E");
 
-			addvar.push_back("Event_gen_T_size");
-			addvar.push_back("Event_gen_T_Pt");
-			addvar.push_back("Event_gen_T_Eta");
-			addvar.push_back("Event_gen_T_Phi");
-			addvar.push_back("Event_gen_T_E");
-			addvar.push_back("Event_gen_Tbar_size");
-			addvar.push_back("Event_gen_Tbar_Pt");
-			addvar.push_back("Event_gen_Tbar_Eta");
-			addvar.push_back("Event_gen_Tbar_Phi");
-			addvar.push_back("Event_gen_Tbar_E");
-		}	
+		addvar.push_back("gen_T_size");
+		addvar.push_back("gen_T_Pt");
+		addvar.push_back("gen_T_Eta");
+		addvar.push_back("gen_T_Phi");
+		addvar.push_back("gen_T_E");
+			
+		addvar.push_back("gen_Tbar_size");
+		addvar.push_back("gen_Tbar_Pt");
+		addvar.push_back("gen_Tbar_Eta");
+		addvar.push_back("gen_Tbar_Phi");
+		addvar.push_back("gen_Tbar_E");
 	}	
+     }	
 	
-	if(!isData){
-		addvar.push_back("mu_eff");
-		addvar.push_back("mu_eff_up");
-		addvar.push_back("mu_eff_down");
-	}
+    if(!isData){
+	addvar.push_back("mu_eff");
+	addvar.push_back("mu_eff_up");
+	addvar.push_back("mu_eff_down");
+    }
 	
     if(addPV){
       addvar.push_back("nPV");
@@ -2213,23 +2233,6 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
     }
     */
 
-    if(useLHEWeights){
-      for (size_t w = 0; w <= (size_t)maxWeights; ++w)  {
-	stringstream w_n;
-	w_n << w;
-	addvar.push_back("LHEWeight"+w_n.str());
-	//	cout << " weight # " << w << " test "<< "LHEWeight"+w_n.str()<< endl; 
-	//addvar.push_back(("LHEWeight"+w_n.str())+"ID");
-      }
-    }
-    if(addLHAPDFWeights){
-      for (size_t p = 1; p <= (size_t)maxPdf; ++p)  {
-	//cout << " pdf # " << pdf_weights[p - 1] << " test "<< endl; 
-	stringstream w_n;
-	w_n << p;
-	addvar.push_back("PDFWeight" + w_n.str());
-      }
-    }
     if(useMETFilters){
 //      for (size_t lt = 0; lt < metFilters.size(); ++lt)  {
 //		string trig = metFilters.at(lt);
@@ -2274,14 +2277,15 @@ void DMAnalysisTreeMaker::initializePdf(string central, string varied){
     if(central == "CT") {  LHAPDF::initPDFSet(1, "cteq66.LHgrid"); }
     if(central == "CT10") {  LHAPDF::initPDFSet(1, "CT10.LHgrid"); }
     if(central == "CT10f4") {  LHAPDF::initPDFSet(1, "CT10f4.LHgrid"); }
-    if(central == "NNPDF") { LHAPDF::initPDFSet(1, "NNPDF22_100.LHgrid");  }
+    if(central == "NNPDF") { LHAPDF::initPDFSet(1, "NNPDF30_nlo_nf_4_pdfas");  }
     if(central == "MSTW") { LHAPDF::initPDFSet(1, "MSTW2008nlo68cl.LHgrid");  }
 
     if(varied == "CT") {  LHAPDF::initPDFSet(2, "cteq66.LHgrid"); maxPdf = 44; }
     if(varied == "CT10") {  LHAPDF::initPDFSet(2, "CT10.LHgrid"); maxPdf = 52; }
     if(varied == "CT10f4") {  LHAPDF::initPDFSet(2, "CT10f4.LHgrid"); maxPdf = 52; }
-    if(varied == "NNPDF") { LHAPDF::initPDFSet(2, "NNPDF22_100.LHgrid");  maxPdf = 100; }
+    if(varied == "NNPDF") { LHAPDF::initPDFSet(2, "NNPDF30_nlo_nf_4_pdfas");  maxPdf=102; }
     if(varied == "MSTW") { LHAPDF::initPDFSet(2, "MSTW2008nlo68cl.LHgrid"); maxPdf = 40; }
+
 }
 
 
@@ -2350,9 +2354,8 @@ void DMAnalysisTreeMaker::getPUSF(){
 
 void DMAnalysisTreeMaker::getEventPdf(){
 
-  if (genprod->pdf()->id.first == 21 || genprod->pdf()->id.second == 21) return;
 
-  std::cout << " getting pdf "<<endl;
+//  std::cout << " getting pdf "<<endl;
 
   double scalePDF = genprod->pdf()->scalePDF;
   double x1 =  genprod->pdf()->x.first;
@@ -2360,9 +2363,15 @@ void DMAnalysisTreeMaker::getEventPdf(){
   int id1 =  genprod->pdf()->id.first;
   int id2 =  genprod->pdf()->id.second;
 
-  std::cout << " maxpdf "<< maxPdf << " accessing x1 " << x1<< " id1 " << id1<<std::endl;
-  std::cout << " maxpdf "<< maxPdf << " accessing x2 " << x2<< " id2 " << id2<<std::endl;
-  cout << "scalePDF " << scalePDF << endl;
+  if (id1==21)
+	id1=0;
+  if (id2==21)
+	id2=0;
+	
+
+//  std::cout << " maxpdf "<< maxPdf << " accessing x1 " << x1<< " id1 " << id1<<std::endl;
+//  std::cout << " maxpdf "<< maxPdf << " accessing x2 " << x2<< " id2 " << id2<<std::endl;
+//  std::cout << "scalePDF " << scalePDF << std::endl;
 
   LHAPDF::usePDFMember(1, 0);
   double xpdf1 = LHAPDF::xfx(1, x1, scalePDF, id1);
@@ -2370,16 +2379,15 @@ void DMAnalysisTreeMaker::getEventPdf(){
   double w0 = xpdf1 * xpdf2;
   int maxPDFCount = maxPdf;
 
-  cout << "xpdf1 " << xpdf1 << endl;
-  cout << "xpdf2 " << xpdf2 << endl;
+//  cout << "xpdf1 " << xpdf1 << endl;
+//  cout << "xpdf2 " << xpdf2 << endl;
 
-  cout << "weight " << w0 << endl;
+//  cout << "weight " << w0 << endl;
 
-  std::cout << "entering pdf loop" <<std::endl;
-  for (int p = 1; p <= maxPdf; ++p)
-    {
-      
-      if ( p > maxPDFCount ) continue;
+//  cout << "entering pdf loop" <<endl;
+
+  for (int p = 1; p <= maxPdf; ++p){
+    if ( p > maxPDFCount ) continue; 
       LHAPDF::usePDFMember(2, p);
       double xpdf1_new = LHAPDF::xfx(2, x1, scalePDF, id1);
       double xpdf2_new = LHAPDF::xfx(2, x2, scalePDF, id2);
@@ -2387,13 +2395,14 @@ void DMAnalysisTreeMaker::getEventPdf(){
       stringstream w_n;
       w_n << p;
 
-      cout << "xpdf1 new " << xpdf1_new << endl;
-      cout << "xpdf2 new " << xpdf2_new << endl;
+//      cout << "xpdf1 new " << xpdf1_new << endl;
+//      cout << "xpdf2 new " << xpdf2_new << endl;
 
-      cout << "index " << p << " pweight " << pweight << endl;
-
-      float_values["PDFWeight"+w_n.str()]= pweight;
-    }
+//      cout << "index " << p << " pweight " << pweight << endl;
+      pdfWeights.push_back(pweight);
+//      cout << "index " << p << " pweight after fill " << pdfWeights.at(p-1) << endl;				
+    
+  } 
   
 }
 
@@ -2402,28 +2411,24 @@ void DMAnalysisTreeMaker::getEventLHEWeights(){
   //  std::cout << " in weight "<<endl;
 //  std::string weightID;
   size_t wgtsize=  lhes->weights().size();
-  //  std::cout << "weight size "<< wgtsize<<endl;
-  for (size_t i = 0; i <  wgtsize; ++i)  {
-    if (i<= (size_t)maxWeights){ 
+//  std::cout << "weight size "<< wgtsize<<endl;
+  for (unsigned int i = 0; i <  (unsigned int)wgtsize; i++){
+    if (i< (unsigned int)maxWeights){ 
       stringstream w_n;
       w_n << i;
 
       float ww = (float)lhes->weights().at(i).wgt;
 //	  weightID=(lhes->weights().at(i).id.data()).str();
-      std::cout<<"Name: "<<lhes->weights().at(i).id.data()<<"\t Weight: "<<ww<<std::endl; 
+//      std::cout<<"Name: "<<lhes->weights().at(i).id.data()<<"\t Weight: "<<ww<<std::endl; 
       //      cout << "ww # " << i<< "is "<<ww <<endl;
       //      cout <<" floatval before "<< float_values["Event_LHEWeight"+w_n.str()]<<endl;
-
-      float_values["Event_LHEWeight"+w_n.str()]= ww;
-
-      //      cout <<" floatval after "<< float_values["Event_LHEWeight"+w_n.str()]<<endl;
-
+	  genWeights.push_back(ww);
+//	  std::cout<<"Float Value after "<<genWeights.at(i)<<std::endl; 	
     }
     //else cout << "WARNING! there are " << wgtsize << " weights, and you accomodated for only "<< maxWeights << " weights, check your configuration file/your lhe!!!"<<endl;
   }
   
 }
-
 
 // double DMAnalysisTreeMaker::smearPt(double ptCorr, double genpt, double eta, string syst){
 //   double resolScale = resolSF(fabs(eta), syst);
@@ -2439,57 +2444,35 @@ double DMAnalysisTreeMaker::smear(double pt, double genpt, double eta, string sy
   return  smear;
 }
 
-double DMAnalysisTreeMaker::getTopPtWeight(double ptT, double ptTbar, bool extrap){
+double DMAnalysisTreeMaker::getTopPtWeight(double ptT, double ptTbar){
   if((ptT>0.0 && ptTbar>0.0) ){
-//    if (extrap || (ptT<=400.0 && ptTbar <=400.0)){
-      //      double a = 0.156;// 7/8 TeV
-      //      double b = -0.00137;//
       double a = 0.0615;//
       double b = -0.0005;//
       double sfT = exp(a+b*ptT);
       double sfTbar = exp(a+b*ptTbar);
 	  return sqrt(sfT*sfTbar); 
-//    }
   }
-  return 1.0;
+  else return 1.0;
 }
-/*
- // 8 TeV scale factors
-double DMAnalysisTreeMaker::resolSF(double eta, string syst)
-{
-  double fac = 0.;
-  if (syst == "jer__up")fac = 1.;
-  if (syst == "jer__down")fac = -1.;
-  if (eta <= 0.5)                       return 0.079 + (0.026 * fac);
-  else if ( eta > 0.5 && eta <= 1.1 )   return 0.099 + (0.028 * fac);
-  else if ( eta > 1.1 && eta <= 1.7 )   return 0.121 + (0.029 * fac);
-  else if ( eta > 1.7 && eta <= 2.3 )   return 0.208 + (0.046 * fac);
-  else if ( eta > 2.3 && eta <= 2.8 )   return 0.254 + (0.062 * fac);
-  else if ( eta > 2.8 && eta <= 3.2 )   return 0.395 + (0.063 * fac);
-  else if ( eta > 3.2 && eta <= 5.0 )   return 0.056 + (0.191 * fac);
-  return 0.1;
-}
-*/
-
 // 80X Data/MC JER SFs
 double DMAnalysisTreeMaker::resolSF(double eta, string syst)
 {
   double fac = 0.;
   if (syst == "jer__up")fac = 1.;
   if (syst == "jer__down")fac = -1.;
-  if( eta <= 0.5 )                      return 1.109 + (0.008 * fac);		
-  else if ( eta > 0.5 && eta <= 0.8 )   return 1.138 + (0.013 * fac);
-  else if ( eta > 0.8 && eta <= 1.1 )   return 1.114 + (0.013 * fac);
-  else if ( eta > 1.1 && eta <= 1.3 )   return 1.123 + (0.024 * fac);
-  else if ( eta > 1.3 && eta <= 1.7 )   return 1.084 + (0.011 * fac);
-  else if ( eta > 1.7 && eta <= 1.9 )   return 1.082 + (0.035 * fac);
-  else if ( eta > 1.9 && eta <= 2.1 )   return 1.140 + (0.047 * fac);
-  else if ( eta > 2.1 && eta <= 2.3 )   return 1.067 + (0.053 * fac);
-  else if ( eta > 2.3 && eta <= 2.5 )   return 1.177 + (0.041 * fac);
-  else if ( eta > 2.5 && eta <= 2.8 )   return 1.364 + (0.039 * fac);
-  else if ( eta > 2.8 && eta <= 3.0 )   return 1.857 + (0.071 * fac);
-  else if ( eta > 3.0 && eta <= 3.2 )   return 1.328 + (0.022 * fac);
-  else                                  return 1.16 + (0.029 * fac);
+  if( eta <= 0.522 )                        return 1.1595 + (0.0645 * fac);		
+  else if ( eta > 0.522 && eta <= 0.783 )   return 1.1948 + (0.0652 * fac);
+  else if ( eta > 0.783 && eta <= 1.131 )   return 1.1464 + (0.0632 * fac);
+  else if ( eta > 1.131 && eta <= 1.305 )   return 1.1609 + (0.1025 * fac);
+  else if ( eta > 1.305 && eta <= 1.740 )   return 1.1278 + (0.0986 * fac);
+  else if ( eta > 1.740 && eta <= 1.930 )   return 1.1000 + (0.1079 * fac);
+  else if ( eta > 1.930 && eta <= 2.043 )   return 1.1426 + (0.1214 * fac);
+  else if ( eta > 2.043 && eta <= 2.322 )   return 1.1512 + (0.1140 * fac);
+  else if ( eta > 2.322 && eta <= 2.5 )     return 1.2963 + (0.2371 * fac);
+  else if ( eta > 2.5 && eta <= 2.853 )     return 1.3418 + (0.2091 * fac);
+  else if ( eta > 2.853 && eta <= 2.964 )   return 1.7788 + (0.2008 * fac);
+  else if ( eta > 2.964 && eta <= 3.139 )   return 1.1869 + (0.1243 * fac);
+  else                                      return 1.1922 + (0.1488 * fac);
 }
 
 double DMAnalysisTreeMaker::jetUncertainty(double ptCorr, double eta, string syst)
@@ -2571,80 +2554,9 @@ float DMAnalysisTreeMaker::BTagWeight::weight(vector<JetInfo> jetTags, int tags)
   return pData / pMC;
 }
 
-//double DMAnalysisTreeMaker::MCTagEfficiency(string algo, int flavor, double pt){
-
-//	double eff=1.0;
-/*	if (abs(flavor) ==5){
-    if(algo=="csvt") return 0.38;
-    if(algo=="csvm") return 0.58;
-    if(algo=="csvl") return 0.755;
-  }
-
-  if (abs(flavor) ==4){
-    if(algo=="csvt") return 0.015;
-    if(algo=="csvm") return 0.08;
-    if(algo=="csvl") return 0.28;
-  }
-
-  if (abs(flavor) !=4 && abs(flavor) !=5){
-    if(algo=="csvt") return 0.0008;
-    if(algo=="csvm") return 0.007;
-    if(algo=="csvl") return 0.079;
-  }
-  return 1.0;
-
-/// MC Tag Efficiencies calculated for cMVAv2 algorithm based on BTV-15-001
-	if(abs(flavor) == 5){
-		if(algo == "cmvat"){ 
-			if(pt>=30.0 && pt<160.0) eff = 0.127 + 0.01578*pt - 2.126*pow(10,-4)*pt*pt + 1.273*pow(10,-6)*pt*pt*pt - 2.88*pow(10,-9)*pt*pt*pt*pt;
-			if(pt>=160.0) eff = 0.634 - 6.74*pow(10,-4)*pt + 2.69*pow(10,-7)*pt*pt;
-		}
-		if(algo == "cmvam"){
-			if(pt>=30.0 && pt<175) eff = 0.421 + 0.0107*pt - 1.314*pow(10,-4)*pt*pt + 7.268*pow(10,-7)*pt*pt*pt - 1.523*pow(10,-9)*pt*pt*pt*pt;
-			if(pt>=175.0) eff = 0.79 - 3.17*pow(10,-4)*pt + 1.24*pow(10,-7)*pt*pt;
-		}
-		if(algo == "cmval"){
-			if(pt>=30.0 && pt<150.0) eff = 0.707+5.6*pow(10,-3)*pt - 6.27*pow(10,-5)*pt*pt + 3.10*pow(10,-7)*pt*pt*pt - 5.63*pow(10,-10)*pt*pt*pt*pt;
-			if(pt>=150.0) eff = 0.906 - 6.39*pow(10,-5)*pt + 4.11*pow(10,-8)*pt*pt;
-		}	
-	}
-	
-	if(abs(flavor) == 4){
-		if(algo == "cmvat"){ 
-			if(pt>=30.0 && pt<240.0) eff = 0.024 + 5.27*pow(10,-4)*pt - 3.72*pow(10,-6)*pt*pt + 9.87*pow(10,-9)*pt*pt*pt - 8.83*pow(10,-12)*pt*pt*pt*pt;
-			if(pt>=240.0) eff = 0.044;
-		}
-		if(algo == "cmvam"){
-			if(pt>=30.0 && pt<170.0) eff = 0.13 + 1.48*pow(10,-3)*pt - 1.00*pow(10,-5)*pt*pt + 2.65*pow(10,-8)*pt*pt*pt - 2.36*pow(10,-11)*pt*pt*pt*pt;
-			if(pt>=170.0) eff = 0.20;
-		}
-		if (algo == "cmval"){
-			if(pt>=30.0 && pt<205.0) eff = 0.40 + 1.23*pow(10,-3)*pt - 4.60*pow(10,-6)*pt*pt + 5.71*pow(10,-9)*pt*pt*pt;
-			if(pt>=205.0) eff = 0.478 + 1.573*pow(10,-4)*pt;
-		}
-	}
-	
-	if(abs(flavor)!=4 && abs(flavor)!=5){
-		if(algo == "cmvat"){ 
-			if(pt>=30.0 && pt<130.0) eff= 1.24*pow(10,-3) - 1.27*pow(10,-5)*pt + 1.98*pow(10,-7)*pt*pt - 7.46*pow(10,-10)*pt*pt*pt + 8.35*pow(10,-13)*pt*pt*pt*pt;
-			if(pt>=130.0) eff = 1.08*pow(10,-3)+ 3.54*pow(10,-6)*pt;
-		}
-		if(algo == "cmvam"){
-			if(pt>=30.0 && pt<170.0) eff = 9.59*pow(10,-3) - 1.96*pow(10,-5)*pt + 4.53*pow(10,-7)*pt*pt - 1.08*pow(10,-9)*pt*pt*pt + 7.62*pow(10,-13)*pt*pt*pt*pt;
-			if(pt>=170.0) eff = 5.07*pow(10,-3) + 6.02*pow(10,-5)*pt - 2.3*pow(10,-8)*pt*pt;
-		}
-		if (algo == "cmval"){
-			if(pt>=30.0 && pt<130.0) eff = 0.124 - 1.0*pow(10,-3)*pt + 1.06*pow(10,-5)*pt*pt - 3.18*pow(10,-8)*pt*pt*pt + 3.13*pow(10,-11)*pt*pt*pt*pt;
-			if(pt>=130.0) eff = 0.055 + 4.53*pow(10,-4)*pt -1.6*pow(10,-7)*pt*pt;
-		}	
-	}
-	
-	return eff;								
-}
-*/
 
 double DMAnalysisTreeMaker::MCTagEfficiency(string algo, int flavor, double pt, double eta){
-  if(pt < 40)pt = 40.1;
+  if(pt < 40) pt = 40.1;
   if (abs(flavor) ==5){
 //    if(algo=="csvt") return 0.51;
 //    if(algo=="csvm") return 0.71;
@@ -2676,103 +2588,6 @@ double DMAnalysisTreeMaker::MCTagEfficiency(string algo, int flavor, double pt, 
 }
 
 double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst, double pt, double eta){
-// source (03/08/16):
-// https://twiki.cern.ch/twiki/pub/CMS/BtagRecommendation80X/CSVv2_ichep.csv
-  	
-	
-/*	if(algo=="cmvat"){
-		if(syst=="noSyst"){
-			if(abs(flavor)==5 || abs(flavor)==4){
-				if(pt>=30.0 && pt<300.0) return 0.806363+(0.000389927*pt);
-				if(pt>=300.0){ ptTmp= 300.0 - 0.0001; return 0.806363+(0.000389927*ptTmp);}
-			}
-			else{
-				if(pt>=20.0 && pt<1000.0) return 0.712074+293.026/(pt*pt);
-				if(pt>=1000.0){ ptTmp=1000.0 - 0.0001; return 0.712074+293.026/(ptTmp*ptTmp);}
-			}
-		}	
-		
-		if(syst=="btag_up"){
-			if(abs(flavor)==5){
-				if(pt>=30.0 && pt<50.0) return (0.806363+(0.000389927*pt))+0.036142464727163315;
-				if(pt>=50.0 && pt<70.0) return (0.806363+(0.000389927*pt))+0.02133803628385067;
-				if(pt>=70.0 && pt<100.0) return (0.806363+(0.000389927*pt))+0.015581912361085415;
-				if(pt>=100.0 && pt<140.0) return (0.806363+(0.000389927*pt))+0.018966136500239372;
-				if(pt>=140.0 && pt<200.0) return (0.806363+(0.000389927*pt))+0.024859944358468056;
-				if(pt>=200.0 && pt<300.0) return (0.806363+(0.000389927*pt))+0.062531806528568268;
-				if(pt>=300.0){
-					ptTmp=300.0 - 0.0001; 
-					return (0.806363+(0.000389927*ptTmp))+ 2 * 0.062531806528568268; // Double uncertainty if pt is out of range
-				}		  
-			}
-			else if(abs(flavor)==4){
-				if(pt>=30.0 && pt<50.0) return (0.806363+(0.000389927*pt))+0.07228492945432663;
-				if(pt>=50.0 && pt<70.0) return (0.806363+(0.000389927*pt))+0.04267607256770134;
-				if(pt>=70.0 && pt<100.0) return (0.806363+(0.000389927*pt))+0.03116382472217083;
-				if(pt>=100.0 && pt<140.0) return (0.806363+(0.000389927*pt))+0.037932273000478745;
-				if(pt>=140.0 && pt<200.0) return (0.806363+(0.000389927*pt))+0.049719888716936111;
-				if(pt>=200.0 && pt<300.0) return (0.806363+(0.000389927*pt))+0.12506361305713665;
-				if(pt>=300.0){ 
-					ptTmp=300.0 - 0.0001; 
-					return (0.806363+(0.000389927*ptTmp))+2 * 0.12506361305713665; // Double uncertainty if pt is out of range
-				}
-			}
-			else return 1.0;			
-		}
-		
-		if(syst=="btag_down"){
-			if(abs(flavor)==5){
-				if(pt>=30.0 && pt<50.0) return 0.806363+((0.000389927*pt)-0.036142464727163315);
-				if(pt>=50.0 && pt<70.0) return 0.806363+((0.000389927*pt)-0.02133803628385067);
-				if(pt>=70.0 && pt<100.0) return 0.806363+((0.000389927*pt)-0.015581912361085415);
-				if(pt>=100.0 && pt<140.0) return 0.806363+((0.000389927*pt)-0.018966136500239372);
-				if(pt>=140.0 && pt<200.0) return 0.806363+((0.000389927*pt)-0.024859944358468056);
-				if(pt>=200.0 && pt<300.0) return 0.806363+((0.000389927*pt)-0.062531806528568268);
-				if(pt>=300.0){ 
-					ptTmp=300.0 - 0.0001; 
-					return 0.806363+((0.000389927*pt)- 2 * 0.062531806528568268); // Double uncertainty if pt is out of range
-
-				} 			}
-			else if(abs(flavor)==4){
-				if(pt>=30.0 && pt<50.0) return 0.806363+((0.000389927*ptTmp)-0.07228492945432663);
-				if(pt>=50.0 && pt<70.0) return 0.806363+((0.000389927*ptTmp)-0.04267607256770134);
-				if(pt>=70.0 && pt<100.0) return 0.806363+((0.000389927*ptTmp)-0.03116382472217083); 
-				if(pt>=100.0 && pt<140.0) return 0.806363+((0.000389927*ptTmp)-0.037932273000478745);
-				if(pt>=140.0 && pt<200.0) return 0.806363+((0.000389927*ptTmp)-0.049719888716936111);
-				if(pt>=200.0 && pt<300.0) return 0.806363+((0.000389927*ptTmp)-0.12506361305713665);
-				if(pt>=300.0){ 
-					ptTmp=300.0 - 0.0001; 
-					return 0.806363+((0.000389927*ptTmp)-2 * 0.12506361305713665); // Double uncertainty if pt is out of range
-				} 
-			}
-			else return 1.0;
-		}
-		
-		if(syst=="mistag_up"){
-			if(abs(flavor)== 5.0 || abs(flavor)== 4.0) return 1.0;
-			else{
-				if(pt>=20.0 && pt<1000.0) return (0.712074+293.026/(pt*pt))*(1 + (0.145849 + 8.95114e-05*pt + -9.63642e-08*pt*pt));
-				if(pt>=1000.0){
-					ptTmp=1000.0 - 0.0001; 
-					return (0.712074+293.026/(pt*pt))*(1 + 2* (0.145849 + 8.95114e-05*ptTmp + -9.63642e-08*ptTmp*ptTmp)); // Double uncertainty if pt is out of range
-				}
-			}	
-		}
-		
-		if(syst=="mistag_down"){
-			if(abs(flavor)== 5.0 || abs(flavor)== 4.0) return 1.0;
-			else{
-				if(pt>=20.0 && pt<1000.0) return (0.712074+293.026/(pt*pt))*(1- (0.145849 + 8.95114e-05*pt + -9.63642e-08*pt*pt));
-				if(pt>=1000.0){
-					ptTmp=1000.0 - 0.0001;
-					return (0.712074+293.026/(ptTmp*ptTmp))*(1- 2 * (0.145849 + 8.95114e-05*ptTmp + -9.63642e-08*pt*ptTmp)); // Double uncertainty if pt is out of range
-				}	
-			}			
-		}	
-	}		
-	return 1.0;					
-*/
-
 	if(algo == "cmval"){
 		if(syst ==  "noSyst") {
 			if(abs(flavor)==5){return readerCMVALoose->eval_auto_bounds("central",BTagEntry::FLAV_B, eta, pt);    }

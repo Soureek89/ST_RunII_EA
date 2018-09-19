@@ -16,20 +16,24 @@ import FWCore.ParameterSet.VarParsing as opts
 options = opts.VarParsing ('analysis')
 
 options.register('maxEvts',
-                 -1,# default value: process all events
+#                 -1,# default value: process all events
+                 5,		
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.int,
                  'Number of events to process')
 
 options.register('sample',
-                 [#'file:/tmp/oiorio/B2GEDMNtuple_1.root'
-        #                 'file:../../edm_mc/B2GEDMNtuple.root'
-        #                 'file:/afs/cern.ch/work/n/nfalterm/public/B2GEDMNtuple.root'
-        #                  'root://xrootd.ba.infn.it///store/user/decosa/ttDM/CMSSW_7_4_X/TT_TuneCUETP8M1_13TeV-powheg-pythia8/TT_TuneCUETP8M1_13TeV/150926_070344/0000/B2GEDMNtuple_1.root'
-        #				'root://se01.indiacms.res.in//store/user/smitra/25ns/EDMTuple_74Xv8/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_EDMTuple_74Xv8/151109_200859/0000/DYJets_EDMTuple_1.root'	
-        #				'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/EDMTuple_80X/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple/160714_102438/0000/TChannel_aMCatNLO_EDMTuple_9.root'
+                 [
+#	'file:/tmp/oiorio/B2GEDMNtuple_1.root'
+#       'file:../../edm_mc/B2GEDMNtuple.root'
+#       'file:/afs/cern.ch/work/n/nfalterm/public/B2GEDMNtuple.root'
+#       'root://xrootd.ba.infn.it///store/user/decosa/ttDM/CMSSW_7_4_X/TT_TuneCUETP8M1_13TeV-powheg-pythia8/TT_TuneCUETP8M1_13TeV/150926_070344/0000/B2GEDMNtuple_1.root'
+#	'root://se01.indiacms.res.in//store/user/smitra/25ns/EDMTuple_74Xv8/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_EDMTuple_74Xv8/151109_200859/0000/DYJets_EDMTuple_1.root'	
+#	'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/EDMTuple_80X/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple/160714_102438/0000/TChannel_aMCatNLO_EDMTuple_9.root'
         #'file:/store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple_Summer16/170309_045551/0000/TChannel_Powheg_EDMTuple_1.root'
-        'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple_Summer16/170309_045551/0000/TChannel_Powheg_EDMTuple_1.root'
+#        'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple_Summer16/170309_045551/0000/TChannel_Powheg_EDMTuple_1.root'
+#	'file:/storage/c/smitra/B2GEDMNtuple_Signal.root'
+	'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/TTbar_EDMTuple_Summer16/170310_092846/0000/TTbar_EDMTuple_1.root'	
         ],
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
@@ -37,8 +41,9 @@ options.register('sample',
 
 options.register('outputLabel',
                 # 'treesTest_NewSmall_EleTrig.root',
-                # 'TChannel_Powheg.root',
-                 'tree.root',
+                #'TChannel_Powheg.root',
+                "TTbar.root",
+                # 'tree.root',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Output label')
@@ -60,7 +65,7 @@ options.register('lhes',
                  'externalLHEProducer',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
-		                 'name from generator')
+		 'name from generator')
 
 options.register('syst',
                  ['noSyst'],
@@ -73,7 +78,7 @@ options.register('syst',
 options.register('globalTag',
 #                 '76X_mcRun2_asymptotic_v12',
                  #'76X_dataRun2_v15',
- 				 '80X_mcRun2_asymptotic_2016_miniAODv2',	
+ 		'80X_mcRun2_asymptotic_2016_miniAODv2',	
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'global tag to be used')
@@ -126,7 +131,9 @@ process.DMTreesDumper.systematics =(options.syst)
 process.DMTreesDumper.changeJECs = cms.untracked.bool(False)# JEC via GT
 process.DMTreesDumper.useMETNoHF = cms.untracked.bool(False)
 #process.DMTreesDumper.addPV = cms.untracked.bool(True)
-process.DMTreesDumper.channelInfo.useLHEWeights =cms.untracked.bool(False)
+process.DMTreesDumper.channelInfo.useLHEWeights =cms.untracked.bool(True)
+process.DMTreesDumper.channelInfo.addLHAPDFWeights =cms.untracked.bool(True)
+process.DMTreesDumper.channelInfo.topPtreweight=cms.untracked.bool(True)
 process.DMTreesDumper.isData = cms.untracked.bool(False)#This adds the L2L3Residuals
 process.DMTreesDumper.doPU= cms.bool(True);
 process.DMTreesDumper.dataPUFile=cms.string("DistrSummer16_25ns");
