@@ -123,14 +123,13 @@ DMTreesDumper = cms.EDAnalyzer(
         hadronicTriggers = cms.vstring(hadronTriggers),
         leptonicTriggers = cms.vstring(leptonTriggers),
         metFilters = cms.vstring(metFilters),
-        
         #useLHE = cms.untracked.bool(False),#Whether one uses the weights from the LHE in order to get scale uncertainties
         useLHE = cms.untracked.bool(True),
-	topPtreweight= cms.untracked.bool(False),
+        topPtreweight= cms.untracked.bool(False),
         useLHEWeights = cms.untracked.bool(False),#Whether one uses the weights from the LHE in order to get scale uncertainties
         addLHAPDFWeights = cms.untracked.bool(False), #Whether to add the PDF for uncertainty evaluation (time consuming)
         maxWeights = cms.untracked.int32(9),
-        maxPdf = cms.untracked.int32(102) 
+        maxPdf = cms.untracked.int32(102),
        )
     )
 
@@ -173,16 +172,16 @@ DMTreesDumper.physicsObjects.append(
             cms.InputTag("muons","muIsLooseMuon"),
             cms.InputTag("muons","muIsSoftMuon"),
             cms.InputTag("muons","muIsTightMuon"),
-			cms.InputTag("muons","muDxy"),
-#            cms.InputTag("muons","muDBerr"),
+	    cms.InputTag("muons","muDxy"),
+#           cms.InputTag("muons","muDBerr"),
             cms.InputTag("muons","muDz"),
-#            cms.InputTag("muons","muDzerr"),
+#           cms.InputTag("muons","muDzerr"),
             cms.InputTag("muons","muGenMuonCharge"),
             cms.InputTag("muons","muGenMuonEta"),
             cms.InputTag("muons","muGenMuonPt"),
             cms.InputTag("muons","muGenMuonE"),
             cms.InputTag("muons","muGenMuonPhi"),
-#            cms.InputTag("muons","muGenMuonY"),
+#           cms.InputTag("muons","muGenMuonY"),
             cms.InputTag("muons","muGlbTrkNormChi2"),
             #cms.InputTag("muons","muHLTmuonDeltaR"),
             #cms.InputTag("muons","muHLTmuonE"),
@@ -204,7 +203,7 @@ DMTreesDumper.physicsObjects.append(
             cms.InputTag("muons","muSumNeutralHadronPt"),
             cms.InputTag("muons","muSumPUPt"),
             cms.InputTag("muons","muSumPhotonPt"),
-#            cms.InputTag("muons","muY"),            
+#           cms.InputTag("muons","muY"),            
 
             ),
         variablesI = cms.VInputTag(),
@@ -223,14 +222,14 @@ DMTreesDumper.physicsObjects.append(
         variablesF = cms.VInputTag(
             cms.InputTag("electrons","elE"),
             cms.InputTag("electrons","elPt"),
-#            cms.InputTag("electrons","elMass"),
+#           cms.InputTag("electrons","elMass"),
             cms.InputTag("electrons","elEta"),
             cms.InputTag("electrons","elPhi"),
             cms.InputTag("electrons","elCharge"),
             cms.InputTag("electrons","elSCEta"),
             cms.InputTag("electrons","elHoE"),
             cms.InputTag("electrons","elIso03"),
-#            cms.InputTag("electrons","elY"),
+#           cms.InputTag("electrons","elY"),
             cms.InputTag("electrons","eldEtaIn"),
             cms.InputTag("electrons","eldPhiIn"),
             cms.InputTag("electrons","elmissHits"),
@@ -242,7 +241,7 @@ DMTreesDumper.physicsObjects.append(
             cms.InputTag("electrons","elvidMedium"),
             cms.InputTag("electrons","elDz"),
             cms.InputTag("electrons","elDxy"),
-			cms.InputTag("electrons","elvidHEEP"),
+	    cms.InputTag("electrons","elvidHEEP"),
         ),
         variablesI = cms.VInputTag( ),
         singleI = cms.VInputTag(),
