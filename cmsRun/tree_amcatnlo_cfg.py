@@ -33,17 +33,17 @@ options.register('sample',
         #'file:/store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple_Summer16/170309_045551/0000/TChannel_Powheg_EDMTuple_1.root'
 #        'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple_Summer16/170309_045551/0000/TChannel_Powheg_EDMTuple_1.root'
 #	'file:/storage/c/smitra/B2GEDMNtuple_Signal.root'
-	'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/TTbar_EDMTuple_Summer16/170310_092846/0000/TTbar_EDMTuple_1.root'	
-        ],
+#                 'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/TTbar_EDMTuple_Summer16/170310_092846/0000/TTbar_EDMTuple_1.root'
+                 ],
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Sample to analyze')
 
 options.register('outputLabel',
-                # 'treesTest_NewSmall_EleTrig.root',
+                #'treesTest_NewSmall_EleTrig.root',
                 #'TChannel_Powheg.root',
-                "TTbar.root",
-                # 'tree.root',
+                 'TTbar.root',
+                #'tree.root',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Output label')
@@ -65,7 +65,7 @@ options.register('lhes',
                  'externalLHEProducer',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
-		 'name from generator')
+                 'name from generator')
 
 options.register('syst',
                  ['noSyst'],
@@ -76,9 +76,8 @@ options.register('syst',
 
 
 options.register('globalTag',
-#                 '76X_mcRun2_asymptotic_v12',
-                 #'76X_dataRun2_v15',
- 		'80X_mcRun2_asymptotic_2016_miniAODv2',	
+                 '94X_mcRun2_asymptotic_v3', ## Summer16MC
+#                 '94X_mc2017_realistic_v17', ## Fall17MC
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'global tag to be used')

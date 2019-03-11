@@ -97,10 +97,12 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 #process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
 #process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
 
-#process.GlobalTag.globaltag = '74X_dataRun2_Prompt_v0'
-#process.GlobalTag.globaltag = '76X_dataRun2_v15'
-#process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v8'
-process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'
+## 2016 Data
+process.GlobalTag.globaltag = '94X_dataRun2_v10'
+
+## 2017 Data
+#process.GlobalTag.globaltag = '94X_dataRun2_v11' 
+
 
 #for pset in process.GlobalTag.toGet.value():
 #    pset.connect = pset.connect.value().replace('frontier://FrontierProd/', 'frontier://FrontierProd/')
@@ -131,7 +133,7 @@ process.DMTreesDumper.addPV = cms.untracked.bool(True)
 process.DMTreesDumper.channelInfo.useLHEWeights =cms.untracked.bool(False)
 process.DMTreesDumper.isData = cms.untracked.bool(True)#This adds the L2L3Residuals
 process.DMTreesDumper.doPU= cms.bool(False)
-process.DMTreesDumper.dataPUFile=cms.string("DistrSpring16_25ns")
+process.DMTreesDumper.dataPUFile=cms.string("DistrSummer16_25ns")
 process.DMTreesDumper.era= cms.string(options.Era)
 
 
