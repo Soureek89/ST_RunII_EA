@@ -1096,11 +1096,11 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       }
     }
 
-	if(!isData){
-		float_values["Event_mu_eff"]=mu_sf;
-		float_values["Event_mu_eff_up"]=mu_sf_up;
-		float_values["Event_mu_eff_down"]=mu_sf_down;
-	}
+//	if(!isData){
+//		float_values["Event_mu_eff"]=mu_sf;
+//		float_values["Event_mu_eff_up"]=mu_sf_up;
+//		float_values["Event_mu_eff_down"]=mu_sf_down;
+//	}
 //	std::cout<<"Ending Muons"<<std::endl;
 	
     /**************************
@@ -1722,7 +1722,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float_values["Event_bWeight1CMVAT"]=b_weight_cmvat_1_tag;
       float_values["Event_bWeight2CMVAT"]=b_weight_cmvat_2_tags;
       
-      float_values["Event_bWeight0CMVAL"]=b_weight_cmval_0_tags;
+/*    float_values["Event_bWeight0CMVAL"]=b_weight_cmval_0_tags;
       float_values["Event_bWeight1CMVAL"]=b_weight_cmval_1_tag;
       float_values["Event_bWeight2CMVAL"]=b_weight_cmval_2_tags;
       
@@ -1735,6 +1735,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float_values["Event_bWeight2CMVAT"]=b_weight_cmvat_2_tags;
 
       //Mistag
+
       float_values["Event_bWeightMisTagUp0CMVAL"]=b_weight_cmval_0_tags_mistag_up;
       float_values["Event_bWeightMisTagUp1CMVAL"]=b_weight_cmval_1_tag_mistag_up;
       float_values["Event_bWeightMisTagUp2CMVAL"]=b_weight_cmval_2_tags_mistag_up;
@@ -1784,6 +1785,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float_values["Event_bWeightBTagDown0CMVAT"]=b_weight_cmvat_0_tags_b_tag_down;
       float_values["Event_bWeightBTagDown1CMVAT"]=b_weight_cmvat_1_tag_b_tag_down;
       float_values["Event_bWeightBTagDown2CMVAT"]=b_weight_cmvat_2_tags_b_tag_down;      
+*/
     }
     
 //    std::cout<<"Ending Btagging SFs"<<std::endl;
@@ -2110,6 +2112,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
 	addvar.push_back("bWeight0CMVAT");
 	addvar.push_back("bWeight1CMVAT");
 	addvar.push_back("bWeight2CMVAT");
+
 	addvar.push_back("bWeight0CMVAM");
 	addvar.push_back("bWeight1CMVAM");
 	addvar.push_back("bWeight2CMVAM");
@@ -2118,7 +2121,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
 	addvar.push_back("bWeight1CMVAL");
 	addvar.push_back("bWeight2CMVAL");
 
-	addvar.push_back("bWeightMisTagDown0CMVAT");
+/*	addvar.push_back("bWeightMisTagDown0CMVAT");
 	addvar.push_back("bWeightMisTagDown1CMVAT");
 	addvar.push_back("bWeightMisTagDown2CMVAT");
 
@@ -2145,6 +2148,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
 	addvar.push_back("bWeightBTagUp0CMVAT");
 	addvar.push_back("bWeightBTagUp1CMVAT");
 	addvar.push_back("bWeightBTagUp2CMVAT");
+
 	addvar.push_back("bWeightBTagUp0CMVAM");
 	addvar.push_back("bWeightBTagUp1CMVAM");
 	addvar.push_back("bWeightBTagUp2CMVAM");
@@ -2164,6 +2168,7 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
 	addvar.push_back("bWeightBTagDown0CMVAL");
 	addvar.push_back("bWeightBTagDown1CMVAL");
 	addvar.push_back("bWeightBTagDown2CMVAL");
+*/
     }
     
     if(!isData && useLHE){
@@ -2202,9 +2207,9 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
      }	
 	
     if(!isData){
-	addvar.push_back("mu_eff");
-	addvar.push_back("mu_eff_up");
-	addvar.push_back("mu_eff_down");
+//	addvar.push_back("mu_eff");
+//	addvar.push_back("mu_eff_up");
+//	addvar.push_back("mu_eff_down");
     }
 	
     if(addPV){
@@ -2263,8 +2268,8 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
 //------------ Soureek adding PU info -----------------    
     if(doPU_){
       addvar.push_back("puWeight");
-      addvar.push_back("puWeightUp");
-      addvar.push_back("puWeightDown");
+//    addvar.push_back("puWeightUp");
+//    addvar.push_back("puWeightDown");
       addvar.push_back("nTruePU");
     }
   }
@@ -2346,8 +2351,8 @@ void DMAnalysisTreeMaker::getPUSF(){
   // std::cout<<"nTruePU: "<<nTruePU<<"\tnPV: "<<nPV<<std::endl;
   // std::cout<<"pileUp weight: "<<puWeight<<"\tpileUp weight Up: "<<puWeightUp<<"\tpileUp weight Down: "<<puWeightDown<<std::endl;
   float_values["Event_puWeight"]=puWeight;
-  float_values["Event_puWeightUp"]=puWeightUp; 
-  float_values["Event_puWeightDown"]=puWeightDown;
+//  float_values["Event_puWeightUp"]=puWeightUp; 
+//  float_values["Event_puWeightDown"]=puWeightDown;
   float_values["Event_nTruePU"]=(float)nTruePU;
 }
 
