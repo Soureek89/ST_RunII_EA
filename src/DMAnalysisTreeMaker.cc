@@ -703,7 +703,8 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
 		jes_syst.append(syst,4,jNumeral-4);	
 		std::cout<<jes_syst<<std::endl;
 
-		if(isData) {
+/// For Local cmsRun
+/*		if(isData) {
 
 			if(Era=="RunB" || Era=="RunC" || Era=="RunD"){
 				jecParsL1  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016BCDV4_DATA_L1FastJet_AK4PFchs.txt");
@@ -755,60 +756,61 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
 		jecCorr = new FactorizedJetCorrector(jecPars);	
 	  }		
 	}	
+*/
 
+/// For crab submission
+	if(isData) {
 
-/*  if(isData) {
+		if(Era=="RunB" || Era=="RunC" || Era=="RunD"){
+			jecParsL1  = new JetCorrectorParameters("Summer16_23Sep2016BCDV4_DATA_L1FastJet_AK4PFchs.txt");
+			jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016BCDV4_DATA_L2Residual_AK4PFchs.txt");
+			jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016BCDV4_DATA_L3Absolute_AK4PFchs.txt");
+			jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16_23Sep2016BCDV4_DATA_L2L3Residual_AK4PFchs.txt");     
+			jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016BCDV4_DATA_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
+		}
 
-	if(Era=="RunB" || Era=="RunC" || Era=="RunD"){
-        jecParsL1  = new JetCorrectorParameters("Summer16_23Sep2016BCDV4_DATA_L1FastJet_AK4PFchs.txt");
-        jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016BCDV4_DATA_L2Residual_AK4PFchs.txt");
-        jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016BCDV4_DATA_L3Absolute_AK4PFchs.txt");
-        jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016BCDV4_DATA_L2L3Residual_AK4PFchs.txt");     
-        jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016BCDV4_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
+		if(Era=="RunE" || Era=="RunF"){
+			jecParsL1  = new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_L1FastJet_AK4PFchs.txt");
+			jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_L2Residual_AK4PFchs.txt");
+			jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_L3Absolute_AK4PFchs.txt");
+			jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_L2L3Residual_AK4PFchs.txt");     
+			jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
+		}
+
+		if(Era=="RunG"){
+			jecParsL1  = new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_L1FastJet_AK4PFchs.txt");
+			jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_L2Residual_AK4PFchs.txt");
+			jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_L3Absolute_AK4PFchs.txt");
+			jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_L2L3Residual_AK4PFchs.txt");     
+			jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
+		}
+
+		if(Era=="RunH"){	
+			jecParsL1  = new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_L1FastJet_AK4PFchs.txt");
+			jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_L2Residual_AK4PFchs.txt");
+			jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_L3Absolute_AK4PFchs.txt");
+			jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_L2L3Residual_AK4PFchs.txt");		
+			jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
+		}
 	}
 
-	if(Era=="RunE" || Era=="RunF"){
-        jecParsL1  = new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_L1FastJet_AK4PFchs.txt");
-        jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_L2Residual_AK4PFchs.txt");
-        jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_L3Absolute_AK4PFchs.txt");
-        jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_L2L3Residual_AK4PFchs.txt");     
-        jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016EFV4_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
-
+	else {
+		jecParsL1  = new JetCorrectorParameters("Summer16_23Sep2016V4_MC_L1FastJet_AK4PFchs.txt");
+		jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016V4_MC_L2Relative_AK4PFchs.txt");
+		jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016V4_MC_L3Absolute_AK4PFchs.txt");
+		jecUnc[syst]  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016V4_MC_UncertaintySources_AK4PFchs.txt", jes_syst.c_str())));
 	}
 
-	if(Era=="RunG"){
-        jecParsL1  = new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_L1FastJet_AK4PFchs.txt");
-        jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_L2Residual_AK4PFchs.txt");
-        jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_L3Absolute_AK4PFchs.txt");
-        jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_L2L3Residual_AK4PFchs.txt");     
-        jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016GV4_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
+	jecPars.push_back(*jecParsL1);
+	jecPars.push_back(*jecParsL2);
+	jecPars.push_back(*jecParsL3);
 
-	}
+	if(isData) jecPars.push_back(*jecParsL2L3Residuals);
 
-	if(Era=="RunH"){	
-		jecParsL1  = new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_L1FastJet_AK4PFchs.txt");
-		jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_L2Residual_AK4PFchs.txt");
-		jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_L3Absolute_AK4PFchs.txt");
-		jecParsL2L3Residuals  = new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_L2L3Residual_AK4PFchs.txt");		
-		jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016HV4_DATA_UncertaintySources_AK4PFchs.txt", "Total")));
-	}
-  }
-
-  else {
-    jecParsL1  = new JetCorrectorParameters("Summer16_23Sep2016V4_MC_L1FastJet_AK4PFchs.txt");
-    jecParsL2  = new JetCorrectorParameters("Summer16_23Sep2016V4_MC_L2Relative_AK4PFchs.txt");
-    jecParsL3  = new JetCorrectorParameters("Summer16_23Sep2016V4_MC_L3Absolute_AK4PFchs.txt");
-	jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("Summer16_23Sep2016V4_MC_UncertaintySources_AK4PFchs.txt", "Total")));
-  }
-
-  jecPars.push_back(*jecParsL1);
-  jecPars.push_back(*jecParsL2);
-  jecPars.push_back(*jecParsL3);
-
-  if(isData) jecPars.push_back(*jecParsL2L3Residuals);
-
-  jecCorr = new FactorizedJetCorrector(jecPars);
-*/ 
+	jecCorr = new FactorizedJetCorrector(jecPars);
+  }		 
+ }	
+ 
   
 //  jecUnc  = new JetCorrectionUncertainty(*(new JetCorrectorParameters("", "Total")));
 	
