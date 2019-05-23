@@ -11,8 +11,6 @@
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as opts
 
-
-
 options = opts.VarParsing ('analysis')
 
 options.register('maxEvts',
@@ -35,17 +33,18 @@ options.register('sample',
 #	'file:/storage/c/smitra/B2GEDMNtuple_Signal.root'
 #	'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/TTbar_EDMTuple_Summer16/170310_092846/0000/TTbar_EDMTuple_1.root'
 #    'root://se01.indiacms.res.in//store/user/rkarnam/TopMass/Single_Electron/Systematics/EDMTuples/TChannel_ScaleDown_16Oct/ST_t-channel_top_4f_scaledown_inclusiveDecays_13TeV-powhegV2-madspin-pythia8/TChannel_ScaleDown_16Oct2018/181016_230910/0000/TChannel_ScaleDown_16Oct_99.root'
-     'file:/ceph/smitra/TopMass/B2GEDMNtuple_tCh_antitop_mass166p5.root'
+#     'file:/ceph/smitra/TopMass/B2GEDMNtuple_tCh_antitop_mass166p5.root'
 #      'root://se01.indiacms.res.in//store/user/mikumar/TopMass/Single_Electron/TTbar_alternate_mass_B2G/TT_TuneCUETP8M2T4_mtop1695_13TeV-powheg-pythia8/TT_TuneCUETP8M2T4_mtop1695_13TeV-powheg-pythia8/TT_TuneCUETP8M2T4_mtop1695_13TeV-powheg-pythia8/190305_133446/0000/TT_TuneCUETP8M2T4_mtop1695_13TeV-powheg-pythia8_63.root'
+'root://cms-xrd-global.cern.ch//store/user/smitra/TopMassST/EDMTuples/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple_Summer16_NewJER/180921_121115/0000/TChannel_Powheg_EDMTuple_1.root'
        ],
-                 opts.VarParsing.multiplicity.singleton,
-                 opts.VarParsing.varType.string,
-                 'Sample to analyze')
+       opts.VarParsing.multiplicity.singleton,
+       opts.VarParsing.varType.string,
+       'Sample to analyze')
 
 options.register('outputLabel',
                 # 'treesTest_NewSmall_EleTrig.root',
                 #'TChannel_Powheg.root',
-                "/ceph/smitra/TopMass/jes_test.root",
+                "/storage/9/smitra/jer_test.root",
                 # 'tree.root',
                 #'Trees_TbarChannel_Mass166p5_Summer16_80X_20.root',
                  opts.VarParsing.multiplicity.singleton,
@@ -73,7 +72,12 @@ options.register('lhes',
 
 options.register('syst',
 #                 ['noSyst'],
-                 ['jes_CorrelationGroupIntercalibration_up','jes_CorrelationGroupIntercalibration_down','jes_CorrelationGroupUncorrelated_up','jes_CorrelationGroupUncorrelated_down','jes_CorrelationGroupMPFInSitu_up','jes_CorrelationGroupMPFInSitu_down','jes_SubTotalPileUp_up','jes_SubTotalPileUp_down','jes_FlavorPureQuark_up','jes_FlavorPureQuark_down','jes_FlavorPureGluon_up','jes_FlavorPureGluon_down','jes_FlavorPureCharm_up','jes_FlavorPureCharm_down','jes_FlavorPureBottom_up','jes_FlavorPureBottom_down','jes_CorrelationGroupFlavor_up','jes_CorrelationGroupFlavor_down','jes_Total_up','jes_Total_down'],
+#                 ['jes_CorrelationGroupIntercalibration_up','jes_CorrelationGroupIntercalibration_down','jes_CorrelationGroupUncorrelated_up','jes_CorrelationGroupUncorrelated_down','jes_CorrelationGroupMPFInSitu_up','jes_CorrelationGroupMPFInSitu_down','jes_SubTotalPileUp_up','jes_SubTotalPileUp_down','jes_FlavorPureQuark_up','jes_FlavorPureQuark_down','jes_FlavorPureGluon_up','jes_FlavorPureGluon_down','jes_FlavorPureCharm_up','jes_FlavorPureCharm_down','jes_FlavorPureBottom_up','jes_FlavorPureBottom_down','jes_CorrelationGroupFlavor_up','jes_CorrelationGroupFlavor_down','jes_Total_up','jes_Total_down'],
+#                 ['jes_CorrelationGroupIntercalibration_up','jes_CorrelationGroupUncorrelated_up','jes_CorrelationGroupMPFInSitu_up','jes_CorrelationGroupFlavor_up','jes_SubTotalPileUp_up'],
+#                 ['jes_CorrelationGroupIntercalibration_down','jes_CorrelationGroupUncorrelated_down','jes_CorrelationGroupMPFInSitu_down','jes_CorrelationGroupFlavor_down','jes_SubTotalPileUp_down'],
+#                 ['jes_FlavorPureQuark_up','jes_FlavorPureGluon_up','jes_FlavorPureCharm_up','jes_FlavorPureBottom_up','jes_Total_up'],
+#                 ['jes_FlavorPureQuark_down','jes_FlavorPureGluon_down','jes_FlavorPureCharm_down','jes_FlavorPureBottom_down','jes_Total_down'], 
+                  ['jer_up','jer_down','unclusteredMet_up',"unclusteredMet_down"],
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'systematic trees')
