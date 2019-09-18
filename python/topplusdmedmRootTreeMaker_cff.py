@@ -130,6 +130,8 @@ DMTreesDumper = cms.EDAnalyzer(
         addLHAPDFWeights = cms.untracked.bool(False), #Whether to add the PDF for uncertainty evaluation (time consuming)
         maxWeights = cms.untracked.int32(9),
         maxPdf = cms.untracked.int32(102),
+		addPSWeights = cms.untracked.bool(False),
+		maxPSWeights = cms.untracked.int32(12),
        )
     )
 

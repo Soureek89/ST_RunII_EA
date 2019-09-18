@@ -87,6 +87,7 @@ private:
   string makeBranchName(string label, string pref, string var);
   void initializePdf(string centralpdf,string variationpdf);
   void getEventPdf();
+  void getEventPSWeights();
   bool getEventTriggers();
   void getEventLHEWeights();
   bool getMETFilters();
@@ -168,14 +169,15 @@ private:
   std::string channel;
   double crossSection, originalEvents;
   bool useLHEWeights, useLHE, useTriggers,cutOnTriggers, useMETFilters, addPV;
-  bool addLHAPDFWeights;
+  bool addLHAPDFWeights, addPSWeights;
   string centralPdfSet,variationPdfSet;
   std::vector<string> leptonicTriggers, hadronicTriggers, metFilters;
 
-  int maxPdf, maxWeights;
+  int maxPdf, maxWeights, maxPSWeights;
 
   std::vector<float> genWeights;
   std::vector<float> pdfWeights;
+  std::vector<float> psWeights;
   
   edm::Handle<GenEventInfoProduct> genprod;
   edm::Handle<std::vector<reco::GenParticle> > prunedGenParticles;
@@ -426,7 +428,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   addLHAPDFWeights = channelInfo.getUntrackedParameter<bool>("addLHAPDFWeights",false);
 //  addLHAPDFWeights = channelInfo.getUntrackedParameter<bool>("addLHAPDFWeights",true);
   doTopPtReweight= channelInfo.getUntrackedParameter<bool>("topPtreweight",false);	
-
+  addPSWeights = channelInfo.getUntrackedParameter<bool>("addPSWeights",false);	
 
   if( useLHE ){
     edm::InputTag lhes_ = iConfig.getParameter<edm::InputTag>( "lhes" );
@@ -438,7 +440,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
 	t_genParticles_ = consumes < std::vector<reco::GenParticle> >( genParticles_ );
   }
 		
-  if( addLHAPDFWeights ){
+  if( addLHAPDFWeights || addPSWeights ){
     edm::InputTag genprod_ = iConfig.getParameter<edm::InputTag>( "genprod" );
     t_genprod_ = consumes<GenEventInfoProduct>( genprod_ );
   }
@@ -520,6 +522,9 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
     initializePdf(centralPdfSet,variationPdfSet);
   }
   
+  if(addPSWeights){
+    maxPSWeights= channelInfo.getUntrackedParameter<int>("maxPSWeights",12);
+  }	  
 
   systematics = iConfig.getParameter<std::vector<std::string> >("systematics");
 
@@ -670,7 +675,11 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   if(!isData && useLHEWeights){ 
 	  trees["noSyst"]->Branch("maxGenWeights", &maxWeights, "maxGenWeights/I");
 	  trees["noSyst"]->Branch("genWeights", &genWeights);	  
-   }		
+   }
+   if(!isData && addPSWeights){
+	  trees["noSyst"]->Branch("maxPSWeights", &maxPSWeights, "maxPSWeights/I");
+	  trees["noSyst"]->Branch("PSWeights", &psWeights);
+   }   		
   //Prepare the trees cloning all branches and setting the correct names/titles:
   if(!addNominal){
     DMTrees = fs->mkdir( "systematics_trees" );
@@ -863,7 +872,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
   if(useLHE){
     iEvent.getByToken(t_lhes_, lhes);
   }
-  if(addLHAPDFWeights){
+  if(addLHAPDFWeights || addPSWeights){
     iEvent.getByToken(t_genprod_, genprod);
   }
 
@@ -922,7 +931,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     
   
     
-//  std::cout<<"Collected # of primary vertices: "<<nPV<<std::endl;	  
+//	std::cout<<"Collected # of primary vertices: "<<nPV<<std::endl;	  
 
   //Part 1 taking the obs values from the edm file
   for (;itPsets!=physObjects.end();++itPsets){ 
@@ -949,10 +958,10 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       iEvent.getByToken(t_floats[name] ,h_floats[name]);
       //      cout << "name "<< name <<endl;
       for (size_t fi = 0;fi < maxInstance ;++fi){
-	if(fi <h_floats[name]->size()){tmp = h_floats[name]->at(fi);}
-	else { tmp = -9999.; }
+	    if(fi <h_floats[name]->size()){tmp = h_floats[name]->at(fi);}
+	    else { tmp = -9999.; }
 	//	cout << " setting name "<< name<< " at instance "<< fi <<" to value "<< tmp <<endl;
-	vfloats_values[name][fi]=tmp;
+	    vfloats_values[name][fi]=tmp;
       }
       sizes[namelabel]=h_floats[name]->size();
       //      cout<< " size for "<< namelabel <<" is then "<< sizes[namelabel]<<endl; 
@@ -966,13 +975,13 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       int tmp = 1;
       iEvent.getByToken(t_ints[name] ,h_ints[name]);
       for (size_t fi = 0;fi < maxInstance;++fi){
-	if(fi <h_ints[name]->size()){tmp = h_ints[name]->at(fi);}
-	else { tmp = -9999.; }
-	vints_values[name][fi]=tmp;
+	    if(fi <h_ints[name]->size()){tmp = h_ints[name]->at(fi);}
+	    else { tmp = -9999.; }
+	    vints_values[name][fi]=tmp;
       }
     }  
     
-//        std::cout << " checkpoint ints"<<endl;
+//    std::cout << " checkpoint ints"<<endl;
     //Single floats/ints
     for (;itsF != singleFloat.end();++itsF){
       string varname=itsF->instance();
@@ -987,10 +996,12 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       iEvent.getByToken(t_int[name],h_int[name]);
       int_values[name]=*h_int[name];
     }
-//       std::cout << " checkpoint singles"<<endl;
+
+//    std::cout << " checkpoint singles"<<endl;
+
   }
 
-//    std::cout << " checkpoint part 1"<<endl;
+//  std::cout << " checkpoint part 1"<<endl;
 
 
   //Part 2: selection and analysis-level changes
@@ -1016,7 +1027,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     loosemuons.clear();
     jets.clear();
     genWeights.clear();
-    pdfWeights.clear();		
+    pdfWeights.clear();
+    psWeights.clear();		
     string syst = systematics.at(s);
 
     jsfscmvat.clear();
@@ -1363,8 +1375,8 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	vfloats_values[jets_label+"_JetID_neutralMultiplicity"][j]=neuMulti;
 	vfloats_values[jets_label+"_JetID_numberOfDaughters"][j]=chMulti+neuMulti;
 
-/*	
-	std::cout << "### JET ID ###" << std::endl;
+	
+/*	std::cout << "### JET ID ###" << std::endl;
 	std::cout <<"enZero "<<enZero<< std::endl;
 	std::cout << "ndau " << chMulti+neuMulti << std::endl;
 	std::cout << "chMulti " << chMulti << std::endl;
@@ -1376,7 +1388,7 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	std::cout << "neuHadEnFrac " << neuHadEnFrac << std::endl;
 	std::cout << "passes loose id " << int(passesID) << std::endl;
 */		
-      }
+    }
 
       vfloats_values[jets_label+"_PassesID"][j]=(float)passesID;
 //      std::cout<<"Check 1"<<std::endl;
@@ -1914,8 +1926,11 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
     if(addLHAPDFWeights){
       getEventPdf();
     }
-    		
-
+    
+    if(addPSWeights){
+		getEventPSWeights();
+	}	
+    	
     if(addPV){
       float nGoodPV = 0.0;
       for (size_t v = 0; v < pvZ->size();++v){
@@ -2428,6 +2443,23 @@ void DMAnalysisTreeMaker::getEventLHEWeights(){
     //else cout << "WARNING! there are " << wgtsize << " weights, and you accomodated for only "<< maxWeights << " weights, check your configuration file/your lhe!!!"<<endl;
   }
   
+}
+
+void DMAnalysisTreeMaker::getEventPSWeights(){
+
+	float w0 = lhes->hepeup().XWGTUP;	
+	for(unsigned int ii=2; ii<=13; ii++){
+		float ww= (float) genprod->weights()[ii];
+		ww= ww/w0;
+//		std::cout<<"Weight ID: "<<ii<<"\tWeight: "<<ww<<std::endl;
+		psWeights.push_back(ww);
+//		std::cout<<"Weight Stored: "<<psWeights.at(ii-2)<<std::endl; 
+	}
+	
+	if((int)psWeights.size() != maxPSWeights){ 
+		std::cout<<"Warning!!! Problem in PS Weights. Clearing PS weights vector"<<std::endl;
+		psWeights.clear();
+	}	  
 }
 
 // double DMAnalysisTreeMaker::smearPt(double ptCorr, double genpt, double eta, string syst){
