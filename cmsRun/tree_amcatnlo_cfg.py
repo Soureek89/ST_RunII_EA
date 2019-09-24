@@ -36,7 +36,8 @@ options.register('sample',
 #               'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/TTbar_EDMTuple_Summer16/170310_092846/0000/TTbar_EDMTuple_1.root'
 #                'root://cms-xrd-global.cern.ch//store/user/smitra/TopMassST/EDMTuples/ST_t-channel_antitop_4f_mtop1715_inclusiveDecays_13TeV-powhegV2-madspin-pythia8/TbarChannel_Mass171p5_EDMTuple_Summer16_newJER/190308_151328/0000/TbarChannel_Mass171p5_EDMTuple_9.root'
 #                 'file:/ceph/smitra/TopMass/TChannel_Powheg/TChannel_ScaleUp_EDMTuple_42.root'
-				'file:/ceph/smitra/TopMass/B2GEDMNtuple_tCh_antiTop_PSWeights.root'
+#				'file:/ceph/smitra/TopMass/B2GEDMNtuple_tCh_antiTop_PSWeights.root'
+				'file:/ceph/smitra/TopMass/TTbar/TTbar_EDMTuple.root'
                  ],
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
@@ -47,7 +48,8 @@ options.register('outputLabel',
                 # 'TbarChannel_Mass171p5.root',
                 #'TTbar.root',
 #                '/ceph/smitra/TopMass/TChannel_Powheg/Trees_TChannel_ScaleUp_Summer16_80X_42.root',
-				'/ceph/smitra/TopMass/TChannel_Powheg/Trees_TChannel_PSWeights_Summer16_94X_trial.root',
+#				'/ceph/smitra/TopMass/TChannel_Powheg/Trees_TChannel_PSWeights_Summer16_94X_trial.root',
+				'/ceph/smitra/TopMass/TTbar/Trees_TTbar_Summer16_94X_bFragWeights_trial.root',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Output label')
@@ -137,7 +139,8 @@ process.DMTreesDumper.useMETNoHF = cms.untracked.bool(False)
 #process.DMTreesDumper.addPV = cms.untracked.bool(True)
 process.DMTreesDumper.channelInfo.useLHEWeights =cms.untracked.bool(False)
 process.DMTreesDumper.channelInfo.addLHAPDFWeights =cms.untracked.bool(False)
-process.DMTreesDumper.channelInfo.addPSWeights =cms.untracked.bool(True)
+process.DMTreesDumper.channelInfo.addPSWeights =cms.untracked.bool(False)
+process.DMTreesDumper.channelInfo.addBFragWeights =cms.untracked.bool(True)
 process.DMTreesDumper.channelInfo.topPtreweight=cms.untracked.bool(False)
 process.DMTreesDumper.isData = cms.untracked.bool(False)#This adds the L2L3Residuals
 process.DMTreesDumper.doPU= cms.bool(True);

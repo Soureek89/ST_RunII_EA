@@ -132,6 +132,7 @@ DMTreesDumper = cms.EDAnalyzer(
         maxPdf = cms.untracked.int32(102),
 		addPSWeights = cms.untracked.bool(False),
 		maxPSWeights = cms.untracked.int32(12),
+		addBFragWeights = cms.untracked.bool(False),
        )
     )
 
