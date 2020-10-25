@@ -80,7 +80,7 @@ private:
     LumiWeightsUp_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69p2mbMinBias_up.root",std::string("pileup"),std::string("pileup"));
     LumiWeightsDown_ = edm::LumiReWeighting(distr,"DataPileupHistogram_69p2mbMinBias_down.root",std::string("pileup"),std::string("pileup"));
   }
-  }
+ }
 
   virtual void analyze(const edm::Event &, const edm::EventSetup & );
   vector<string> additionalVariables(string);
@@ -94,6 +94,7 @@ private:
   bool getMETFilters();
 
   void getBFragWeights();
+  void getPreFireWeights();
   
   double getTopPtWeight(double ptT,double ptTbar);
 
@@ -134,7 +135,7 @@ private:
 
   edm::EDGetTokenT<double> t_Rho_;
   edm::EDGetTokenT<int> t_ntrpu_;
-
+		
   //====================================
 
   TTree * treesBase;
@@ -173,6 +174,7 @@ private:
   double crossSection, originalEvents;
   bool useLHEWeights, useLHE, useTriggers,cutOnTriggers, useMETFilters, addPV;
   bool addLHAPDFWeights, addPSWeights, addBFragWeights;
+	
   string centralPdfSet,variationPdfSet;
   std::vector<string> leptonicTriggers, hadronicTriggers, metFilters;
 
@@ -240,6 +242,20 @@ private:
 /// ------------------------------Gen Particle Info ---------------------------------------
   float genPartpt, genParteta, genPartphi, genPartE;
   int genPartId;
+
+///-------------------------------- PreFire Weights --------------------------------------
+
+  bool addPreFireWeights;
+
+  edm::EDGetTokenT<double> t_preFireProb_;
+  edm::EDGetTokenT<double> t_preFireProbUp_;
+  edm::EDGetTokenT<double> t_preFireProbDown_;
+
+  edm::Handle<double> preFireProb;
+  edm::Handle<double> preFireProb_Up;
+  edm::Handle<double> preFireProb_Down;
+
+  double preFireWgt, preFireWgtUp, preFireWgtDown;		
 ///----------------------------------------------------------------------------------------		
   //JEC info
   bool changeJECs = false;
@@ -453,21 +469,33 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
 //  addLHAPDFWeights = channelInfo.getUntrackedParameter<bool>("addLHAPDFWeights",true);
   doTopPtReweight= channelInfo.getUntrackedParameter<bool>("topPtreweight",false);	
   addPSWeights = channelInfo.getUntrackedParameter<bool>("addPSWeights",false);	
-  addBFragWeights = channelInfo.getUntrackedParameter<bool>("addBFragWeights",false);
-  
-  if( useLHE ){
+  addBFragWeights = channelInfo.getUntrackedParameter<bool>("addBFragWeights",false);  
+  addPreFireWeights = channelInfo.getUntrackedParameter<bool>("addPreFireWeights",false);
+
+  if( !isData && useLHE ){
     edm::InputTag lhes_ = iConfig.getParameter<edm::InputTag>( "lhes" );
     t_lhes_ = consumes< LHEEventProduct >( lhes_ );
   }
 
-  if(doTopPtReweight){
+  if(!isData && doTopPtReweight){
 	edm::InputTag genParticles_= iConfig.getParameter<edm::InputTag>( "genParticles" );  
 	t_genParticles_ = consumes < std::vector<reco::GenParticle> >( genParticles_ );
   }
 		
-  if( addLHAPDFWeights || addPSWeights ){
+  if( !isData && (addLHAPDFWeights || addPSWeights) ){
     edm::InputTag genprod_ = iConfig.getParameter<edm::InputTag>( "genprod" );
     t_genprod_ = consumes<GenEventInfoProduct>( genprod_ );
+  }
+
+  if( !isData && addPreFireWeights ){
+//    edm::InputTag preFire_ = iConfig.getParameter<edm::InputTag>("prefiringweight","NonPrefiringProb");
+    t_preFireProb_ = consumes<double>(edm::InputTag("prefiringweight","NonPrefiringProb"));
+
+//	edm::InputTag preFireUp_ = iConfig.getParameter<edm::InputTag>("prefiringweight","NonPrefiringProbUp");	
+	t_preFireProbUp_ = consumes<double>(edm::InputTag("prefiringweight","NonPrefiringProbUp"));
+
+//	edm::InputTag preFireDown_ = iConfig.getParameter<edm::InputTag>("prefiringweight","NonPrefiringProbDown");
+	t_preFireProbDown_ = consumes<double>(edm::InputTag("prefiringweight","NonPrefiringProbDown"));	
   }
 
   useTriggers = iConfig.getUntrackedParameter<bool>("useTriggers",true);
@@ -529,6 +557,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
 //----------------  PU info -----------------------------------------
   doPU_=iConfig.getParameter<bool>("doPU");
   dataPUFile_=iConfig.getParameter<std::string>("dataPUFile");
+  
   if( !isData && doPU_ ){
 //	dataPUFile_=iConfig.getParameter<std::string>("dataPUFile");
     t_ntrpu_ = consumes< int >( edm::InputTag( "eventUserData","puNtrueInt" ) );
@@ -723,7 +752,7 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
 	  trees["noSyst"]->Branch("maxPSWeights", &maxPSWeights, "maxPSWeights/I");
 	  trees["noSyst"]->Branch("PSWeights", &psWeights);
   }
-   
+    	   
   //Prepare the trees cloning all branches and setting the correct names/titles:
   if(!addNominal){
     DMTrees = fs->mkdir( "systematics_trees" );
@@ -922,7 +951,13 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
 	iEvent.getByToken(semilepbrUpToken_, semilepbrUp);
 	iEvent.getByToken(semilepbrDownToken_, semilepbrDown);    
   }
-	  
+  
+  if(addPreFireWeights){	  
+	  iEvent.getByToken(t_preFireProb_, preFireProb);
+	  iEvent.getByToken(t_preFireProbUp_, preFireProb_Up);
+	  iEvent.getByToken(t_preFireProbDown_, preFireProb_Down);
+  }
+  	  
   if(useLHE){
     iEvent.getByToken(t_lhes_, lhes);
   }
@@ -1114,9 +1149,11 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       getPUSF();
     }
 	
-	if(addBFragWeights) getBFragWeights();  
+	if(addBFragWeights) getBFragWeights();
+	
+	if(addPreFireWeights) getPreFireWeights();  
 
-//    std::cout<<"Check for PU re-weighting 2"<<std::endl;
+    std::cout<<"Check for PU reweighting, BFragWeights & Prefire Weights "<<std::endl;
 
 /**************************
     Muons:
@@ -2300,10 +2337,10 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
      
      }	
 	
-/*    if(!isData){
-	addvar.push_back("mu_eff");
-	addvar.push_back("mu_eff_up");
-	addvar.push_back("mu_eff_down");
+/*  if(!isData){
+	  addvar.push_back("mu_eff");
+	  addvar.push_back("mu_eff_up");
+	  addvar.push_back("mu_eff_down");
     }
 */	
     if(addPV){
@@ -2375,6 +2412,12 @@ vector<string> DMAnalysisTreeMaker::additionalVariables(string object){
 		addvar.push_back("semilepbrUp_Weight");
 		addvar.push_back("semilepbrDown_Weight");
 	}
+	
+	if(addPreFireWeights){
+		addvar.push_back("preFireWeight");
+		addvar.push_back("preFireWeightUp");
+		addvar.push_back("preFireWeightDown");		
+    }		
   }
       
   return addvar;
@@ -2555,6 +2598,18 @@ void DMAnalysisTreeMaker::getEventPSWeights(){
 	}	  
 }
 
+void DMAnalysisTreeMaker::getPreFireWeights(){
+	preFireWgt = *preFireProb;
+	preFireWgtUp = *preFireProb_Up;
+	preFireWgtDown = *preFireProb_Down;
+
+	std::cout<<"Prefire weights:\n==========================\nNominal: "<<preFireWgt<<"\tUp: "<<preFireWgtUp<<"\tDown: "<<preFireWgtDown<<std::endl;	
+
+	float_values["Event_preFireWeight"] = (float) preFireWgt;
+	float_values["Event_preFireWeightUp"] = (float) preFireWgtUp;
+	float_values["Event_preFireWeightDown"] = (float) preFireWgtDown;
+	
+}	
 void DMAnalysisTreeMaker::getBFragWeights(){
 
 	float wgt;

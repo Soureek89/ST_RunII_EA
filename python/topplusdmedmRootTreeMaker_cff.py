@@ -54,7 +54,10 @@ DMTreesDumper = cms.EDAnalyzer(
     'DMAnalysisTreeMaker',
     lhes = cms.InputTag('source'),
     genprod = cms.InputTag('generator'),
-    genParticles= cms.InputTag('filteredPrunedGenParticles'),
+    genParticles = cms.InputTag('filteredPrunedGenParticles'),
+#    prefireProb = cms.InputTag("prefiringweight","NonPrefiringProb","b2gEDMNtuples"),
+#    prefireProbUp = cms.InputTag("prefiringweight","NonPrefiringProbUp","b2gEDMNtuples"),
+#    prefireProbDown = cms.InputTag("prefiringweight","NonPrefiringProbDown","b2gEDMNtuples"),
     muLabel = mulabel,
     eleLabel = elelabel,
     jetsLabel = jetlabel,
@@ -133,6 +136,7 @@ DMTreesDumper = cms.EDAnalyzer(
 		addPSWeights = cms.untracked.bool(False),
 		maxPSWeights = cms.untracked.int32(12),
 		addBFragWeights = cms.untracked.bool(False),
+        addPreFireWeights = cms.untracked.bool(False),
        )
     )
 

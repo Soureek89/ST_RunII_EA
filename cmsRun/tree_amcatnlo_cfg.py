@@ -16,8 +16,8 @@ import FWCore.ParameterSet.VarParsing as opts
 options = opts.VarParsing ('analysis')
 
 options.register('maxEvts',
-#                 -1,# default value: process all events
-                 5,		
+                 -1,# default value: process all events
+#                 5,		
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.int,
                  'Number of events to process')
@@ -37,19 +37,20 @@ options.register('sample',
 #                'root://cms-xrd-global.cern.ch//store/user/smitra/TopMassST/EDMTuples/ST_t-channel_antitop_4f_mtop1715_inclusiveDecays_13TeV-powhegV2-madspin-pythia8/TbarChannel_Mass171p5_EDMTuple_Summer16_newJER/190308_151328/0000/TbarChannel_Mass171p5_EDMTuple_9.root'
 #                 'file:/ceph/smitra/TopMass/TChannel_Powheg/TChannel_ScaleUp_EDMTuple_42.root'
 #				'file:/ceph/smitra/TopMass/B2GEDMNtuple_tCh_antiTop_PSWeights.root'
-				'file:/ceph/smitra/TopMass/TTbar/TTbar_EDMTuple.root'
+#				'file:/ceph/smitra/TopMass/TTbar/TTbar_EDMTuple.root'
+                'root://cms-xrd-global.cern.ch//store/user/smitra/TopMassST/EDMTuples/ST_t-channel_top_4f_inclusiveDecays_13TeV_PSweights-powhegV2-madspin/TChannel_Powheg_EDMTuple_Summer16_NewJER_PSWeights_BFragWeights/190925_090527/0000/TChannel_PSWeights_bFragWeights_EDMTuple_99.root'
                  ],
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Sample to analyze')
 
 options.register('outputLabel',
-                #'treesTest_NewSmall_EleTrig.root',
-                # 'TbarChannel_Mass171p5.root',
-                #'TTbar.root',
-#                '/ceph/smitra/TopMass/TChannel_Powheg/Trees_TChannel_ScaleUp_Summer16_80X_42.root',
+#               'treesTest_NewSmall_EleTrig.root',
+                'TChannel_preFire_Weights.root',
+#               'TTbar_preFire_Weights.root',
+#               '/ceph/smitra/TopMass/TChannel_Powheg/Trees_TChannel_ScaleUp_Summer16_80X_42.root',
 #				'/ceph/smitra/TopMass/TChannel_Powheg/Trees_TChannel_PSWeights_Summer16_94X_trial.root',
-				'/ceph/smitra/TopMass/TTbar/Trees_TTbar_Summer16_94X_bFragWeights_trial.root',
+#				'/ceph/smitra/TopMass/TTbar/Trees_TTbar_Summer16_94X_bFragWeights_trial.root',
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Output label')
@@ -104,7 +105,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxE
 ### Source file
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-        options.sample
+#        options.sample
         )
 )
 
@@ -127,7 +128,6 @@ process.GlobalTag.globaltag = options.globalTag
     
 
 ### Rootplizer
-
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputLabel))
 process.load("TreeMaker.ST_RunII_EA.topplusdmedmRootTreeMaker_cff")
 #process.DMTreesDumper.lhes =cms.InputTag("externalLHEProducer")
@@ -140,12 +140,12 @@ process.DMTreesDumper.useMETNoHF = cms.untracked.bool(False)
 process.DMTreesDumper.channelInfo.useLHEWeights =cms.untracked.bool(False)
 process.DMTreesDumper.channelInfo.addLHAPDFWeights =cms.untracked.bool(False)
 process.DMTreesDumper.channelInfo.addPSWeights =cms.untracked.bool(False)
-process.DMTreesDumper.channelInfo.addBFragWeights =cms.untracked.bool(True)
+process.DMTreesDumper.channelInfo.addBFragWeights =cms.untracked.bool(False)
 process.DMTreesDumper.channelInfo.topPtreweight=cms.untracked.bool(False)
+process.DMTreesDumper.channelInfo.addPreFireWeights=cms.untracked.bool(True)
 process.DMTreesDumper.isData = cms.untracked.bool(False)#This adds the L2L3Residuals
-process.DMTreesDumper.doPU= cms.bool(True);
-process.DMTreesDumper.dataPUFile=cms.string("DistrSummer16_25ns");
-
+process.DMTreesDumper.doPU= cms.bool(True)
+process.DMTreesDumper.dataPUFile=cms.string("DistrSummer16_25ns")
 process.analysisPath = cms.Path(
     process.DMTreesDumper
     )
