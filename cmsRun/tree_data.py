@@ -80,7 +80,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxE
 ### Source file
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-        options.sample
+#        options.sample
         )
 )
 
@@ -97,10 +97,12 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 #process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
 #process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
 
-#process.GlobalTag.globaltag = '74X_dataRun2_Prompt_v0'
-#process.GlobalTag.globaltag = '76X_dataRun2_v15'
 #process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v8'
-process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'
+
+if options.Era in ['RunB','RunC', 'RunD','RunE','RunF','RunG']: 
+	process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'
+else:
+	process.GlobalTag.globaltag= '80X_dataRun2_Prompt_v16'
 
 #for pset in process.GlobalTag.toGet.value():
 #    pset.connect = pset.connect.value().replace('frontier://FrontierProd/', 'frontier://FrontierProd/')
@@ -131,16 +133,16 @@ process.DMTreesDumper.addPV = cms.untracked.bool(True)
 process.DMTreesDumper.channelInfo.useLHEWeights =cms.untracked.bool(False)
 process.DMTreesDumper.isData = cms.untracked.bool(True)#This adds the L2L3Residuals
 process.DMTreesDumper.doPU= cms.bool(False)
-process.DMTreesDumper.dataPUFile=cms.string("DistrSpring16_25ns")
+process.DMTreesDumper.dataPUFile=cms.string("DistrSummer16_25ns")
 process.DMTreesDumper.era= cms.string(options.Era)
 
 
-import FWCore.PythonUtilities.LumiList as LumiList
-import FWCore.ParameterSet.Types as CfgTypes
-process.source.lumisToProcess = CfgTypes.untracked(CfgTypes.VLuminosityBlockRange())
-JSONfile = 'Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt'
-myLumis = LumiList.LumiList(url = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions16/13TeV/Final/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt').getCMSSWString().split(',')
-process.source.lumisToProcess.extend(myLumis)
+#import FWCore.PythonUtilities.LumiList as LumiList
+#import FWCore.ParameterSet.Types as CfgTypes
+#process.source.lumisToProcess = CfgTypes.untracked(CfgTypes.VLuminosityBlockRange())
+#JSONfile = 'Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt'
+#myLumis = LumiList.LumiList(url = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions16/13TeV/Final/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt').getCMSSWString().split(',')
+#process.source.lumisToProcess.extend(myLumis)
 
 
 process.analysisPath = cms.Path(

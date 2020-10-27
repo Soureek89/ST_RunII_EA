@@ -703,8 +703,9 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
 		jes_syst.append(syst,4,jNumeral-4);	
 		std::cout<<jes_syst<<std::endl;
 
+/*
 /// For Local cmsRun
-/*		if(isData) {
+		if(isData) {
 
 			if(Era=="RunB" || Era=="RunC" || Era=="RunD"){
 				jecParsL1  = new JetCorrectorParameters("Summer16JEC/Summer16_23Sep2016BCDV4_DATA_L1FastJet_AK4PFchs.txt");
@@ -756,8 +757,8 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
 		jecCorr = new FactorizedJetCorrector(jecPars);	
 	  }		
 	}	
-*/
 
+*/
 /// For crab submission
 	if(isData) {
 
@@ -832,17 +833,17 @@ DMAnalysisTreeMaker::DMAnalysisTreeMaker(const edm::ParameterSet& iConfig){
   readerCMVALoose = new BTagCalibrationReader(BTagEntry::OP_LOOSE, "central", {"up", "down"});      
   readerCMVALoose->load(*calib_cmvav2, BTagEntry::FLAV_B,   "ttbar");
   readerCMVALoose->load(*calib_cmvav2, BTagEntry::FLAV_C,   "ttbar");
-  readerCMVALoose->load(*calib_cmvav2, BTagEntry::FLAV_UDSG,   "incl");
+  readerCMVALoose->load(*calib_cmvav2, BTagEntry::FLAV_UDSG,  "incl");
 
   readerCMVAMedium = new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central", {"up", "down"});      
   readerCMVAMedium->load(*calib_cmvav2, BTagEntry::FLAV_B,   "ttbar");
   readerCMVAMedium->load(*calib_cmvav2, BTagEntry::FLAV_C,   "ttbar");
-  readerCMVAMedium->load(*calib_cmvav2, BTagEntry::FLAV_UDSG,   "incl");
+  readerCMVAMedium->load(*calib_cmvav2, BTagEntry::FLAV_UDSG,  "incl");
 
   readerCMVATight = new BTagCalibrationReader(BTagEntry::OP_TIGHT, "central", {"up", "down"});      
   readerCMVATight->load(*calib_cmvav2, BTagEntry::FLAV_B,   "ttbar");
   readerCMVATight->load(*calib_cmvav2, BTagEntry::FLAV_C,   "ttbar");
-  readerCMVATight->load(*calib_cmvav2, BTagEntry::FLAV_UDSG,   "incl");
+  readerCMVATight->load(*calib_cmvav2, BTagEntry::FLAV_UDSG,  "incl");
 
 //  readerCMVAReshape = new BTagCalibrationReader(BTagEntry::OP_RESHAPING, "central", {"up_jes", "down_jes"});      
 //  readerCMVAReshape->load(*calib_cmvav2, BTagEntry::FLAV_B,   "iterativefit");
@@ -1213,7 +1214,6 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       string pref = obj_to_pref[jets_label];
       float pt = vfloats_values[makeName(jets_label,pref,"Pt")][j];
       //      if(pt<0)continue;
-      float genpt = vfloats_values[makeName(jets_label,pref,"GenJetPt")][j];
       float eta = vfloats_values[makeName(jets_label,pref,"Eta")][j];
       float phi = vfloats_values[makeName(jets_label,pref,"Phi")][j];
       float energy = vfloats_values[makeName(jets_label,pref,"E")][j];
@@ -1224,6 +1224,17 @@ void DMAnalysisTreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetu
       float jecscale = vfloats_values[makeName(jets_label,pref,"jecFactor0")][j];
       float area = vfloats_values[makeName(jets_label,pref,"jetArea")][j];
 
+      float genpt = vfloats_values[makeName(jets_label,pref,"GenJetPt")][j];
+      float genJeta = vfloats_values[makeName(jets_label,pref,"GenJetEta")][j];
+      float genJphi = vfloats_values[makeName(jets_label,pref,"GenJetPhi")][j];
+      float genJE = vfloats_values[makeName(jets_label,pref,"GenJetE")][j];
+	
+//	  TLorentzVector genJ;	
+//	  genJ.SetPtEtaPhiE(genpt,genJeta,genJphi,genJE);
+//	  std::cout<<"GenJet Info: "<<std::endl;
+//	  std::cout<<"pt: "<<genpt<<"\t eta: "<<fabs(genJeta)<<"\t phi: "<<genJphi<<"\t E: "<<genJE<<std::endl;
+//	  std::cout<<"\n================ GenJet Info ends ======================== "<<std::endl;
+	  	
       // if(pt>0){
       // 	ptCorr = smearPt(pt, genpt, eta, syst);
 	
@@ -2561,37 +2572,40 @@ float DMAnalysisTreeMaker::BTagWeight::weight(vector<JetInfo> jetTags, int tags)
   return pData / pMC;
 }
 
-
 double DMAnalysisTreeMaker::MCTagEfficiency(string algo, int flavor, double pt, double eta){
-  if(pt < 40) pt = 40.1;
+  
+  double eff=1.0;	
+  if(pt < 40.0) eff = 1.0;
+  
   if (abs(flavor) ==5){
 //    if(algo=="csvt") return 0.51;
 //    if(algo=="csvm") return 0.71;
 //    if(algo=="csvl") return 0.86;
-    if(algo=="cmvat") return cmvaeffbt->getEff(fabs(eta),pt);
-    if(algo=="cmvam") return cmvaeffbm->getEff(fabs(eta),pt);
-    if(algo=="cmval") return cmvaeffbl->getEff(fabs(eta),pt);
-
+    if(algo=="cmvat") eff = cmvaeffbt->getEff(fabs(eta),pt);
+    if(algo=="cmvam") eff = cmvaeffbm->getEff(fabs(eta),pt);
+    if(algo=="cmval") eff = cmvaeffbl->getEff(fabs(eta),pt);
   }
 
   if (abs(flavor) ==4){
 //    if(algo=="csvt") return 0.015;
 //    if(algo=="csvm") return 0.08;
 //    if(algo=="csvl") return 0.28;
-    if(algo=="cmvat") return cmvaeffct->getEff(fabs(eta),pt);
-    if(algo=="cmvam") return cmvaeffcm->getEff(fabs(eta),pt);
-    if(algo=="cmval") return cmvaeffcl->getEff(fabs(eta),pt);
+    if(algo=="cmvat") eff = cmvaeffct->getEff(fabs(eta),pt);
+    if(algo=="cmvam") eff = cmvaeffcm->getEff(fabs(eta),pt);
+    if(algo=="cmval") eff = cmvaeffcl->getEff(fabs(eta),pt);
   }
 
   if (abs(flavor) !=4 && abs(flavor) !=5){
 //    if(algo=="csvt") return 0.003;
 //    if(algo=="csvm") return 0.02;
 //    if(algo=="csvl") return 0.16;
-    if(algo=="cmvat") return 0.003; //cmvaeffot->getEff(fabs(eta),pt);
-    if(algo=="cmvam") return 0.02;//cmvaeffom->getEff(fabs(eta),pt);
-    if(algo=="cmval") return 0.13; //cmvaeffol->getEff(fabs(eta),pt);
+    if(algo=="cmvat") eff= 0.003; //cmvaeffot->getEff(fabs(eta),pt);
+    if(algo=="cmvam") eff= 0.02;//cmvaeffom->getEff(fabs(eta),pt);
+    if(algo=="cmval") eff= 0.13; //cmvaeffol->getEff(fabs(eta),pt);
   }
-  return 1.0;
+  
+  return eff;
+  
 }
 
 double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst, double pt, double eta){
@@ -2694,8 +2708,8 @@ double DMAnalysisTreeMaker::TagScaleFactor(string algo, int flavor, string syst,
 
 }			 
 
-float DMAnalysisTreeMaker::BTagWeight::weightWithVeto(vector<JetInfo> jetsTags, int tags, vector<JetInfo> jetsVetoes, int vetoes)
-{//This function takes into account cases where you have n b-tags and m vetoes, but they have different thresholds. 
+float DMAnalysisTreeMaker::BTagWeight::weightWithVeto(vector<JetInfo> jetsTags, int tags, vector<JetInfo> jetsVetoes, int vetoes){	
+//This function takes into account cases where you have n b-tags and m vetoes, but they have different thresholds. 
   if (!filter(tags))
     {
       //   std::cout << "nThis event should not pass the selection, what is it doing here?" << std::endl;

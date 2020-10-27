@@ -23,19 +23,22 @@ options.register('maxEvts',
 options.register('sample',
                  [
 #	'file:/tmp/oiorio/B2GEDMNtuple_1.root'
-#       'file:../../edm_mc/B2GEDMNtuple.root'
-#       'file:/afs/cern.ch/work/n/nfalterm/public/B2GEDMNtuple.root'
-#       'root://xrootd.ba.infn.it///store/user/decosa/ttDM/CMSSW_7_4_X/TT_TuneCUETP8M1_13TeV-powheg-pythia8/TT_TuneCUETP8M1_13TeV/150926_070344/0000/B2GEDMNtuple_1.root'
+#	'file:../../edm_mc/B2GEDMNtuple.root'
+#	'file:/afs/cern.ch/work/n/nfalterm/public/B2GEDMNtuple.root'
+#	'root://xrootd.ba.infn.it///store/user/decosa/ttDM/CMSSW_7_4_X/TT_TuneCUETP8M1_13TeV-powheg-pythia8/TT_TuneCUETP8M1_13TeV/150926_070344/0000/B2GEDMNtuple_1.root'
 #	'root://se01.indiacms.res.in//store/user/smitra/25ns/EDMTuple_74Xv8/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_EDMTuple_74Xv8/151109_200859/0000/DYJets_EDMTuple_1.root'	
 #	'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/EDMTuple_80X/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple/160714_102438/0000/TChannel_aMCatNLO_EDMTuple_9.root'
-        #'file:/store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple_Summer16/170309_045551/0000/TChannel_Powheg_EDMTuple_1.root'
-#        'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple_Summer16/170309_045551/0000/TChannel_Powheg_EDMTuple_1.root'
+#	'file:/store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple_Summer16/170309_045551/0000/TChannel_Powheg_EDMTuple_1.root'
+#	'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple_Summer16/170309_045551/0000/TChannel_Powheg_EDMTuple_1.root'
 #	'file:/storage/c/smitra/B2GEDMNtuple_Signal.root'
 #	'root://se01.indiacms.res.in//store/user/smitra/25ns/TopMass/2017/EDMTuple_80X/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/TTbar_EDMTuple_Summer16/170310_092846/0000/TTbar_EDMTuple_1.root'
 #    'root://se01.indiacms.res.in//store/user/rkarnam/TopMass/Single_Electron/Systematics/EDMTuples/TChannel_ScaleDown_16Oct/ST_t-channel_top_4f_scaledown_inclusiveDecays_13TeV-powhegV2-madspin-pythia8/TChannel_ScaleDown_16Oct2018/181016_230910/0000/TChannel_ScaleDown_16Oct_99.root'
-#     'file:/ceph/smitra/TopMass/B2GEDMNtuple_tCh_antitop_mass166p5.root'
-#      'root://se01.indiacms.res.in//store/user/mikumar/TopMass/Single_Electron/TTbar_alternate_mass_B2G/TT_TuneCUETP8M2T4_mtop1695_13TeV-powheg-pythia8/TT_TuneCUETP8M2T4_mtop1695_13TeV-powheg-pythia8/TT_TuneCUETP8M2T4_mtop1695_13TeV-powheg-pythia8/190305_133446/0000/TT_TuneCUETP8M2T4_mtop1695_13TeV-powheg-pythia8_63.root'
-'root://cms-xrd-global.cern.ch//store/user/smitra/TopMassST/EDMTuples/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple_Summer16_NewJER/180921_121115/0000/TChannel_Powheg_EDMTuple_1.root'
+#	'file:/ceph/smitra/TopMass/B2GEDMNtuple_tCh_antitop_mass166p5.root'
+#	'root://se01.indiacms.res.in//store/user/mikumar/TopMass/Single_Electron/TTbar_alternate_mass_B2G/TT_TuneCUETP8M2T4_mtop1695_13TeV-powheg-pythia8/TT_TuneCUETP8M2T4_mtop1695_13TeV-powheg-pythia8/TT_TuneCUETP8M2T4_mtop1695_13TeV-powheg-pythia8/190305_133446/0000/TT_TuneCUETP8M2T4_mtop1695_13TeV-powheg-pythia8_63.root'
+#	'root://cms-xrd-global.cern.ch//store/user/smitra/TopMassST/EDMTuples/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/TChannel_Powheg_EDMTuple_Summer16_NewJER/180921_121115/0000/TChannel_Powheg_EDMTuple_1.root'
+#    'file:/ceph/smitra/TopMass/TTbar_TuneUp_EDMTuple.root'
+#	'root://se01.indiacms.res.in//store/user/rkarnam/TopMass/Single_Electron/MC_Nominal/EDMTuples/DYJets_27Sep/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJets_27Sep18/180927_192001/0000/DYJets_27Sep18_91.root'	
+    'root://cms-xrd-global.cern.ch//store/user/smitra/TopMassST/EDMTuples/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4/TWChannel_EDMTuple_Summer16_NewJER/180924_123839/0000/TWChannel_EDMTuple_2.root'
        ],
        opts.VarParsing.multiplicity.singleton,
        opts.VarParsing.varType.string,
@@ -44,9 +47,10 @@ options.register('sample',
 options.register('outputLabel',
                 # 'treesTest_NewSmall_EleTrig.root',
                 #'TChannel_Powheg.root',
-                "/storage/9/smitra/jer_test.root",
+                #"/ceph/smitra/TopMass/TTbar/TTbar_TuneUp_2.root",
                 # 'tree.root',
                 #'Trees_TbarChannel_Mass166p5_Summer16_80X_20.root',
+				"/ceph/smitra/TopMass/TWChannel/SystTrees_JES_FlavorUp_trial.root",
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'Output label')
@@ -73,11 +77,11 @@ options.register('lhes',
 options.register('syst',
 #                 ['noSyst'],
 #                 ['jes_CorrelationGroupIntercalibration_up','jes_CorrelationGroupIntercalibration_down','jes_CorrelationGroupUncorrelated_up','jes_CorrelationGroupUncorrelated_down','jes_CorrelationGroupMPFInSitu_up','jes_CorrelationGroupMPFInSitu_down','jes_SubTotalPileUp_up','jes_SubTotalPileUp_down','jes_FlavorPureQuark_up','jes_FlavorPureQuark_down','jes_FlavorPureGluon_up','jes_FlavorPureGluon_down','jes_FlavorPureCharm_up','jes_FlavorPureCharm_down','jes_FlavorPureBottom_up','jes_FlavorPureBottom_down','jes_CorrelationGroupFlavor_up','jes_CorrelationGroupFlavor_down','jes_Total_up','jes_Total_down'],
-#                 ['jes_CorrelationGroupIntercalibration_up','jes_CorrelationGroupUncorrelated_up','jes_CorrelationGroupMPFInSitu_up','jes_CorrelationGroupFlavor_up','jes_SubTotalPileUp_up'],
-#                 ['jes_CorrelationGroupIntercalibration_down','jes_CorrelationGroupUncorrelated_down','jes_CorrelationGroupMPFInSitu_down','jes_CorrelationGroupFlavor_down','jes_SubTotalPileUp_down'],
-#                 ['jes_FlavorPureQuark_up','jes_FlavorPureGluon_up','jes_FlavorPureCharm_up','jes_FlavorPureBottom_up','jes_Total_up'],
-#                 ['jes_FlavorPureQuark_down','jes_FlavorPureGluon_down','jes_FlavorPureCharm_down','jes_FlavorPureBottom_down','jes_Total_down'], 
-                  ['jer_up','jer_down','unclusteredMet_up',"unclusteredMet_down"],
+                 ['jes_CorrelationGroupIntercalibration_up','jes_CorrelationGroupUncorrelated_up','jes_CorrelationGroupMPFInSitu_up'],#'jes_CorrelationGroupFlavor_up','jes_SubTotalPileUp_up'],
+#                 ['jes_CorrelationGroupIntercalibration_down','jes_CorrelationGroupUncorrelated_down','jes_CorrelationGroupMPFInSitu_down'], #'jes_CorrelationGroupFlavor_down','jes_SubTotalPileUp_down'],
+#                 ['jes_FlavorPureQuark_up','jes_FlavorPureGluon_up','jes_FlavorPureCharm_up','jes_FlavorPureBottom_up'],#'jes_Total_up'],
+#                 ['jes_FlavorPureQuark_down','jes_FlavorPureGluon_down','jes_FlavorPureCharm_down','jes_FlavorPureBottom_down'], #'jes_Total_down'], 
+#                 ['jer_up','jer_down','unclusteredMet_up',"unclusteredMet_down"],
                  opts.VarParsing.multiplicity.singleton,
                  opts.VarParsing.varType.string,
                  'systematic trees')
@@ -108,7 +112,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxE
 ### Source file
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-        options.sample
+#        options.sample
         )
 )
 
